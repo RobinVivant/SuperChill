@@ -2,6 +2,7 @@
 
 Samples = new Meteor.Collection('samples');
 
+
 Samples.allow({
     insert: function (userId, doc) {
         return true;
@@ -15,6 +16,9 @@ Samples.allow({
 });
 
 if (Meteor.isServer) {
+
+    Samples._ensureIndex({id: 1});
+
     Meteor.publish('samples', function () {
         return Samples.find();
     });
@@ -22,7 +26,7 @@ if (Meteor.isServer) {
     if( Samples.find().count() == 0 ){
         Samples.insert({
             title:"Yolo song",
-            duration:120
+            duration: 120
         });
     }
 }
