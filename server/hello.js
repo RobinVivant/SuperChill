@@ -12,6 +12,18 @@ if (Meteor.isClient) {
     'click button': function () {
       // increment the counter when button is clicked
       Session.set("counter", Session.get("counter") + 1);
+
+      // TEST DDP
+      var ddp = new MeteorDdp('ws://localhost:3000/websocket');
+      ddp.connect().done(function() {
+        console.log('Connected!');
+        ddp.call('hiBitch', ["prout"]).done(function(yolo) {
+          console.log(yolo);
+        });
+      });
+
+
+
     }
   });
 }
