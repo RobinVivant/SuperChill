@@ -4,12 +4,14 @@
 
 <template name="slave">
 
-    <h1 class='center'>Hey, you slave ! ;-)</h1>
+    <div id="slavePage">
+        <h1 class='center'>Hey, you slave ! ;-)</h1>
 
-    {{#each samples}}
-        <div class="sample">
-            <h2>{{title}}</h2>
-        </div>
-    {{/each}}
+        {{#each samples}}
+            <div class="sample">
+                <h2>{{title}}</h2>
+            </div>
+        {{/each}}
+    </div>
 
 </template>
