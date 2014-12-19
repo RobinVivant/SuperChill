@@ -5,6 +5,10 @@ Meteor.methods({
         this.unblock();
 
         console.log(yo);
+        Samples.insert({
+            title: yo,
+            duration:42
+        });
         return yo;
     }
 });
