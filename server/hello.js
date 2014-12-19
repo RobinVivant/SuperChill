@@ -18,7 +18,13 @@ if (Meteor.isClient) {
       ddp.connect().done(function() {
         console.log('Connected!');
         ddp.call('hiBitch', ["prout"]).done(function(yolo) {
-          console.log(yolo);
+          console.log('remote call returns : '+yolo);
+        });
+        ddp.subscribe("samples").done(function(){
+          console.log('Samples content: ' + ddp.getCollection("samples"));
+          ddp.watch('samples', function(changedDoc, message) {
+            console.log("Samples changed : ", arguments);
+          });
         });
       });
 
