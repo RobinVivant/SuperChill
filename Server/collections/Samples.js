@@ -40,7 +40,7 @@ if (Meteor.isServer) {
                 } else {
                     samples.push({
                         name: finalName,
-                        path: name.substring(process.env.PWD.length)
+                        path: name.substring((process.env.PWD+"/public").length)
                     });
                 }
             }
