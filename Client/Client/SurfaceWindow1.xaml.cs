@@ -15,14 +15,161 @@ using Microsoft.Surface;
 using Microsoft.Surface.Presentation;
 using Microsoft.Surface.Presentation.Controls;
 using Microsoft.Surface.Presentation.Input;
+using Newtonsoft.Json;
+using Net.DDP.Client;
 
 namespace MySurfaceApplication
 {
+    public class MeteorSubscriber : IDataSubscriber
+    {
+        public DDPClient Client { get; set; }
+
+        private readonly Dictionary<string, List<IBinding<object>>> _bindings = new Dictionary<string, List<IBinding<object>>>();
+
+        public MeteorSubscriber()
+        {
+
+        }
+
+        public void DataReceived(string data)
+        {
+            Console.WriteLine(data);
+
+            var message = JsonConvert.DeserializeObject<Message>(data);
+
+            switch (message.Type)
+            {
+                case "added":
+                    var added = JsonConvert.DeserializeObject<AddedMessage>(data);
+
+                    var bindings = _bindings[added.Collection];
+
+                    foreach (var binding in bindings)
+                    {
+                        Console.WriteLine(binding);
+                    }
+                    //subscription.onEvent += (s, e) =>
+                    //{
+                    //    Console.WriteLine(e.Data);
+
+                    //    var message = JsonConvert.DeserializeObject<Message>(e.Data);
+
+                    //    switch (message.Type)
+                    //    {
+                    //        case "added":
+
+                    //            var fields = e.Data.GetFields();
+
+                    //            var newObject = JsonConvert.DeserializeObject<T>(fields);
+
+                    //            list.Add(newObject);
+                    //            break;
+                    //    }
+
+                    //    Console.WriteLine();
+                    //};
+
+                    Console.WriteLine();
+                    break;
+            }
+
+            Console.WriteLine();
+
+            //try
+            //{
+            //    if (data.type == "added")
+            //    {
+            //        Console.WriteLine(data.prodCode + ": " + data.prodName + ": collection: " + data.collection);
+            //    }
+            //}
+            //catch (Exception ex)
+            //{
+            //    throw;
+            //}
+        }
+
+        public void Bind<T>(List<T> list, string collectionName, string subscribeTo)
+            where T : new()
+        {
+            if (!_bindings.ContainsKey(collectionName))
+                _bindings.Add(collectionName, new List<IBinding<object>>());
+
+            _bindings[collectionName].Add(new Binding<object>(list));
+
+            Client.Subscribe(subscribeTo);
+        }
+
+        private interface IBinding<T>
+            where T : new()
+        {
+            T Target { get; }
+        }
+
+        private class Binding<T> : IBinding<T>
+            where T : new()
+        {
+            public T Target { get; private set; }
+
+            public Binding(T target)
+            {
+                Target = target;
+            }
+        }
+
+        //private class CollectionBinding<L, T> : IBinding
+        //    where L : IList<T>
+        //{
+        //    private L _target;
+        //    private T _generic;
+
+        //    public CollectionBinding(L target, T generic)
+        //    {
+        //        _target = target;
+        //        _generic = generic;
+        //    }
+        //}
+    }
+
+    public class Message
+    {
+        [JsonProperty("msg")]
+        public string Type { get; set; }
+    }
+
+    public abstract class Collection : Message
+    {
+        [JsonProperty("collection")]
+        public string CollectionName { get; set; }
+
+        public string Id { get; set; }
+
+        public Dictionary<string, object> Fields { get; set; }
+    }
+
+    public class AddedMessage : Message
+    {
+        public string Collection { get; set; }
+
+        public string Id { get; set; }
+
+        public Dictionary<string, object> Fields { get; set; }
+    }
+
+    public class ChangedMessage : Message
+    {
+        public string Collection { get; set; }
+
+        public string Id { get; set; }
+
+        public Dictionary<string, object> Fields { get; set; }
+    }
+
     /// <summary>
     /// Interaction logic for SurfaceWindow1.xaml
     /// </summary>
     public partial class SurfaceWindow1 : SurfaceWindow
     {
+        private static List<Message> _messages = new List<Message>(); 
         /// <summary>
         /// Default constructor.
         /// </summary>
@@ -32,6 +179,28 @@ namespace MySurfaceApplication
 
             // Add handlers for window availability events
             AddWindowAvailabilityHandlers();
+
+
+            var subscriber = new MeteorSubscriber();
+            var client = new DDPClient(subscriber);
+
+            // TODO; hack
+            subscriber.Client = client;
+
+            client.Connect("superchill.meteor.com");
+
+            subscriber.Bind(_messages, "samples", "samples");
+
+            /*
+            IDataSubscriber subscriber = new Subscriber();
+            DDPClient client = new DDPClient(subscriber);
+
+            Console.WriteLine("yo !! " + client.ToString());
+            client.Connect("superchill.meteor.com");
+            Console.WriteLine("bitch !! "+client.ToString());
+            client.Subscribe("samples");
+            Console.WriteLine("what's up ?? " + client.ToString());
+            client.Call("hiBitch", "prout");*/
         }
 
         /// <summary>
