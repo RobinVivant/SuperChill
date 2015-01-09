@@ -1,0 +1,37 @@
+
+<template name="slave">
+
+
+    <div id="slavePage">
+        <h1 class='center'>{{#if isTablet}}Tablette{{else}}Smartphone{{/if}}</h1>
+
+        <div id="samples">
+            {{#with samples}}
+                {{#if isTablet}}
+                    {{#each tracks}}
+                        <div class="sample">
+                            <h3 class="zouzou" style="background-color: #{{zouzou}};">{{name}}</h3>
+                        </div>
+                    {{/each}}
+                {{else}}
+                    {{> slaveTree childs}}
+                {{/if}}
+            {{/with}}
+        </div>
+
+    </div>
+
+</template>
+
+<template name="slaveTree">
+    {{#each .}}
+        <div class="sample">
+            {{#if childs}}
+                <h2>{{name}}</h2>
+                {{> slaveTree childs}}
+            {{else}}
+                <h3 data-sound="{{path}}" class="phoneSample {{isSampleSelected}}">{{name}}</h3>
+            {{/if}}
+        </div>
+    {{/each}}
+</template>
