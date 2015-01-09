@@ -35,6 +35,16 @@ Template.slaveTree.helpers({
 
 Template.slave.events({
   'click .phoneSample': function (e, tmpl) {
+
+    var that = this;
+    function loadHandler(event) {
+      createjs.Sound.play(that.path);
+    }
+
+    createjs.Sound.on("fileload", loadHandler, this);
+    createjs.Sound.registerSound(this.path, this.path);
+
+
     Jam.update({
       _id: tmpl.data.jamId
     },{
