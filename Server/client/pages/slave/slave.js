@@ -9,11 +9,11 @@ Template.slave.helpers({
     return isTablet;
   },
   isZouzouEq:function(z){
+    console.log(currentZouzou === z, currentZouzou, z);
     return currentZouzou === z;
   },
   saveCurrentZouzou:function(){
     currentZouzou = this.id;
-
   }
 });
 
@@ -35,7 +35,6 @@ Template.slaveTree.helpers({
 
 Template.slave.events({
   'click .phoneSample': function (e, tmpl) {
-console.log(this, tmpl);
     Jam.update({
       _id: tmpl.data.jamId
     },{
@@ -80,6 +79,6 @@ Template.slave.created = function(){
 };
 
 Template.slave.destroyed = function(){
-  Meteor.unsubscribe('samples');
+  //Meteor.unsubscribe('samples');
 };
 

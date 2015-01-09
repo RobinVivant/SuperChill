@@ -8,15 +8,9 @@
         <div id="samples">
             {{#with samples}}
                 {{#if isTablet}}
-                    {{#each zouzous}}
-                        {{saveCurrentZouzou}}
+                    {{#each tracks}}
                         <div class="sample">
-                            <h2 class="zouzou" style="background-color: #{{id}};">{{name}}</h2>
-                            {{#each ../tracks}}
-                                {{#if isZouzouEq zouzou }}
-                                    <h3 class="zouzou" style="background-color: #{{zouzou}};">{{name}}</h3>
-                                {{/if}}
-                            {{/each}}
+                            <h3 class="zouzou" style="background-color: #{{zouzou}};">{{name}}</h3>
                         </div>
                     {{/each}}
                 {{else}}

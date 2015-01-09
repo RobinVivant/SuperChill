@@ -29,14 +29,14 @@ if (Meteor.isServer) {
     });
 
     Meteor.startup(function(){
-        if( Jam.find().length == 0) {
+        //if( Jam.find().length == 0) {
             Jam.remove({});
             console.log(Jam.insert({
                 name: "YOLO JAM !",
                 zouzous: [],
                 tracks: []
             }));
-        }
+        //}
     });
 
 
