@@ -17,16 +17,43 @@ Samples.allow({
 
 if (Meteor.isServer) {
 
-    Samples._ensureIndex({id: 1});
+    Samples._ensureIndex({_id: 1});
 
     Meteor.publish('samples', function () {
         return Samples.find();
     });
 
-    if( Samples.find().count() == 0 ){
+    Meteor.startup(function(){
+        var fs = Npm.require('fs');
+        function scanSamples(dir){
+            var samples = [];
+            var files = fs.readdirSync(dir);
+            for(var i in files){
+                if (!files.hasOwnProperty(i)) continue;
+                var name = dir+'/'+files[i];
+                var finalName = files[i].replace(/_/g, ' ').replace(/\..*$/g, ' ');
+                if (fs.statSync(name).isDirectory()){
+                    samples.push({
+                        name: finalName,
+                        childs: scanSamples(name)
+                    });
+                } else {
+                    samples.push({
+                        name: finalName,
+                        path: name.substring(process.env.PWD.length)
+                    });
+                }
+            }
+            return samples;
+        }
+        Samples.remove({});
         Samples.insert({
-            title:"Yolo song",
-            duration: 120
+            name: "loops",
+            childs: scanSamples(process.env.PWD+'/public/loops')
         });
-    }
+
+    });
+
+
+
 }

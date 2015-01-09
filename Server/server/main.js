@@ -1,5 +1,4 @@
 
-
 Meteor.methods({
     hiBitch: function (yo) {
         this.unblock();
