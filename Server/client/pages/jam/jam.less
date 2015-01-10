@@ -1,0 +1,92 @@
+#jamPage{
+
+  color : white;
+
+  .sampleSelected{
+    background-color: #4b4b4b;
+    color: white;
+  }
+
+  h1{
+    font-size: 3em;
+  }
+
+  #samples{
+    padding-left: 10px;
+    padding-right: 10px;
+    overflow:hidden;
+
+
+    .sample{
+      color: black;
+
+      .samplesContainer{
+        overflow:hidden;
+        display:none;
+      }
+
+      .groupeTracksCount{
+        background-color: #4b4b4b;
+        width:25px;
+        height:25px;
+        display:none;
+        border-radius:50%;
+      }
+
+      .groupSelected{
+        display: inline-block;
+      }
+
+      .sampleGroup{
+        display: inline;
+        padding-left:10px;
+      }
+
+      h2{
+        margin-bottom:0;
+        padding-left:10px;
+        padding-right:15px;
+        font-weight: bold;
+        font-size: 2em;
+        cursor: pointer;
+
+      }
+
+      .trackContainer{
+        height: 100px;
+        width:auto;
+        padding-left: 10px;
+        border-top: 10px solid #d2d2d2;
+
+        h3{
+          display:inline;
+          float:left;
+          width: 70%;
+          line-height:100px;
+          text-align: left;
+          font-size: 1.5em;
+          cursor: pointer;
+          margin-bottom:0;
+          margin-top:0;
+          overflow:hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        .playButton{
+          display:inline;
+          float:right;
+          cursor: pointer;
+          width: 30%;
+          height:100px;
+        }
+      }
+
+      .zouzou{
+        margin-top:0;
+      }
+    }
+
+  }
+
+}

@@ -1,0 +1,40 @@
+
+<template name="jam">
+
+    <div id="jamPage">
+        <h1 class='center' style="background-color:#{{zouzouId}}">{{jamName}}</h1>
+
+        <div id="samples">
+            {{#with samples}}
+                {{#if isTablet}}
+                    {{#each tracks}}
+                        <div class="sample">
+                            <h3 class="zouzou" style="background-color: #{{zouzou}};">{{name}}</h3>
+                        </div>
+                    {{/each}}
+                {{else}}
+                    {{> jamTree childs}}
+                {{/if}}
+            {{/with}}
+        </div>
+
+    </div>
+
+</template>
+
+<template name="jamTree">
+    {{#each .}}
+        <div class="sample">
+            {{#if childs}}
+                <span class="groupeTracksCount {{isGroupSelected}}"></span>
+                <h2 class="sampleGroup">{{name}}</h2>
+                <div class="samplesContainer">{{> jamTree childs}}</div>
+            {{else}}
+                <div data-sound="{{path}}" class="trackContainer {{isSampleSelected}}">
+                    <h3 class="phoneSample" >{{name}}</h3>
+                    <div class="playButton" style="background-color:#{{zouzouId}}"></div>
+                </div>
+            {{/if}}
+        </div>
+    {{/each}}
+</template>

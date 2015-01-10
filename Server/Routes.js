@@ -9,19 +9,19 @@ Router.route('/', function () {
     this.render('home');
 });
 
-Router.route('/master', function () {
-    this.render('master');
-});
-
 Router.route('jam',{
-    template: 'slave',
+    template: 'jam',
     path: '/:jamId',
     waitOn: function () {
         Session.set("jamId", this.params.jamId);
+        var that = this;
         return [
             Meteor.subscribe('jam', this.params.jamId, {
                 onError: function(error){
                     Router.go('/');
+                },
+                onReady: function(doc){
+                    Session.set("jamName", Jam.find({_id: that.params.jamId}).fetch()[0].name);
                 }
             }),
             Meteor.subscribe('samples')

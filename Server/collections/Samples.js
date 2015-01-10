@@ -31,7 +31,12 @@ if (Meteor.isServer) {
             for(var i in files){
                 if (!files.hasOwnProperty(i)) continue;
                 var name = dir+'/'+files[i];
-                var finalName = files[i].replace(/_/g, ' ').replace(/\..*$/g, ' ');
+                var finalName = files[i]
+                    .replace(/_/g, ' ')
+                    .replace(/\..*$/g, ' ')
+                    .replace(/120BPM/g, '')
+                    .replace(/[0-9]*/g, '')
+                    .trim();
                 if (fs.statSync(name).isDirectory()){
                     samples.push({
                         name: finalName,
