@@ -117,7 +117,7 @@ Template.jam.events({
       }
     });
   },
-  'click .sampleGroup': function (e, tmpl) {
+  'click .groupHeaderSwitch': function (e, tmpl) {
     var elem = $(e.currentTarget).parent().find(".samplesContainer");
 
     if( !elem.is(":visible") ) {

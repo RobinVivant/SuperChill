@@ -26,6 +26,7 @@
     {{#each .}}
         <div class="{{ifIsGroup}} {{groupSelected}} sample">
             {{#if childs}}
+                <div class="groupHeaderSwitch"></div>
                 <h2 class="sampleGroup">{{name}}</h2>
                 <div class="samplesContainer">{{> jamTree childs}}</div>
             {{else}}
