@@ -44,7 +44,6 @@ Template.slave.events({
     createjs.Sound.on("fileload", loadHandler, this);
     createjs.Sound.registerSound(this.path, this.path);
 
-
     Jam.update({
       _id: tmpl.data.jamId
     },{
