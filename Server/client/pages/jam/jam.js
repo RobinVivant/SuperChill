@@ -15,16 +15,26 @@ var isSampleSelected = function(path){
   return  jam.fetch().length ? true : false;
 };
 
-var playSound = function(context){
+var playSound = function(elem, context){
   var id = Random.hexString(10);
   createjs.Sound.removeAllSounds();
 
   function loadHandler(event) {
+    $(elem).velocity('stop');
+    $(elem).css('opacity', 1);
     loadedSounds[context.path] = id;
     createjs.Sound.play(id);
   }
 
   if(!_.contains(loadedSounds, context.path) ) {
+    $(elem).velocity({
+      properties:{
+        opacity: 0
+      }, options:{
+        duration:'100',
+        loop: true
+      }
+    });//css('background-color', '#'+h+m+s);
     createjs.Sound.on("fileload", loadHandler, context);
     createjs.Sound.registerSound(context.path, id);
   }else{
@@ -34,7 +44,11 @@ var playSound = function(context){
 };
 
 
-var stopSound = function(){
+var stopSound = function(elem){
+  loadedSounds = [];
+
+  $(elem).velocity('stop');
+  $(elem).css('opacity', 1);
   createjs.Sound.removeAllSounds();
 }
 
@@ -60,12 +74,19 @@ Template.jamTree.helpers({
   zouzouId: function(){
     return Session.get("zouzouId");
   },
-  isGroupSelected: function(){
+  groupSelected: function(){
+    if( !this.childs )
+      return;
+    console.log(this.childs);
     for( var i in this.childs ){
       if( isSampleSelected(this.childs[i].path) ){
         return "groupSelected";
       }
     }
+  },
+  ifIsGroup: function(){
+    if(this.childs )
+      return "groupHeader";
   }
 });
 
@@ -100,26 +121,64 @@ Template.jam.events({
     var elem = $(e.currentTarget).parent().find(".samplesContainer");
 
     if( !elem.is(":visible") ) {
-      elem.velocity('stop').velocity('slideDown',{
-        duration: '300'
+      $(e.currentTarget).parent().velocity({
+        properties:{
+          paddingTop: '26px',
+          paddingBottom: '0'
+        }, options:{
+          duration:'300'
+        }
       });
+      elem.velocity('stop').velocity('slideDown',{
+        duration: '300',
+         queue: false
+      });
+
+      elem.velocity({
+        properties:{
+          marginTop: '26px',
+          marginBottom: '40px'
+        }, options:{
+          duration:'300'
+        }
+      });
+
     }else {
+      $(e.currentTarget).parent().velocity({
+        properties: {
+          paddingTop: '26px',
+          paddingBottom: '26px'
+        }, options: {
+          duration: '300'
+        }
+      });
+
       elem.velocity('stop').velocity('slideUp',{
-        duration: '300'
+        duration: '300',
+        queue: false
+      });
+
+      elem.velocity({
+        properties:{
+          marginTop: '0',
+          marginBottom: '0'
+        }, options:{
+          duration:'300'
+        }
       });
     }
   },
   'touchstart .playButton': function(e, tmpl) {
-    playSound(this);
+    playSound(e.currentTarget, this);
   },
   'mousedown .playButton': function(e, tmpl) {
-    playSound(this);
+    playSound(e.currentTarget, this);
   },
   'touchend .playButton': function(e, tmpl) {
-    stopSound();
+    stopSound(e.currentTarget);
   },
   'mouseup .playButton': function(e, tmpl) {
-    stopSound();
+    stopSound(e.currentTarget);
   }
 });
 

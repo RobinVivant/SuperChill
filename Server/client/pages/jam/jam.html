@@ -24,9 +24,8 @@
 
 <template name="jamTree">
     {{#each .}}
-        <div class="sample">
+        <div class="{{ifIsGroup}} {{groupSelected}} sample">
             {{#if childs}}
-                <span class="groupeTracksCount {{isGroupSelected}}"></span>
                 <h2 class="sampleGroup">{{name}}</h2>
                 <div class="samplesContainer">{{> jamTree childs}}</div>
             {{else}}

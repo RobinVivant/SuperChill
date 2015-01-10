@@ -11,14 +11,34 @@
     font-size: 3em;
   }
 
+  .sample.groupSelected{
+    margin-top:10px;
+  }
+
   #samples{
     padding-left: 10px;
     padding-right: 10px;
     overflow:hidden;
 
 
+    .groupSelected{
+      background-color: #4b4b4b !important;
+      color: white!important;
+
+    }
+
+    .groupHeader{
+      padding-top:26px;
+      padding-bottom:26px;
+    }
+
     .sample{
       color: black;
+      background-color: #d2d2d2;
+
+      &:last-child{
+        padding-bottom:0;
+      }
 
       .samplesContainer{
         overflow:hidden;
@@ -33,10 +53,6 @@
         border-radius:50%;
       }
 
-      .groupSelected{
-        display: inline-block;
-      }
-
       .sampleGroup{
         display: inline;
         padding-left:10px;
@@ -49,6 +65,7 @@
         font-weight: bold;
         font-size: 2em;
         cursor: pointer;
+        height: 100px;
 
       }
 
