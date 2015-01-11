@@ -208,7 +208,7 @@ Template.jam.events({
     if( Session.get('headerShown') )
       return;
     Session.set("jamHeaderTop", 0);
-    Session.set("jamHeaderMousePosInit", e.clientY);
+    Session.set("jamHeaderMousePosInit", e.originalEvent.changedTouches[0].clientY );
   },
   'mousedown .jamHeader': function(e, tmpl) {
     if( Session.get('headerShown') )
@@ -242,13 +242,14 @@ Template.jam.events({
     });
     window.history.replaceState(Session.get('jamName'), Session.get('jamName'), '/'+Session.get('jamId'));
   },
-  'touchMove .jamHeader': function(e, tmpl) {
+  'touchmove .jamHeader': function(e, tmpl) {
     if( Session.get('headerShown') || !Session.get('jamId' || Session.get("jamHeaderMousePosInit") == -1 ) )
       return;
     var pos = Session.get("jamHeaderMousePosInit");
     if(pos > -1 ){
-      Session.set("jamHeaderTop", Math.min(Math.max(e.clientY - Session.get("jamHeaderMousePosInit"), 0), $(window).height()-100));
+      Session.set("jamHeaderTop", Math.min(Math.max(e.originalEvent.changedTouches[0].clientY - Session.get("jamHeaderMousePosInit"), 0), $(window).height()-100));
     }
+    e.preventDefault();
   },
   'mousemove': function(e, tmpl) {
     if( Session.get('headerShown') || !Session.get('jamId') || Session.get("jamHeaderMousePosInit") == -1 )
@@ -370,7 +371,7 @@ Template.jam.created = function(){
     Session.set('headerShown', true);
     Session.set("jamHeaderMousePosInit", 666);
     Session.set("jamHeaderTop", $(window).height()-100);
-    Session.set("jamName", "No Jam selected");
+    Session.set("jamName", "No Jam");
   }
 
   Session.set("jamId",this.data.jamId);
