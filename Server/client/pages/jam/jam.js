@@ -77,7 +77,6 @@ Template.jamTree.helpers({
   groupSelected: function(){
     if( !this.childs )
       return;
-    console.log(this.childs);
     for( var i in this.childs ){
       if( isSampleSelected(this.childs[i].path) ){
         return "groupSelected";

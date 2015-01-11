@@ -1,4 +1,7 @@
 
+if (Meteor.isServer) {
+    console.log();
+}
 
 Samples = new Meteor.Collection('samples');
 
@@ -37,7 +40,7 @@ if (Meteor.isServer) {
                     .replace(/120BPM/g, '')
                     .replace(/[0-9]*/g, '')
                     .trim();
-                if (fs.statSync(name).isDirectory()){
+                if (fs.statSync(name).isDirectory() && !name.match(/.*\.[^.]$/) ){
                     samples.push({
                         name: finalName,
                         childs: scanSamples(name)
@@ -52,6 +55,12 @@ if (Meteor.isServer) {
             return samples;
         }
         Samples.remove({});
+
+        //if (Meteor.absoluteUrl({replaceLocalhost: true}).indexOf("127.0.0.1") > -1) {
+            /**
+             * LOCAL (DEV)
+             */
+        //__meteor_bootstrap__.serverDir+'/../web browser/app/loops'
         Samples.insert({
             name: "loops",
             childs: scanSamples(process.env.PWD+'/public/loops')

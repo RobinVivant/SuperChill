@@ -6,6 +6,8 @@ Router.configure({
 });
 
 Router.route('/', function () {
+    Router.go('/oNhS39bJ44CeFquRK');
+    return;
     this.render('home');
 });
 
