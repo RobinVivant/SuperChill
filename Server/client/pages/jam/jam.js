@@ -238,11 +238,7 @@ Template.jam.events({
         }
       }
     });
-
     window.history.replaceState(Session.get('jamName'), Session.get('jamName'), '/'+Session.get('jamId'));
-//document.location = '/'+Session.get('jamId');
-
-
   },
   'touchMove .jamHeader': function(e, tmpl) {
     if( headerShown || !Session.get('jamId') )
@@ -252,8 +248,8 @@ Template.jam.events({
       Session.set("jamHeaderTop", Math.min(Math.max(e.clientY - Session.get("jamHeaderMousePosInit"), 0), $(window).height()-100));
     }
   },
-  'mousemove .jamHeader': function(e, tmpl) {
-    if( headerShown || !Session.get('jamId')  )
+  'mousemove': function(e, tmpl) {
+    if( headerShown || !Session.get('jamId') || Session.get("jamHeaderMousePosInit") == -1 )
       return;
     var pos = Session.get("jamHeaderMousePosInit");
     if(pos > -1 ){
