@@ -1,6 +1,5 @@
 
 var loadedSounds = [];
-var headerShown = false;
 
 var isSampleSelected = function(path){
 
@@ -35,7 +34,7 @@ var playSound = function(elem, context){
         duration:'100',
         loop: true
       }
-    });//css('background-color', '#'+h+m+s);
+    });
     createjs.Sound.on("fileload", loadHandler, context);
     createjs.Sound.registerSound(context.path, id);
   }else{
@@ -60,6 +59,9 @@ Template.jam.helpers({
   isTablet:function(){
     return isTablet;
   },
+  isHeaderShown: function(){
+    return Session.get('headerShown');
+  },
   jamName:function(){
     return Session.get("jamName");
   },
@@ -67,7 +69,7 @@ Template.jam.helpers({
     return Session.get("zouzouId");
   },
   jamHeaderDragging: function(){
-    return Session.get("jamHeaderMousePosInit") > -1 || (!headerShown && !Session.get("jamId") ) ? "jamHeaderDragging" : "";
+    return Session.get("jamHeaderMousePosInit") > -1 || (!Session.get('headerShown') && !Session.get("jamId") ) ? "jamHeaderDragging" : "";
   },
   jamHeaderPosition: function(){
     return Session.get("jamHeaderTop");
@@ -203,20 +205,20 @@ Template.jam.events({
     stopSound(e.currentTarget);
   },
   'touchstart .jamHeader': function(e, tmpl) {
-    if( headerShown )
+    if( Session.get('headerShown') )
       return;
     Session.set("jamHeaderTop", 0);
     Session.set("jamHeaderMousePosInit", e.clientY);
   },
   'mousedown .jamHeader': function(e, tmpl) {
-    if( headerShown )
+    if( Session.get('headerShown') )
       return;
     Session.set("jamHeaderTop", 0);
     Session.set("jamHeaderMousePosInit", e.clientY);
   },
 
   'click .jamHeader': function(e, tmpl) {
-    if( !headerShown || !Session.get('jamId'))
+    if( !Session.get('headerShown') || !Session.get('jamId'))
       return;
 
     $('.jamHeader').velocity({
@@ -234,14 +236,14 @@ Template.jam.events({
         duration:'300',
         complete: function(){
           Session.set("jamHeaderMousePosInit", -1);
-          headerShown = false;
+          Session.set('headerShown',false);
         }
       }
     });
     window.history.replaceState(Session.get('jamName'), Session.get('jamName'), '/'+Session.get('jamId'));
   },
   'touchMove .jamHeader': function(e, tmpl) {
-    if( headerShown || !Session.get('jamId') )
+    if( Session.get('headerShown') || !Session.get('jamId' || Session.get("jamHeaderMousePosInit") == -1 ) )
       return;
     var pos = Session.get("jamHeaderMousePosInit");
     if(pos > -1 ){
@@ -249,7 +251,7 @@ Template.jam.events({
     }
   },
   'mousemove': function(e, tmpl) {
-    if( headerShown || !Session.get('jamId') || Session.get("jamHeaderMousePosInit") == -1 )
+    if( Session.get('headerShown') || !Session.get('jamId') || Session.get("jamHeaderMousePosInit") == -1 )
       return;
     var pos = Session.get("jamHeaderMousePosInit");
     if(pos > -1 ){
@@ -257,7 +259,7 @@ Template.jam.events({
     }
   },
   'touchend .jamHeader': function(e, tmpl) {
-    if( headerShown || !Session.get('jamId') )
+    if( Session.get('headerShown') || !Session.get('jamId') )
       return;
     if( Session.get("jamHeaderTop" ) > $(window).height()/8 ){
       $('.jamHeader').velocity({
@@ -274,7 +276,7 @@ Template.jam.events({
         }, options:{
           duration:'300',
           complete: function(){
-            headerShown = true;
+            Session.set('headerShown',true);
           }
         }
       });
@@ -284,7 +286,7 @@ Template.jam.events({
 
   },
   'mouseup .jamHeader': function(e, tmpl) {
-    if( headerShown || !Session.get('jamId') )
+    if( Session.get('headerShown') || !Session.get('jamId') )
       return;
     if( Session.get("jamHeaderTop" ) > $(window).height()/8 ){
       $('.jamHeader').velocity({
@@ -301,7 +303,7 @@ Template.jam.events({
         }, options:{
           duration:'300',
           complete: function(){
-            headerShown = true;
+            Session.set('headerShown', true);
           }
         }
       });
@@ -365,7 +367,7 @@ Template.jam.created = function(){
   var nickname = "Anonymous";
 
   if( !this.data.jamId ){
-    headerShown = true;
+    Session.set('headerShown', true);
     Session.set("jamHeaderMousePosInit", 666);
     Session.set("jamHeaderTop", $(window).height()-100);
     Session.set("jamName", "No Jam selected");
