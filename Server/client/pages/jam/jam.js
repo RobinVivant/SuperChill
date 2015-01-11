@@ -205,8 +205,33 @@ Template.jam.events({
     stopSound(e.currentTarget);
   },
   'touchstart .jamHeader': function(e, tmpl) {
-    if( Session.get('headerShown') )
+    if( Session.get('headerShown') ){
+      if( !Session.get('headerShown') || !Session.get('jamId'))
+        return;
+
+      $('.jamHeader').velocity({
+        properties:{
+          top: 0
+        }, options:{
+          duration:'300',
+          queue: false
+        }
+      });
+      $('.mainHeader').velocity({
+        properties:{
+          top: -$(window).height()+'px'
+        }, options:{
+          duration:'300',
+          complete: function(){
+            Session.set("jamHeaderMousePosInit", -1);
+            Session.set('headerShown',false);
+          }
+        }
+      });
+      window.history.replaceState(Session.get('jamName'), Session.get('jamName'), '/'+Session.get('jamId'));
       return;
+    }
+
     Session.set("jamHeaderTop", 0);
     Session.set("jamHeaderMousePosInit", e.originalEvent.changedTouches[0].clientY );
   },

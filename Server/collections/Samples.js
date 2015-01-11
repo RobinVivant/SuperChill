@@ -40,7 +40,7 @@ if (Meteor.isServer) {
                     .replace(/120BPM/g, '')
                     .replace(/[0-9]*/g, '')
                     .trim();
-                if (fs.statSync(name).isDirectory() && !name.match(/.*\.[^.]$/) ){
+                if (fs.statSync(name).isDirectory() && name[0] != '.' ){
                     samples.push({
                         name: finalName,
                         childs: scanSamples(name)
