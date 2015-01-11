@@ -28,6 +28,13 @@ if (Meteor.isServer) {
         return Jam.find({_id: jamId});
     });
 
+    Meteor.publish('jamList', function () {
+        return Jam.find({},{fields:{
+            name:1,
+            _id:1
+        }});
+    });
+
     Meteor.startup(function(){
         if( Jam.find().length == 0) {
             Jam.remove({});

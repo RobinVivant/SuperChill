@@ -2,9 +2,28 @@
 <template name="jam">
 
     <div id="jamPage">
-        <h1 class='center' style="background-color:#{{zouzouId}}">{{jamName}}</h1>
+        {{#if jamHeaderDragging}}
+            <div class="mainHeader"
+                 style="top:{{mainHeaderPosition}}px; height:{{windowHeight}}px">
+                <div style="background-color:#{{zouzouId}};height:100%">
+                    <input id="nickname" type="text" placeholder="Nickname" value="{{nickname}}"/>
+                    <div class="jamList" style="height:{{jamListHeight}}px">
+                        {{#each jams}}
+                            <div class="jamItem" data-id="{{_id}}">
+                                {{name}}
+                            </div>
+                        {{/each}}
+                    </div>
+                </div>
+            </div>
+        {{/if}}
 
-        <div id="samples">
+        <h1 class='center jamHeader {{jamHeaderDragging}}'
+            style="background-color:#{{zouzouId}}; top:{{jamHeaderPosition}}px; z-index:20;">
+            {{jamName}}
+        </h1>
+
+        <div id="samples" class="{{jamHeaderDragging}}" style="top:100px; right:0;left:0;">
             {{#with samples}}
                 {{#if isTablet}}
                     {{#each tracks}}

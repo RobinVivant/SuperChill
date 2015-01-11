@@ -7,9 +7,53 @@
     color: white;
   }
 
+  .jamHeaderDragging{
+    position: absolute;
+  }
+
+  #nickname{
+    width: 100%;
+    text-align:center;
+    height:100px;
+    line-height:100px;
+    background: transparent;
+    border: none;
+    font-size: 3em;
+    text-transform: capitalize;
+    color:white;
+    &:focus{
+      outline:none;
+    }
+  }
+
+  .jamList{
+    padding:10px;
+  }
+
+  .jamItem{
+    height: 100px;
+    background-color:#d2d2d2;
+    margin-top:10px;
+    left:10px;
+    right:10px;
+    text-align:center;
+    font-size: 2em;
+    line-height:100px;
+    color: black;
+    cursor:pointer;
+
+  }
+
+  .mainHeader{
+    width:100%;
+    z-index:12;
+    position:absolute;
+  }
+
   h1{
     font-size: 3em;
     line-height: 100px;
+    cursor: move;
   }
 
   .sample.groupSelected{
