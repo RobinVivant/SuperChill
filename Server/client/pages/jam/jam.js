@@ -43,7 +43,6 @@ var playSound = function(elem, context){
 
 };
 
-
 var stopSound = function(elem){
   loadedSounds = [];
 
@@ -90,7 +89,7 @@ Template.jam.helpers({
     }}).fetch();
   },
   jamListHeight: function(){
-    return $(window).height()-2*100;
+    return $(window).height()-120;
   }
 });
 
@@ -115,6 +114,69 @@ Template.jamTree.helpers({
       return "groupHeader";
   }
 });
+
+function onClickJamHeader() {
+  if( !Session.get('headerShown') || !Session.get('jamId'))
+    return;
+
+  Session.set('headerShown',false);
+
+  $('.jamHeader').velocity({
+    properties:{
+      top: 0
+    }, options:{
+      duration:'250',
+      queue: false
+    }
+  });
+  $('.mainHeader').velocity({
+    properties:{
+      top: -$(window).height()+'px'
+    }, options:{
+      duration:'300',
+      complete: function(){
+        Session.set("jamHeaderMousePosInit", -1);
+      }
+    }
+  });
+  window.history.replaceState(Session.get('jamName'), Session.get('jamName'), '/'+Session.get('jamId'));
+}
+
+function onDragJamHeader(clientY) {
+  if( Session.get('headerShown') || !Session.get('jamId' || Session.get("jamHeaderMousePosInit") == -1 ) )
+    return;
+  var pos = Session.get("jamHeaderMousePosInit");
+  if(pos > -1 ){
+    Session.set("jamHeaderTop", Math.min(Math.max(clientY - Session.get("jamHeaderMousePosInit"), 0), $(window).height()-100));
+  }
+}
+
+function onDragEndJamHeader() {
+  if( Session.get('headerShown') || !Session.get('jamId') )
+    return;
+  if( Session.get("jamHeaderTop" ) > $(window).height()/8 ){
+    $('.jamHeader').velocity({
+      properties:{
+        top: $(window).height()-100+'px'
+      }, options:{
+        duration:'300',
+        queue: false
+      }
+    });
+    $('.mainHeader').velocity({
+      properties:{
+        top: 0
+      }, options:{
+        duration:'300',
+        complete: function(){
+          Session.set('headerShown',true);
+        }
+      }
+    });
+  }else{
+    Session.set("jamHeaderMousePosInit", -1);
+  }
+}
 
 Template.jam.events({
   'click .phoneSample': function (e, tmpl) {
@@ -204,36 +266,16 @@ Template.jam.events({
   'mouseup .playButton': function(e, tmpl) {
     stopSound(e.currentTarget);
   },
+  'click .jamHeader': function(e, tmpl) {
+    onClickJamHeader();
+  },
   'touchstart .jamHeader': function(e, tmpl) {
     if( Session.get('headerShown') ){
-      if( !Session.get('headerShown') || !Session.get('jamId'))
-        return;
-
-      $('.jamHeader').velocity({
-        properties:{
-          top: 0
-        }, options:{
-          duration:'300',
-          queue: false
-        }
-      });
-      $('.mainHeader').velocity({
-        properties:{
-          top: -$(window).height()+'px'
-        }, options:{
-          duration:'300',
-          complete: function(){
-            Session.set("jamHeaderMousePosInit", -1);
-            Session.set('headerShown',false);
-          }
-        }
-      });
-      window.history.replaceState(Session.get('jamName'), Session.get('jamName'), '/'+Session.get('jamId'));
-      return;
+      onClickJamHeader();
+    }else{
+      Session.set("jamHeaderTop", 0);
+      Session.set("jamHeaderMousePosInit", e.originalEvent.changedTouches[0].clientY );
     }
-
-    Session.set("jamHeaderTop", 0);
-    Session.set("jamHeaderMousePosInit", e.originalEvent.changedTouches[0].clientY );
   },
   'mousedown .jamHeader': function(e, tmpl) {
     if( Session.get('headerShown') )
@@ -241,102 +283,18 @@ Template.jam.events({
     Session.set("jamHeaderTop", 0);
     Session.set("jamHeaderMousePosInit", e.clientY);
   },
-
-  'click .jamHeader': function(e, tmpl) {
-    if( !Session.get('headerShown') || !Session.get('jamId'))
-      return;
-
-    $('.jamHeader').velocity({
-      properties:{
-        top: 0
-      }, options:{
-        duration:'300',
-        queue: false
-      }
-    });
-    $('.mainHeader').velocity({
-      properties:{
-        top: -$(window).height()+'px'
-      }, options:{
-        duration:'300',
-        complete: function(){
-          Session.set("jamHeaderMousePosInit", -1);
-          Session.set('headerShown',false);
-        }
-      }
-    });
-    window.history.replaceState(Session.get('jamName'), Session.get('jamName'), '/'+Session.get('jamId'));
-  },
   'touchmove .jamHeader': function(e, tmpl) {
-    if( Session.get('headerShown') || !Session.get('jamId' || Session.get("jamHeaderMousePosInit") == -1 ) )
-      return;
-    var pos = Session.get("jamHeaderMousePosInit");
-    if(pos > -1 ){
-      Session.set("jamHeaderTop", Math.min(Math.max(e.originalEvent.changedTouches[0].clientY - Session.get("jamHeaderMousePosInit"), 0), $(window).height()-100));
-    }
-    e.preventDefault();
+    onDragJamHeader(e.originalEvent.changedTouches[0].clientY);
   },
   'mousemove': function(e, tmpl) {
-    if( Session.get('headerShown') || !Session.get('jamId') || Session.get("jamHeaderMousePosInit") == -1 )
-      return;
-    var pos = Session.get("jamHeaderMousePosInit");
-    if(pos > -1 ){
-      Session.set("jamHeaderTop", Math.min(Math.max(e.clientY - Session.get("jamHeaderMousePosInit"), 0), $(window).height()-100));
-    }
+    onDragJamHeader(e.clientY);
+    e.preventDefault();
   },
   'touchend .jamHeader': function(e, tmpl) {
-    if( Session.get('headerShown') || !Session.get('jamId') )
-      return;
-    if( Session.get("jamHeaderTop" ) > $(window).height()/8 ){
-      $('.jamHeader').velocity({
-        properties:{
-          top: $(window).height()-100+'px'
-        }, options:{
-          duration:'300',
-          queue: false
-        }
-      });
-      $('.mainHeader').velocity({
-        properties:{
-          top: 0
-        }, options:{
-          duration:'300',
-          complete: function(){
-            Session.set('headerShown',true);
-          }
-        }
-      });
-    }else{
-      Session.set("jamHeaderMousePosInit", -1);
-    }
-
+    onDragEndJamHeader();
   },
   'mouseup .jamHeader': function(e, tmpl) {
-    if( Session.get('headerShown') || !Session.get('jamId') )
-      return;
-    if( Session.get("jamHeaderTop" ) > $(window).height()/8 ){
-      $('.jamHeader').velocity({
-        properties:{
-          top: $(window).height()-100+'px'
-        }, options:{
-          duration:'300',
-          queue: false
-        }
-      });
-      $('.mainHeader').velocity({
-        properties:{
-          top: 0
-        }, options:{
-          duration:'300',
-          complete: function(){
-            Session.set('headerShown', true);
-          }
-        }
-      });
-    }else{
-      Session.set("jamHeaderMousePosInit", -1);
-    }
-
+    onDragEndJamHeader();
   },
   'blur #nickname': function(e, tmpl) {
     Session.set('nickname', e.currentTarget.value);
@@ -361,14 +319,12 @@ Template.jam.events({
       });
     });
   },
-
   'click .jamItem': function(e, tmpl) {
     Meteor.subscribe('jam', $(e.currentTarget).attr('data-id'), {
       onError: function(error){
         Router.go('/');
       },
       onReady: function(error, doc){
-
         Jam.update({
           _id: $(e.currentTarget).attr('data-id')
         },{
@@ -385,7 +341,6 @@ Template.jam.events({
     });
     Session.set("jamId",$(e.currentTarget).attr('data-id'));
   }
-
 });
 
 Template.jam.created = function(){
@@ -453,7 +408,4 @@ Template.jam.created = function(){
 
 };
 
-Template.jam.destroyed = function(){
-  //Meteor.unsubscribe('samples');
-};
 
