@@ -33,16 +33,7 @@ if (Meteor.isServer) {
             _id:1
         }});
     });
-
-    Meteor.startup(function(){
-        if( Jam.find().length == 0) {
-            Jam.insert({
-                name: "YOLO JAM !"
-            });
-        }
-    });
 }
-
 
 JamTracks = new Meteor.Collection('jam-tracks');
 JamTracks.allow({
@@ -57,9 +48,42 @@ JamTracks.allow({
     }
 });
 if (Meteor.isServer) {
-    JamTracks._ensureIndex({jamId: 1});
+    JamTracks._ensureIndex({_id: 1});
 
     Meteor.publish('jam-tracks', function (jamId) {
         return JamTracks.find({jamId: jamId});
+    });
+}
+
+if (Meteor.isServer){
+    Meteor.startup(function () {
+        //if( Jam.find().length == 0) {
+        JamTracks.remove({});
+        Jam.remove({});
+        Jam.insert({
+            name: "Jam 1"
+        });
+        Jam.insert({
+            name: "Jam 2"
+        });
+        Jam.insert({
+            name: "Jam 3"
+        });
+        Jam.insert({
+            name: "Jam 4"
+        });
+        Jam.insert({
+            name: "Jam 5"
+        });
+        Jam.insert({
+            name: "Jam 6"
+        });
+        Jam.insert({
+            name: "Jam 7"
+        });
+        Jam.insert({
+            name: "Jam 8"
+        });
+        //}
     });
 }

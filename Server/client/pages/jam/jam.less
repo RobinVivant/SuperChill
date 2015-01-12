@@ -2,9 +2,9 @@
 
   color : white;
 
-  .sampleSelected{
-    background-color: #4b4b4b;
-    color: white;
+  .sampleSelected, .jamItemSelected{
+    background-color: #4b4b4b !important;
+    color: white !important;
   }
 
   .jamHeaderDragging{
@@ -32,12 +32,13 @@
 
   .jamList{
     padding:10px;
+    overflow:auto;
   }
 
   .jamItem{
     height: 100px;
     background-color:#d2d2d2;
-    margin-top:10px;
+    margin-bottom:10px;
     left:10px;
     right:10px;
     text-align:center;
@@ -45,7 +46,9 @@
     line-height:100px;
     color: black;
     cursor:pointer;
-
+    &:last-child{
+      margin-bottom:20px;
+    }
   }
 
   .mainHeader{

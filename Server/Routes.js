@@ -14,20 +14,18 @@ Router.route('jam',{
     template: 'jam',
     path: '/:jamId?',
     waitOn: function () {
+        if( !localStorage.getItem("zouzouId") ){
+            localStorage.setItem("zouzouId", Random.hexString(6));
+        }
+        Session.set("zouzouId",localStorage.getItem("zouzouId"));
         Session.set("jamId", this.params.jamId);
         var that = this;
-        var sub = [Meteor.subscribe('samples'), Meteor.subscribe('jamList')];
-        if( this.params.jamId ){
-            sub.push(Meteor.subscribe('jam', this.params.jamId, {
-                onError: function(error){
-                    Router.go('/');
-                },
-                onReady: function(doc){
-                    Session.set("jamName", Jam.find({_id: that.params.jamId}).fetch()[0].name);
-                }
-            }));
+        var sub = [
+            Meteor.subscribe('samples'),
+            Meteor.subscribe('jamList'),
+            Meteor.subscribe('zouzou', localStorage.getItem("zouzouId"))
+        ];
 
-        }
         return sub;
     }
 });

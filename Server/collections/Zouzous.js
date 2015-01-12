@@ -1,6 +1,6 @@
 
 
-Zouzous = new Meteor.Collection('zouzou');
+Zouzous = new Meteor.Collection('zouzous');
 Zouzous.allow({
     insert: function (userId, doc) {
         return true;
@@ -13,9 +13,13 @@ Zouzous.allow({
     }
 });
 if (Meteor.isServer) {
-    Zouzous._ensureIndex({hexId: 1});
+    Zouzous._ensureIndex({_id: 1});
 
     Meteor.publish('zouzou', function (hexId) {
         return Zouzous.find({hexId: hexId});
     });
+    Meteor.publish('zouzouList', function () {
+        return Zouzous.find({});
+    });
 }
+

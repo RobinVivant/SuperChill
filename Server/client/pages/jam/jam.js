@@ -2,17 +2,10 @@
 var loadedSounds = [];
 
 var isSampleSelected = function(path){
-
-  var jam = Jam.find({
-    _id: Session.get("jamId"),
-    tracks: {
-      $elemMatch: {
-        path: path,
-        zouzou: localStorage.getItem("zouzouId")
-      }
-    }
+  return  JamTracks.findOne({
+    path: path,
+    zouzou: localStorage.getItem("zouzouId")
   });
-  return  jam.fetch().length ? true : false;
 };
 
 var playSound = function(elem, context){
@@ -49,11 +42,11 @@ var stopSound = function(elem){
   $(elem).velocity('stop');
   $(elem).css('opacity', 1);
   createjs.Sound.removeAllSounds();
-}
+};
 
 Template.jam.helpers({
   samples: function () {
-    return isTablet ?Jam.findOne() : Samples.findOne();//Session.get("samples");
+    return isTablet ? Jam.findOne() : Samples.findOne();
   },
   isTablet:function(){
     return isTablet;
@@ -89,7 +82,10 @@ Template.jam.helpers({
     }}).fetch();
   },
   jamListHeight: function(){
-    return $(window).height()-120;
+    return $(window).height()-200;
+  },
+  jamItemSelected: function(){
+    return this._id === Session.get('jamId') ? "jamItemSelected" : "";
   }
 });
 
@@ -139,11 +135,10 @@ function onClickJamHeader() {
       }
     }
   });
-  window.history.replaceState(Session.get('jamName'), Session.get('jamName'), '/'+Session.get('jamId'));
 }
 
 function onDragJamHeader(clientY) {
-  if( Session.get('headerShown') || !Session.get('jamId' || Session.get("jamHeaderMousePosInit") == -1 ) )
+  if( Session.get('headerShown') || !Session.get('jamId') || Session.get("jamHeaderMousePosInit") == -1 )
     return;
   var pos = Session.get("jamHeaderMousePosInit");
   if(pos > -1 ){
@@ -152,7 +147,7 @@ function onDragJamHeader(clientY) {
 }
 
 function onDragEndJamHeader() {
-  if( Session.get('headerShown') || !Session.get('jamId') )
+  if( Session.get('headerShown') || !Session.get('jamId') || Session.get("jamHeaderMousePosInit") == -1 )
     return;
   if( Session.get("jamHeaderTop" ) > $(window).height()/8 ){
     $('.jamHeader').velocity({
@@ -179,31 +174,19 @@ function onDragEndJamHeader() {
 }
 
 Template.jam.events({
-  'click .phoneSample': function (e, tmpl) {
-    Jam.update({
-      _id: Session.get('jamId')
-    },{
-      $addToSet:{
-        tracks: {
-          zouzou: localStorage.getItem("zouzouId"),
-          path : this.path,
-          name: this.name
-        }
-      }
-    });
-  },
-  'click .sampleSelected .phoneSample': function (e, tmpl) {
+  'click .phoneSample' : function (e, tmpl) {
+    if( $(e.currentTarget).parent().hasClass('sampleSelected')){
+      JamTracks.remove({
+        _id: JamTracks.findOne({path: this.path})._id
+      });
+    }else{
+      JamTracks.insert({
+        zouzou: localStorage.getItem("zouzouId"),
+        jamId: Session.get('jamId'),
+        path : this.path
+      });
+    }
 
-    Jam.update({
-      _id: Session.get('jamId')
-    },{
-      $pull:{
-        tracks: {
-          zouzou: localStorage.getItem("zouzouId"),
-          path : this.path
-        }
-      }
-    });
   },
   'click .groupHeaderSwitch': function (e, tmpl) {
     var elem = $(e.currentTarget).parent().find(".samplesContainer");
@@ -276,6 +259,7 @@ Template.jam.events({
       Session.set("jamHeaderTop", 0);
       Session.set("jamHeaderMousePosInit", e.originalEvent.changedTouches[0].clientY );
     }
+    e.preventDefault();
   },
   'mousedown .jamHeader': function(e, tmpl) {
     if( Session.get('headerShown') )
@@ -283,69 +267,39 @@ Template.jam.events({
     Session.set("jamHeaderTop", 0);
     Session.set("jamHeaderMousePosInit", e.clientY);
   },
-  'touchmove .jamHeader': function(e, tmpl) {
+  'touchmove ': function(e, tmpl) {
     onDragJamHeader(e.originalEvent.changedTouches[0].clientY);
+    //e.preventDefault();
   },
   'mousemove': function(e, tmpl) {
     onDragJamHeader(e.clientY);
-    e.preventDefault();
+    //e.preventDefault();
   },
-  'touchend .jamHeader': function(e, tmpl) {
+  'touchend': function(e, tmpl) {
     onDragEndJamHeader();
   },
-  'mouseup .jamHeader': function(e, tmpl) {
+  'mouseup': function(e, tmpl) {
     onDragEndJamHeader();
   },
-  'blur #nickname': function(e, tmpl) {
+  'keyup #nickname': function(e, tmpl) {
     Session.set('nickname', e.currentTarget.value);
-    Jam.update({
-      _id: Session.get("jamId")
+    Zouzous.update({
+      _id: Zouzous.findOne({hexId:Session.get('zouzouId')})._id
     },{
-      $pull:{
-        zouzous: {
-          id : localStorage.getItem("zouzouId")
-        }
+      $set:{
+        nickname: e.currentTarget.value
       }
-    }, function(error){
-      Jam.update({
-        _id: Session.get("jamId")
-      },{
-        $push:{
-          zouzous: {
-            id : localStorage.getItem("zouzouId"),
-            name: e.currentTarget.value
-          }
-        }
-      });
     });
   },
   'click .jamItem': function(e, tmpl) {
-    Meteor.subscribe('jam', $(e.currentTarget).attr('data-id'), {
-      onError: function(error){
-        Router.go('/');
-      },
-      onReady: function(error, doc){
-        Jam.update({
-          _id: $(e.currentTarget).attr('data-id')
-        },{
-          $addToSet:{
-            zouzous: {
-              id : localStorage.getItem("zouzouId"),
-              name: Session.get('nickname')
-            }
-          }
-        });
-        Session.set("jamName", Jam.find({_id: $(e.currentTarget).attr('data-id')}).fetch()[0].name);
-
-      }
-    });
     Session.set("jamId",$(e.currentTarget).attr('data-id'));
+    Session.set("jamName", $(e.currentTarget).html());
   }
 });
 
 Template.jam.created = function(){
 
-  var nickname = "Anonymous";
+  Session.set('nickname', 'Anonymous');
 
   if( !Session.get("jamId") ){
     Session.set('headerShown', true);
@@ -354,55 +308,30 @@ Template.jam.created = function(){
     Session.set("jamName", "No Jam");
   }
 
-  if( !localStorage.getItem("zouzouId") ){
-    localStorage.setItem("zouzouId", Random.hexString(6));
-  }else if(Session.get("jamId")){
-    var zouzous = Jam.find({
-      _id: Session.get("jamId")
-    },{
-      fields:{
-        zouzous: 1
-      }
-    }).fetch()[0].zouzous;
-
-    for( var i in zouzous){
-      if( zouzous[i].id == localStorage.getItem("zouzouId")){
-        nickname = zouzous[i].name;
-        break;
-      }
-    }
-    Jam.update({
-      _id: Session.get("jamId")
-    },{
-      $addToSet:{
-        zouzous: {
-          id : localStorage.getItem("zouzouId"),
-          name: nickname
+  Tracker.autorun(function () {
+    window.history.replaceState(Session.get('jamName'), Session.get('jamName'), '/'+Session.get('jamId'));
+  });
+  Tracker.autorun(function () {
+    Meteor.subscribe('jam-tracks', Session.get('jamId'));
+    Meteor.subscribe('jam', Session.get('jamId'), {
+      onError: function(error){
+        Router.go('/');
+      },
+      onReady: function(doc){
+        Session.set("jamName", Jam.findOne({_id: Session.get('jamId')}).name);
+        var zouzou = Zouzous.findOne({jamId: Session.get("jamId")});
+        if (!zouzou) {
+          Zouzous.insert({
+            jamId: Session.get("jamId"),
+            hexId: Session.get("zouzouId"),
+            nickname: Session.get("nickname")
+          });
+        } else {
+          Session.set("nickname", zouzou.nickname);
         }
       }
     });
-  }
-  Session.set('nickname', nickname);
-  Session.set("zouzouId",localStorage.getItem("zouzouId"));
-
-
-  /*
-   if(Meteor.isCordova){
-   cordova.plugins.barcodeScanner.scan(
-   function (result) {
-   alert("We got a barcode\n" +
-   "Result: " + result.text + "\n" +
-   "Format: " + result.format + "\n" +
-   "Cancelled: " + result.cancelled);
-   },
-   function (error) {
-   alert("Scanning failed: " + error);
-   }
-   );
-   }
-   */
-
-
+  });
 
 };
 

@@ -9,7 +9,7 @@
                     <input id="nickname" type="text" placeholder="Nickname" value="{{nickname}}"/>
                     <div class="jamList" style="height:{{jamListHeight}}px">
                         {{#each jams}}
-                            <div class="jamItem" data-id="{{_id}}">
+                            <div class="{{jamItemSelected}} jamItem" data-id="{{_id}}">
                                 {{name}}
                             </div>
                         {{/each}}
