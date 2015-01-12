@@ -28,6 +28,9 @@ if (Meteor.isServer) {
 
     Meteor.startup(function(){
         var fs = Npm.require('fs');
+
+        var isLocal = Meteor.absoluteUrl({replaceLocalhost: true}).indexOf("127.0.0.1") > -1;
+
         function scanSamples(dir){
             var samples = [];
             var files = fs.readdirSync(dir);
@@ -48,7 +51,7 @@ if (Meteor.isServer) {
                 } else {
                     samples.push({
                         name: finalName,
-                        path: name.substring((process.env.PWD+"/public").length)
+                        path: name.substring((isLocal ? process.env.PWD+"/public" : __meteor_bootstrap__.serverDir+'/../web.browser/app').length)
                     });
                 }
             }
@@ -56,15 +59,21 @@ if (Meteor.isServer) {
         }
         Samples.remove({});
 
-        //if (Meteor.absoluteUrl({replaceLocalhost: true}).indexOf("127.0.0.1") > -1) {
+        if (isLocal) {
             /**
              * LOCAL (DEV)
              */
-        //__meteor_bootstrap__.serverDir+'/../web browser/app/loops'
-        Samples.insert({
-            name: "loops",
-            childs: scanSamples(process.env.PWD+'/public/loops')
-        });
+            Samples.insert({
+                name: "loops",
+                childs: scanSamples(process.env.PWD+'/public/loops')
+            });
+        }else{
+            Samples.insert({
+                name: "loops",
+                childs: scanSamples(__meteor_bootstrap__.serverDir+'/../web.browser/app/loops')
+            });
+        }
+
 
     });
 
