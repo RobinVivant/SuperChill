@@ -1,6 +1,8 @@
 
 var loadedSounds = [];
 
+var rollinBackHeader = false;
+
 var isSampleSelected = function(path){
   return  JamTracks.findOne({
     path: path,
@@ -116,6 +118,7 @@ function onClickJamHeader() {
     return;
 
   Session.set('headerShown',false);
+  rollinBackHeader = true;
 
   $('.jamHeader').velocity({
     properties:{
@@ -132,13 +135,14 @@ function onClickJamHeader() {
       duration:'300',
       complete: function(){
         Session.set("jamHeaderMousePosInit", -1);
+        rollinBackHeader = false;
       }
     }
   });
 }
 
 function onDragJamHeader(clientY) {
-  if( Session.get('headerShown') || !Session.get('jamId') || Session.get("jamHeaderMousePosInit") == -1 )
+  if( rollinBackHeader || Session.get('headerShown') || !Session.get('jamId') || Session.get("jamHeaderMousePosInit") == -1 )
     return;
   var pos = Session.get("jamHeaderMousePosInit");
   if(pos > -1 ){
@@ -147,9 +151,10 @@ function onDragJamHeader(clientY) {
 }
 
 function onDragEndJamHeader() {
-  if( Session.get('headerShown') || !Session.get('jamId') || Session.get("jamHeaderMousePosInit") == -1 )
+  if( rollinBackHeader || Session.get('headerShown') || !Session.get('jamId') || Session.get("jamHeaderMousePosInit") == -1 )
     return;
   if( Session.get("jamHeaderTop" ) > $(window).height()/8 ){
+    rollinBackHeader = true;
     $('.jamHeader').velocity({
       properties:{
         top: $(window).height()-100+'px'
@@ -165,6 +170,7 @@ function onDragEndJamHeader() {
         duration:'300',
         complete: function(){
           Session.set('headerShown',true);
+          rollinBackHeader = false;
         }
       }
     });
@@ -190,17 +196,18 @@ Template.jam.events({
   },
   'click .groupHeaderSwitch': function (e, tmpl) {
     var elem = $(e.currentTarget).parent().find(".samplesContainer");
+    var animSpeed = 500;
 
     if( !elem.is(":visible") ) {
       $(e.currentTarget).parent().velocity('stop').velocity({
         properties:{
           paddingBottom: ['0','26px']
         }, options:{
-          duration:'300'
+          duration:animSpeed/2
         }
       });
       elem.velocity('stop').velocity('slideDown',{
-        duration: '300',
+        duration: animSpeed/2,
         queue: false
       });
 
@@ -209,7 +216,7 @@ Template.jam.events({
           marginTop: ['26px','0'],
           marginBottom: ['40px', '0']
         }, options:{
-          duration:'300'
+          duration:animSpeed/2
         }
       });
 
@@ -218,12 +225,12 @@ Template.jam.events({
         properties: {
           paddingBottom: ['26px', '0']
         }, options: {
-          duration: '300'
+          duration: animSpeed
         }
       });
 
       elem.velocity('stop').velocity('slideUp',{
-        duration: '300',
+        duration: animSpeed,
         queue: false
       });
 
@@ -232,7 +239,7 @@ Template.jam.events({
           marginTop: ['0','26px'],
           marginBottom: ['0','40px']
         }, options:{
-          duration:'300'
+          duration:animSpeed
         }
       });
     }
