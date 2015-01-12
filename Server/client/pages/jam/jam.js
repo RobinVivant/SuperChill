@@ -347,20 +347,18 @@ Template.jam.created = function(){
 
   var nickname = "Anonymous";
 
-  if( !this.data.jamId ){
+  if( !Session.get("jamId") ){
     Session.set('headerShown', true);
     Session.set("jamHeaderMousePosInit", 666);
     Session.set("jamHeaderTop", $(window).height()-100);
     Session.set("jamName", "No Jam");
   }
 
-  Session.set("jamId",this.data.jamId);
-
   if( !localStorage.getItem("zouzouId") ){
     localStorage.setItem("zouzouId", Random.hexString(6));
-  }else if(this.data.jamId){
+  }else if(Session.get("jamId")){
     var zouzous = Jam.find({
-      _id: this.data.jamId
+      _id: Session.get("jamId")
     },{
       fields:{
         zouzous: 1
@@ -374,7 +372,7 @@ Template.jam.created = function(){
       }
     }
     Jam.update({
-      _id: this.data.jamId
+      _id: Session.get("jamId")
     },{
       $addToSet:{
         zouzous: {

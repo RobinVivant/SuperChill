@@ -16,21 +16,18 @@ Router.route('jam',{
     waitOn: function () {
         Session.set("jamId", this.params.jamId);
         var that = this;
-        return [
-            this.params.jamId ? Meteor.subscribe('jam', this.params.jamId, {
+        var sub = [Meteor.subscribe('samples'), Meteor.subscribe('jamList')];
+        if( this.params.jamId ){
+            sub.push(Meteor.subscribe('jam', this.params.jamId, {
                 onError: function(error){
                     Router.go('/');
                 },
                 onReady: function(doc){
                     Session.set("jamName", Jam.find({_id: that.params.jamId}).fetch()[0].name);
                 }
-            }) : null,
-            Meteor.subscribe('samples'),
-            Meteor.subscribe('jamList')
-        ];
-    },
-    data: function() {
-        return {jamId: this.params.jamId}
-    }
+            }));
 
+        }
+        return sub;
+    }
 });
