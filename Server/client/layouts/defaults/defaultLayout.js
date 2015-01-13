@@ -3,8 +3,10 @@
 Template.defaultLayout.created = function(){
   Meteor.subscribe('samples');
 
-  isTablet = (new MobileDetect(window.navigator.userAgent)).tablet();
+  //createjs.Sound.initializeDefaultPlugins();
 
+  isTablet = false;//(new MobileDetect(window.navigator.userAgent)).tablet();
+/*
   var swag = function(){
     var date = new Date();
     var h = date.getHours();
@@ -25,6 +27,7 @@ Template.defaultLayout.created = function(){
 
   setInterval(swag, 1000);
   swag();
+  */
 };
 
 

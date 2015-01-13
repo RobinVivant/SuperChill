@@ -1,0 +1,60 @@
+
+<template name="jam">
+
+    <div id="jamPage">
+        {{#if jamHeaderDragging}}
+            <div class="mainHeader"
+                 style="top:{{mainHeaderPosition}}px; height:{{windowHeight}}px">
+                <div style="background-color:#{{zouzouId}};height:100%">
+                    <input id="nickname" type="text" placeholder="Nickname" value="{{nickname}}"/>
+                    <div class="jamList" style="height:{{jamListHeight}}px">
+                        {{#each jams}}
+                            <div class="{{jamItemSelected}} jamItem" data-id="{{_id}}">
+                                {{name}}
+                            </div>
+                        {{/each}}
+                    </div>
+                </div>
+            </div>
+        {{/if}}
+
+        <h1 class='center jamHeader {{jamHeaderDragging}}'
+            style="background-color:#{{zouzouId}}; top:{{jamHeaderPosition}}px; z-index:20;">
+            {{jamName}}
+        </h1>
+
+        <div id="samples" class="{{jamHeaderDragging}}" style="top:100px; right:0;left:0; margin-top:12px; {{#if isHeaderShown}}display:none;{{/if}}">
+            {{#with samples}}
+                {{#if isTablet}}
+                    {{#each tracks}}
+                        <div class="sample">
+                            <h3 class="zouzou" style="background-color: #{{zouzou}};">{{name}}</h3>
+                        </div>
+                    {{/each}}
+                {{else}}
+                    {{> jamTree childs}}
+                {{/if}}
+            {{/with}}
+        </div>
+
+    </div>
+
+</template>
+
+<template name="jamTree">
+    {{#each .}}
+        <div class="{{ifIsGroup}} {{groupSelected}} sample">
+            {{#if childs}}
+                <div class="groupHeaderSwitch"></div>
+                <h2 class="sampleGroup">{{name}}</h2>
+                <div class="samplesContainer">{{> jamTree childs}}</div>
+            {{else}}
+                <div data-sound="{{path}}" class="trackContainer {{isSampleSelected}}">
+                    <h3 class="phoneSample" >{{name}}</h3>
+                    <div class="blank"></div>
+                    <div class="playButton zouzou_play_{{zouzouId}}" style="background-color:#{{zouzouId}}"></div>
+                </div>
+            {{/if}}
+        </div>
+    {{/each}}
+</template>

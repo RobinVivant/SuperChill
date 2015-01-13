@@ -1,34 +1,30 @@
 
 Router.configure({
-    layoutTemplate: 'defaultLayout' /*,
-    loadingTemplate: 'loading',
-    notFoundTemplate: '404'*/
+    layoutTemplate: 'defaultLayout' ,
+    loadingTemplate: 'loading'
 });
-
+/*
 Router.route('/', function () {
+
     this.render('home');
 });
-
-Router.route('/master', function () {
-    this.render('master');
-});
-
+*/
 Router.route('jam',{
-    template: 'slave',
-    path: '/:jamId',
+    template: 'jam',
+    path: '/:jamId?',
     waitOn: function () {
+        if( !localStorage.getItem("zouzouId") ){
+            localStorage.setItem("zouzouId", Random.hexString(6));
+        }
+        Session.set("zouzouId",localStorage.getItem("zouzouId"));
         Session.set("jamId", this.params.jamId);
-        return [
-            Meteor.subscribe('jam', this.params.jamId, {
-                onError: function(error){
-                    Router.go('/');
-                }
-            }),
-            Meteor.subscribe('samples')
+        var that = this;
+        var sub = [
+            Meteor.subscribe('samples'),
+            Meteor.subscribe('jamList'),
+            Meteor.subscribe('zouzou', localStorage.getItem("zouzouId"))
         ];
-    },
-    data: function() {
-        return {jamId: this.params.jamId}
-    }
 
+        return sub;
+    }
 });
