@@ -3,6 +3,8 @@ var loadedSounds = [];
 
 var rollinBackHeader = false;
 
+var wasPlaying = false;
+
 var isSampleSelected = function(path){
   return  JamTracks.findOne({
     path: path,
@@ -15,16 +17,18 @@ var playSound = function(elem, context){
   createjs.Sound.removeAllSounds();
 
   function loadHandler(event) {
-    $(elem).velocity('stop');
-    $(elem).css('opacity', 1);
     loadedSounds[context.path] = id;
     createjs.Sound.play(id);
+    $(elem).velocity('stop');
+    Meteor.defer(function(){
+      $(elem).css('background-color','#'+localStorage.getItem('zouzouId'));
+    });
   }
 
   if(!_.contains(loadedSounds, context.path) ) {
-    $(elem).velocity({
+    $(elem).velocity('stop').velocity({
       properties:{
-        opacity: 0
+        backgroundColor: '#d2d2d2'
       }, options:{
         duration:'100',
         loop: true
@@ -39,10 +43,11 @@ var playSound = function(elem, context){
 };
 
 var stopSound = function(elem){
-  loadedSounds = [];
-
   $(elem).velocity('stop');
-  $(elem).css('opacity', 1);
+  Meteor.defer(function(){
+    $(elem).css('background-color','#'+localStorage.getItem('zouzouId'));
+  });
+  loadedSounds = [];
   createjs.Sound.removeAllSounds();
 };
 
@@ -180,8 +185,10 @@ function onDragEndJamHeader() {
 }
 
 Template.jam.events({
-  'click .phoneSample' : function (e, tmpl) {
-    if( $(e.currentTarget).parent().hasClass('sampleSelected')){
+  'click .trackContainer' : function (e, tmpl) {
+    if( wasPlaying)
+      return;
+    if( $(e.currentTarget).hasClass('sampleSelected')){
       JamTracks.remove({
         _id: JamTracks.findOne({path: this.path})._id
       });
@@ -244,17 +251,35 @@ Template.jam.events({
       });
     }
   },
+  'touchmove #samples .groupHeader': function(e, tmpl) {
+    $('.groupHeader').css('background-color',Session.get('hexColorBg'));
+    $('.groupHeader').css('opacity', e.originalEvent.changedTouches[0].clientX / $('.groupHeader').width());
+
+  },
   'touchstart .playButton': function(e, tmpl) {
+    wasPlaying = true;
     playSound(e.currentTarget, this);
   },
   'mousedown .playButton': function(e, tmpl) {
+    wasPlaying = true;
     playSound(e.currentTarget, this);
   },
-  'touchend .playButton': function(e, tmpl) {
-    stopSound(e.currentTarget);
+  'touchend': function(e, tmpl) {
+    onDragEndJamHeader();
+    if(wasPlaying){
+      stopSound(e.currentTarget);
+    }
+      wasPlaying = false
+
   },
-  'mouseup .playButton': function(e, tmpl) {
-    stopSound(e.currentTarget);
+  'mouseup': function(e, tmpl) {
+    onDragEndJamHeader();
+    if(wasPlaying){
+      stopSound(e.currentTarget);
+    }
+    Meteor.defer(function(){
+      wasPlaying = false
+    });
   },
   'click .jamHeader': function(e, tmpl) {
     onClickJamHeader();
@@ -282,12 +307,6 @@ Template.jam.events({
     onDragJamHeader(e.clientY);
     //e.preventDefault();
   },
-  'touchend': function(e, tmpl) {
-    onDragEndJamHeader();
-  },
-  'mouseup': function(e, tmpl) {
-    onDragEndJamHeader();
-  },
   'keyup #nickname': function(e, tmpl) {
     Session.set('nickname', e.currentTarget.value);
     Zouzous.update({
@@ -311,9 +330,16 @@ Template.jam.created = function(){
   if( !Session.get("jamId") ){
     Session.set('headerShown', true);
     Session.set("jamHeaderMousePosInit", 666);
-    Session.set("jamHeaderTop", $(window).height()-100);
     Session.set("jamName", "No Jam");
   }
+
+  Session.set("jamHeaderTop", $(window).height()-100);
+
+
+  Tracker.autorun(function () {
+    Session.set('hexColorBg','#'+('000000' + (('0xffffff' ^ ('0x'+localStorage.getItem('zouzouId'))).toString(16))).slice(-6));
+  });
+
 
   Tracker.autorun(function () {
     window.history.replaceState(Session.get('jamName'), Session.get('jamName'), '/'+Session.get('jamId'));
