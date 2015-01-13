@@ -20,20 +20,22 @@ using Net.DDP.Client;
 
 namespace MySurfaceApplication
 {
+
     public class MeteorSubscriber : IDataSubscriber
     {
+        Logger info = new Logger("MeteorSubscriber.log");
+
         public DDPClient Client { get; set; }
 
         private readonly Dictionary<string, List<IBinding<object>>> _bindings = new Dictionary<string, List<IBinding<object>>>();
 
         public MeteorSubscriber()
         {
-
         }
 
         public void DataReceived(string data)
         {
-            Console.WriteLine(data);
+            info.log(data);
 
             var message = JsonConvert.DeserializeObject<Message>(data);
 
@@ -46,7 +48,7 @@ namespace MySurfaceApplication
 
                     foreach (var binding in bindings)
                     {
-                        Console.WriteLine(binding);
+                        info.log(binding.ToString());
                     }
                     //subscription.onEvent += (s, e) =>
                     //{
@@ -68,13 +70,9 @@ namespace MySurfaceApplication
 
                     //    Console.WriteLine();
                     //};
-
-                    Console.WriteLine();
                     break;
             }
-
-            Console.WriteLine();
-
+            
             //try
             //{
             //    if (data.type == "added")
@@ -88,7 +86,7 @@ namespace MySurfaceApplication
             //}
         }
 
-        public void Bind<T>(List<T> list, string collectionName, string subscribeTo)
+        public void Bind<T>(List<T> list, string collectionName, string subscribeTo, params string [] args)
             where T : new()
         {
             if (!_bindings.ContainsKey(collectionName))
@@ -96,7 +94,7 @@ namespace MySurfaceApplication
 
             _bindings[collectionName].Add(new Binding<object>(list));
 
-            Client.Subscribe(subscribeTo);
+            Client.Subscribe(subscribeTo,args);
         }
 
         private interface IBinding<T>
@@ -113,6 +111,11 @@ namespace MySurfaceApplication
             public Binding(T target)
             {
                 Target = target;
+            }
+
+            public string ToString()
+            {
+                return Target.ToString();
             }
         }
 
@@ -169,6 +172,8 @@ namespace MySurfaceApplication
     /// </summary>
     public partial class SurfaceWindow1 : SurfaceWindow
     {
+        Logger info = new Logger("Surface.log");
+
         private static List<Message> _messages = new List<Message>(); 
         /// <summary>
         /// Default constructor.
@@ -189,18 +194,11 @@ namespace MySurfaceApplication
 
             client.Connect("superchill.meteor.com");
 
-            subscriber.Bind(_messages, "samples", "samples");
-
-            /*
-            IDataSubscriber subscriber = new Subscriber();
-            DDPClient client = new DDPClient(subscriber);
-
-            Console.WriteLine("yo !! " + client.ToString());
-            client.Connect("superchill.meteor.com");
-            Console.WriteLine("bitch !! "+client.ToString());
-            client.Subscribe("samples");
-            Console.WriteLine("what's up ?? " + client.ToString());
-            client.Call("hiBitch", "prout");*/
+            //subscriber.Bind(_messages, "sample", "sample");
+            subscriber.Bind(_messages, "jam", "jam","rMpFcqsiF6zBTBYQx");
+            //subscriber.Bind(_messages, "jamList", "jamList");
+            subscriber.Bind(_messages, "jam-tracks", "jam-tracks", "rMpFcqsiF6zBTBYQx");
+            subscriber.Bind(_messages, "zouzous", "zouzouList");
         }
 
         /// <summary>

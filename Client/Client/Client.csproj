@@ -89,6 +89,7 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Logger.cs" />
     <Compile Include="DDPClient.NET\Net.DDP.Client\DDPClient.cs" />
     <Compile Include="DDPClient.NET\Net.DDP.Client\DDPConnector.cs" />
     <Compile Include="DDPClient.NET\Net.DDP.Client\DynamicEntity.cs" />
