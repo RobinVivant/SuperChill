@@ -21,6 +21,46 @@ using Net.DDP.Client;
 namespace MySurfaceApplication
 {
 
+    public class Message
+    {
+        [JsonProperty("msg")]
+        public string Type { get; set; }
+    }
+
+    public abstract class Collection : Message
+    {
+        [JsonProperty("collection")]
+        public string CollectionName { get; set; }
+
+        public string Id { get; set; }
+
+        public Dictionary<string, object> Fields { get; set; }
+    }
+
+    public class AddedMessage : Message
+    {
+        public string Collection { get; set; }
+
+        public string Id { get; set; }
+
+        public Dictionary<string, object> Fields { get; set; }
+    }
+
+    public class Childs
+    {
+        public string name { get; set; }
+
+        public Dictionary<string, object> childs { get; set; }
+    }
+
+    public class ChangedMessage : Message
+    {
+        public string Collection { get; set; }
+
+        public string Id { get; set; }
+
+        public Dictionary<string, object> Fields { get; set; }
+    }
     public class MeteorSubscriber : IDataSubscriber
     {
         Logger info = new Logger("MeteorSubscriber.log");
@@ -48,42 +88,41 @@ namespace MySurfaceApplication
 
                     foreach (var binding in bindings)
                     {
-                        info.log(binding.ToString());
+                        if (added.Collection == "samples") {
+                            string name = added.Fields["name"].ToString();
+                            //var childs = JsonConvert.DeserializeObject<List<AddedMessage>>(added.Fields["childs"].ToString());
+                            string instrumentName = "";
+                            //string specificName = childs.childs["name"].ToString();
+                            info.log(instrumentName);
+                        }
+                        else if (added.Collection == "jam")
+                        {
+                            string id = added.Id;
+                            string jamName = added.Fields["name"].ToString();
+                        }
+                        else if (added.Collection == "jamList")
+                        {
+                            string id = added.Id;
+                            string jamName = added.Fields["name"].ToString();
+                        }
+                        else if (added.Collection == "jam-tracks")
+                        {
+                            string id = added.Id;
+                            string jamId = added.Fields["jamId"].ToString();
+                            string zouzouColor = added.Fields["zouzou"].ToString();
+                            string path = added.Fields["path"].ToString();
+                        }
+                        else if (added.Collection == "zouzous")
+                        {
+                            string id = added.Id;
+                            string jamId = added.Fields["jamId"].ToString();
+                            string zouzouColor = added.Fields["hexId"].ToString();
+                            string zouzouName = added.Fields["nickname"].ToString();
+                        }
                     }
-                    //subscription.onEvent += (s, e) =>
-                    //{
-                    //    Console.WriteLine(e.Data);
-
-                    //    var message = JsonConvert.DeserializeObject<Message>(e.Data);
-
-                    //    switch (message.Type)
-                    //    {
-                    //        case "added":
-
-                    //            var fields = e.Data.GetFields();
-
-                    //            var newObject = JsonConvert.DeserializeObject<T>(fields);
-
-                    //            list.Add(newObject);
-                    //            break;
-                    //    }
-
-                    //    Console.WriteLine();
-                    //};
+                    
                     break;
-            }
-            
-            //try
-            //{
-            //    if (data.type == "added")
-            //    {
-            //        Console.WriteLine(data.prodCode + ": " + data.prodName + ": collection: " + data.collection);
-            //    }
-            //}
-            //catch (Exception ex)
-            //{
-            //    throw;
-            //}
+            }            
         }
 
         public void Bind<T>(List<T> list, string collectionName, string subscribeTo, params string [] args)
@@ -133,39 +172,7 @@ namespace MySurfaceApplication
         //}
     }
 
-    public class Message
-    {
-        [JsonProperty("msg")]
-        public string Type { get; set; }
-    }
-
-    public abstract class Collection : Message
-    {
-        [JsonProperty("collection")]
-        public string CollectionName { get; set; }
-
-        public string Id { get; set; }
-
-        public Dictionary<string, object> Fields { get; set; }
-    }
-
-    public class AddedMessage : Message
-    {
-        public string Collection { get; set; }
-
-        public string Id { get; set; }
-
-        public Dictionary<string, object> Fields { get; set; }
-    }
-
-    public class ChangedMessage : Message
-    {
-        public string Collection { get; set; }
-
-        public string Id { get; set; }
-
-        public Dictionary<string, object> Fields { get; set; }
-    }
+    
 
     /// <summary>
     /// Interaction logic for SurfaceWindow1.xaml
@@ -194,10 +201,10 @@ namespace MySurfaceApplication
 
             client.Connect("superchill.meteor.com");
 
-            //subscriber.Bind(_messages, "sample", "sample");
-            subscriber.Bind(_messages, "jam", "jam","rMpFcqsiF6zBTBYQx");
-            //subscriber.Bind(_messages, "jamList", "jamList");
-            subscriber.Bind(_messages, "jam-tracks", "jam-tracks", "rMpFcqsiF6zBTBYQx");
+            subscriber.Bind(_messages, "samples", "samples");
+            subscriber.Bind(_messages, "jam", "jam", "Zx4duhaPxeL9WRf7u");
+            subscriber.Bind(_messages, "jamList", "jamList");
+            subscriber.Bind(_messages, "jam-tracks", "jam-tracks", "Zx4duhaPxeL9WRf7u");
             subscriber.Bind(_messages, "zouzous", "zouzouList");
         }
 
