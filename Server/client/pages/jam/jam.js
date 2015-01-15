@@ -213,7 +213,8 @@ Template.jam.events({
 
       elem.velocity('stop').velocity({
         properties: {
-          marginTop: [0, $(window).height()+'px']
+          //marginTop: [0, $(window).height()+'px']
+          marginLeft: [0, $(window).width()+'px']
         }, options: {
           duration: 300
         }
@@ -223,7 +224,6 @@ Template.jam.events({
       $(e.currentTarget).parent().parent().css('position', 'absolute');
       elem.show();
       elem.css('height', 'auto');
-
 
       $(e.currentTarget).parent().parent().css('height', elem.parent().height()+10+'px');
 
