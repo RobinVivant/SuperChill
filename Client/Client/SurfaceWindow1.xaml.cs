@@ -46,11 +46,11 @@ namespace MySurfaceApplication
         public Dictionary<string, object> Fields { get; set; }
     }
 
-    public class Childs
+    public class Childs : Message
     {
         public string name { get; set; }
 
-        public Dictionary<string, object> childs { get; set; }
+        public IEnumerable<IDictionary<string, object>> childs { get; set; }
     }
 
     public class ChangedMessage : Message
@@ -89,11 +89,30 @@ namespace MySurfaceApplication
                     foreach (var binding in bindings)
                     {
                         if (added.Collection == "samples") {
-                            string name = added.Fields["name"].ToString();
-                            //var childs = JsonConvert.DeserializeObject<List<AddedMessage>>(added.Fields["childs"].ToString());
-                            string instrumentName = "";
-                            //string specificName = childs.childs["name"].ToString();
-                            info.log(instrumentName);
+                            var childs = JsonConvert.DeserializeObject<Childs[]>(added.Fields["childs"].ToString());
+                            for (int k = 0; k < childs.Count(); k++)
+                            {
+                                var childsK = childs[k].childs;
+                                string instrumentName = childs[k].name.ToString();
+                                for (int i = 0; i < childsK.Count(); i++)
+                                {
+                                    var childsI = childs[k].childs.ElementAt(i);                                    
+                                    for (int j = 0; j < childsI.Count; j++)
+                                    {
+                                        var key = childs[k].childs.ElementAt(i).ElementAt(j).Key.ToString();
+                                        var value = childs[k].childs.ElementAt(i).ElementAt(j).Value.ToString();
+                                        if (key == "name")
+                                        {
+
+                                        }
+                                        else if (key == "path")
+                                        {
+
+                                        }
+                                    }
+                                }
+                            }
+                            
                         }
                         else if (added.Collection == "jam")
                         {
