@@ -5,6 +5,8 @@ var rollinBackHeader = false;
 
 var wasPlaying = false;
 
+var playTarget;
+
 var isSampleSelected = function(path){
   return  JamTracks.findOne({
     path: path,
@@ -15,6 +17,8 @@ var isSampleSelected = function(path){
 var playSound = function(elem, context){
   var id = Random.hexString(10);
   createjs.Sound.removeAllSounds();
+
+  playTarget = elem;
 
   function loadHandler(event) {
     loadedSounds[context.path] = id;
@@ -113,7 +117,7 @@ Template.jamTree.helpers({
     }
   },
   ifIsGroup: function(){
-    if(this.childs )
+    if(this.childs)
       return "groupHeader";
   }
 });
@@ -202,59 +206,58 @@ Template.jam.events({
 
   },
   'click .groupHeaderSwitch': function (e, tmpl) {
+
     var elem = $(e.currentTarget).parent().find(".samplesContainer");
-    var animSpeed = 500;
 
     if( !elem.is(":visible") ) {
-      $(e.currentTarget).parent().velocity('stop').velocity({
-        properties:{
-          paddingBottom: ['0','26px']
-        }, options:{
-          duration:animSpeed/2
-        }
-      });
-      elem.velocity('stop').velocity('slideDown',{
-        duration: animSpeed/2,
-        queue: false
-      });
 
-      elem.velocity({
-        properties:{
-          marginTop: ['26px','0'],
-          marginBottom: ['40px', '0']
-        }, options:{
-          duration:animSpeed/2
+      elem.velocity('stop').velocity({
+        properties: {
+          marginTop: [0, $(window).height()+'px']
+        }, options: {
+          duration: 300
         }
       });
 
-    }else {
+      $(e.currentTarget).parent().addClass('GroupOpened');
+      $(e.currentTarget).parent().parent().css('position', 'absolute');
+      elem.show();
+      elem.css('height', 'auto');
+
+
+      $(e.currentTarget).parent().parent().css('height', elem.parent().height()+10+'px');
+
       $(e.currentTarget).parent().velocity('stop').velocity({
         properties: {
-          paddingBottom: ['26px', '0']
+          top: [0, $(e.currentTarget).parent().offset().top-110+'px']
         }, options: {
-          duration: animSpeed
+          duration: 100
         }
       });
 
-      elem.velocity('stop').velocity('slideUp',{
-        duration: animSpeed,
-        queue: false
-      });
-
+    }else{
       elem.velocity({
-        properties:{
-          marginTop: ['0','26px'],
-          marginBottom: ['0','40px']
-        }, options:{
-          duration:animSpeed
+        properties: {
+          height: [0, elem.height()+'px']
+        }, options: {
+          duration: 300,
+          display: "none"
+        }
+      });
+      $(e.currentTarget).parent().velocity('reverse',{
+        complete:function(){
+          $(e.currentTarget).parent().removeClass('GroupOpened');
+          $(e.currentTarget).parent().parent().css('position', '');
+          $(e.currentTarget).parent().parent().css('height', 'auto');
         }
       });
     }
   },
   'touchmove #samples .groupHeader': function(e, tmpl) {
-    $('.groupHeader').css('background-color',Session.get('hexColorBg'));
-    $('.groupHeader').css('opacity', e.originalEvent.changedTouches[0].clientX / $('.groupHeader').width());
-
+    /*
+     $('.groupHeader').css('background-color',Session.get('hexColorBg'));
+     $('.groupHeader').css('opacity', e.originalEvent.changedTouches[0].clientX / $('.groupHeader').width());
+     */
   },
   'touchstart .playButton': function(e, tmpl) {
     wasPlaying = true;
@@ -267,15 +270,15 @@ Template.jam.events({
   'touchend': function(e, tmpl) {
     onDragEndJamHeader();
     if(wasPlaying){
-      stopSound(e.currentTarget);
+      stopSound(playTarget);
     }
-      wasPlaying = false
+    wasPlaying = false
 
   },
   'mouseup': function(e, tmpl) {
     onDragEndJamHeader();
     if(wasPlaying){
-      stopSound(e.currentTarget);
+      stopSound(playTarget);
     }
     Meteor.defer(function(){
       wasPlaying = false

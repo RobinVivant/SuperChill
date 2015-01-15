@@ -70,18 +70,26 @@
   #samples{
     padding-left: 10px;
     padding-right: 10px;
+    margin-bottom: 10px;
     overflow:hidden;
+    top:100px;
+    right:0;
+    left:0;
 
+    .GroupOpened{
+      position:absolute;
+      z-index:11;
+      left:10px;
+      right:10px;
+    }
 
     .groupSelected{
       background-color: #4b4b4b !important;
       color: white!important;
-
     }
 
     .groupHeader{
-      padding-top:26px;
-      padding-bottom:26px;
+      margin-top: 10px;
     }
 
     .sample{
@@ -96,7 +104,6 @@
       left:10px;
       right:10px;
       height: 100px;
-      margin-top: -26px;
       cursor: pointer;
     }
 
@@ -105,27 +112,20 @@
       display:none;
     }
 
-    .groupeTracksCount{
-      background-color: #4b4b4b;
-      width:25px;
-      height:25px;
-      display:none;
-      border-radius:50%;
-    }
-
     .sampleGroup{
-      display: inline;
-      padding-left:10px;
+      display: inline-block;
     }
 
     h2{
       margin-bottom:0;
-      padding-left:10px;
-      padding-right:15px;
       font-weight: bold;
       font-size: 2em;
-      height: 100px;
-
+      width: 100%;
+      line-height: 100px;
+      margin-top: 0;
+      text-indent: 10px;
+      padding-left: 0;
+      background-color:#d2d2d2;
     }
 
     .trackContainer{
