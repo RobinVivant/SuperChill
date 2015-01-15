@@ -3,12 +3,7 @@ Router.configure({
     layoutTemplate: 'defaultLayout' ,
     loadingTemplate: 'loading'
 });
-/*
-Router.route('/', function () {
 
-    this.render('home');
-});
-*/
 Router.route('jam',{
     template: 'jam',
     path: '/:jamId?',
