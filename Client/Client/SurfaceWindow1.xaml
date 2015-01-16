@@ -2,16 +2,10 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:s="http://schemas.microsoft.com/surface/2008"
-    Title="MySurfaceApplication"
+    Title="Super Chill"
     >
-    <s:ScatterView>
-        <Label>Hello</Label>
-        <Label>Hello</Label>
-        <Label>Hello</Label>
 
-        <Image x:Name="Img1" Source="Resources/img1.jpg" MaxWidth="300" />
-        <Image x:Name="Img2" Source="Resources/img2.jpg" MaxWidth="300" />
-        <Image x:Name="Img3" Source="Resources/img3.jpg" MaxWidth="300" />
+    <s:ScatterView Name="myScatterView">
     </s:ScatterView>
     
 </s:SurfaceWindow>

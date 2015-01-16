@@ -17,10 +17,10 @@ using Microsoft.Surface.Presentation.Controls;
 using Microsoft.Surface.Presentation.Input;
 using Newtonsoft.Json;
 using Net.DDP.Client;
+using System.Windows.Threading;
 
 namespace MySurfaceApplication
 {
-
     public class Message
     {
         [JsonProperty("msg")]
@@ -61,16 +61,90 @@ namespace MySurfaceApplication
 
         public Dictionary<string, object> Fields { get; set; }
     }
+
     public class MeteorSubscriber : IDataSubscriber
     {
+        ScatterView myScatterView;
+        // Name d'un ScatterViewItem = beginningLetter + trackId 
+        //car Name doit obligatoirement commencer par une lettre
+        string beginningLetter = "k";
         Logger info = new Logger("MeteorSubscriber.log");
+        private SoundManager manager;
+
+        private static List<Message> _messages = new List<Message>();
 
         public DDPClient Client { get; set; }
 
         private readonly Dictionary<string, List<IBinding<object>>> _bindings = new Dictionary<string, List<IBinding<object>>>();
 
-        public MeteorSubscriber()
+        public MeteorSubscriber(ref ScatterView scatterView)
         {
+            this.myScatterView = scatterView;
+            this.manager = new SoundManager();
+        }
+
+        // Dessine un cercle sur la table surface correspondant à une track (avec la couleur du zouzou et le nom de la track)
+        public void drawCircle(string trackId, string trackPath, string zouzouColor)
+        {
+            string trackName;
+            char[] delimiterChars = { '/', '.' };
+            string[] words = trackPath.Split(delimiterChars);
+            trackName = words[words.Length - 2];
+
+            //Console.WriteLine(trackName);
+            //Console.WriteLine(zouzouColor);
+
+            myScatterView.Dispatcher.Invoke(DispatcherPriority.Normal,
+                new Action(delegate()
+                {
+                    Border border = new Border();
+                    var converter = new System.Windows.Media.BrushConverter();
+                    var color = (Brush)converter.ConvertFromString("#" + zouzouColor);
+                    border.BorderBrush = color;
+                    border.Background = color;
+                    //border.BorderBrush = Brushes.White;
+                    //border.BorderThickness = new Thickness(5);
+                    border.CornerRadius = new CornerRadius(130);
+                    border.Height = 130;
+                    border.Width = 130;
+
+                    TextBlock content = new TextBlock();
+                    content.Text = trackName;
+                    content.Foreground = new SolidColorBrush(Colors.White);
+                    content.FontWeight = FontWeights.Bold;
+                    content.FontSize = 14;
+                    content.Height = 40;
+                    content.Width = 100;
+                    content.HorizontalAlignment = HorizontalAlignment.Center;
+                    content.VerticalAlignment = VerticalAlignment.Center;
+                    content.TextAlignment = TextAlignment.Center;
+                    content.TextWrapping = TextWrapping.Wrap;
+
+                    border.Child = content;
+                    ScatterViewItem item = new ScatterViewItem();
+                    item.Name = beginningLetter + trackId;
+                    myScatterView.RegisterName(item.Name, item);
+                    item.Content = border;
+                    item.Background = new SolidColorBrush(Colors.Transparent);
+                    myScatterView.Items.Add(item);
+                })
+            );
+        }
+
+        // Supprime le cercle sur la table surface, correspondant à une track 
+        public void removeCircle(string trackId)
+        {
+            myScatterView.Dispatcher.Invoke(DispatcherPriority.Normal,
+                new Action(delegate()
+                {
+                    object objectScatterViewItem = myScatterView.FindName(beginningLetter + trackId);
+                    if (objectScatterViewItem is ScatterViewItem)
+                    {
+                        ScatterViewItem wantedChild = objectScatterViewItem as ScatterViewItem;
+                        myScatterView.Items.Remove(wantedChild);
+                    }
+                })
+            );
         }
 
         public void DataReceived(string data)
@@ -78,17 +152,18 @@ namespace MySurfaceApplication
             info.log(data);
 
             var message = JsonConvert.DeserializeObject<Message>(data);
+            string myJamId = "";
 
             switch (message.Type)
             {
                 case "added":
                     var added = JsonConvert.DeserializeObject<AddedMessage>(data);
-
                     var bindings = _bindings[added.Collection];
 
                     foreach (var binding in bindings)
                     {
-                        if (added.Collection == "samples") {
+                        if (added.Collection == "samples")
+                        {
                             var childs = JsonConvert.DeserializeObject<Childs[]>(added.Fields["childs"].ToString());
                             for (int k = 0; k < childs.Count(); k++)
                             {
@@ -96,7 +171,7 @@ namespace MySurfaceApplication
                                 string instrumentName = childs[k].name.ToString();
                                 for (int i = 0; i < childsK.Count(); i++)
                                 {
-                                    var childsI = childs[k].childs.ElementAt(i);                                    
+                                    var childsI = childs[k].childs.ElementAt(i);
                                     for (int j = 0; j < childsI.Count; j++)
                                     {
                                         var key = childs[k].childs.ElementAt(i).ElementAt(j).Key.ToString();
@@ -112,17 +187,15 @@ namespace MySurfaceApplication
                                     }
                                 }
                             }
-                            
                         }
                         else if (added.Collection == "jam")
                         {
                             string id = added.Id;
                             string jamName = added.Fields["name"].ToString();
-                        }
-                        else if (added.Collection == "jamList")
-                        {
-                            string id = added.Id;
-                            string jamName = added.Fields["name"].ToString();
+                            if (jamName == "Jam 1")
+                            {
+                                myJamId = id;
+                            }
                         }
                         else if (added.Collection == "jam-tracks")
                         {
@@ -130,6 +203,9 @@ namespace MySurfaceApplication
                             string jamId = added.Fields["jamId"].ToString();
                             string zouzouColor = added.Fields["zouzou"].ToString();
                             string path = added.Fields["path"].ToString();
+
+                            drawCircle(id, path, zouzouColor);
+                            manager.addLoop(id, path, true);
                         }
                         else if (added.Collection == "zouzous")
                         {
@@ -139,12 +215,30 @@ namespace MySurfaceApplication
                             string zouzouName = added.Fields["nickname"].ToString();
                         }
                     }
-                    
+                    if (myJamId.Length > 0)
+                    {
+                        this.Bind(_messages, "jam", "jam", myJamId);
+                        this.Bind(_messages, "jam-tracks", "jam-tracks", myJamId);
+                    }
                     break;
-            }            
+                case "removed":
+                    var removed = JsonConvert.DeserializeObject<AddedMessage>(data);
+                    var removedBindings = _bindings[removed.Collection];
+
+                    foreach (var binding in removedBindings)
+                    {
+                        if (removed.Collection == "jam-tracks")
+                        {
+                            string id = removed.Id;
+                            removeCircle(id);
+                            //manager.removeLoop(id);
+                        }
+                    }
+                    break;
+            }
         }
 
-        public void Bind<T>(List<T> list, string collectionName, string subscribeTo, params string [] args)
+        public void Bind<T>(List<T> list, string collectionName, string subscribeTo, params string[] args)
             where T : new()
         {
             if (!_bindings.ContainsKey(collectionName))
@@ -152,7 +246,7 @@ namespace MySurfaceApplication
 
             _bindings[collectionName].Add(new Binding<object>(list));
 
-            Client.Subscribe(subscribeTo,args);
+            Client.Subscribe(subscribeTo, args);
         }
 
         private interface IBinding<T>
@@ -176,22 +270,7 @@ namespace MySurfaceApplication
                 return Target.ToString();
             }
         }
-
-        //private class CollectionBinding<L, T> : IBinding
-        //    where L : IList<T>
-        //{
-        //    private L _target;
-        //    private T _generic;
-
-        //    public CollectionBinding(L target, T generic)
-        //    {
-        //        _target = target;
-        //        _generic = generic;
-        //    }
-        //}
     }
-
-    
 
     /// <summary>
     /// Interaction logic for SurfaceWindow1.xaml
@@ -200,7 +279,8 @@ namespace MySurfaceApplication
     {
         Logger info = new Logger("Surface.log");
 
-        private static List<Message> _messages = new List<Message>(); 
+        private static List<Message> _messages = new List<Message>();
+
         /// <summary>
         /// Default constructor.
         /// </summary>
@@ -211,8 +291,7 @@ namespace MySurfaceApplication
             // Add handlers for window availability events
             AddWindowAvailabilityHandlers();
 
-
-            var subscriber = new MeteorSubscriber();
+            var subscriber = new MeteorSubscriber(ref myScatterView);
             var client = new DDPClient(subscriber);
 
             // TODO; hack
@@ -220,10 +299,11 @@ namespace MySurfaceApplication
 
             client.Connect("superchill.meteor.com");
 
+            // ..., nom de la collection, nom de la subscription
             subscriber.Bind(_messages, "samples", "samples");
-            subscriber.Bind(_messages, "jam", "jam", "Zx4duhaPxeL9WRf7u");
-            subscriber.Bind(_messages, "jamList", "jamList");
-            subscriber.Bind(_messages, "jam-tracks", "jam-tracks", "Zx4duhaPxeL9WRf7u");
+            //subscriber.Bind(_messages, "jam", "jam", "Zx4duhaPxeL9WRf7u");
+            subscriber.Bind(_messages, "jam", "jamList");
+            //subscriber.Bind(_messages, "jam", "jam-tracks", "Zx4duhaPxeL9WRf7u");
             subscriber.Bind(_messages, "zouzous", "zouzouList");
         }
 
