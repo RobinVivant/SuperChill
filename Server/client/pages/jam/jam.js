@@ -315,6 +315,10 @@ Template.jam.events({
   },
   'keyup #nickname': function(e, tmpl) {
     var nick = e.currentTarget.value.trim();
+    if( nick.length > 8 ) {
+      e.currentTarget.value = nick.substring(0, 8);
+      return;
+    }
     Session.set('nickname', nick);
 
     if( nick.length == 0)

@@ -3,12 +3,16 @@
     <div id="JamTablet">
         <div class="leftPanel">
           {{#each zouzous}}
-              <div style="background-color: #{{hexId}}; width:100%;height:50px;">{{nickname}}</div>
+              <div class="zouzouItem" data-id="{{hexId}}" style="background-color: #{{hexId}};">{{nickname}}</div>
           {{/each}}
         </div>
         <div class="rightPanel">
           {{#each tracks}}
-            <div style="background-color: #{{zouzou}}">{{path}}</div>
+            {{#if displayTrack this}}
+                <div class="trackItem" style="background-color: #{{zouzou}}">
+                    <div class="trackName">{{trackName path}}</div>
+                </div>
+            {{/if}}
           {{/each}}
         </div>
     </div>
