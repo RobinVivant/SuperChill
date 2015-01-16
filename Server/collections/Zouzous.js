@@ -13,13 +13,18 @@ Zouzous.allow({
     }
 });
 if (Meteor.isServer) {
-    Zouzous._ensureIndex({_id: 1});
+
+    Zouzous._ensureIndex({hexId: 1, jamId:1});
 
     Meteor.publish('zouzou', function (hexId) {
         return Zouzous.find({hexId: hexId});
     });
-    Meteor.publish('zouzouList', function () {
+    Meteor.publish('zouzouList', function (jamId) {
         return Zouzous.find({});
+    });
+
+    Meteor.startup(function(){
+        Zouzous.remove({});
     });
 }
 

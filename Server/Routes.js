@@ -17,7 +17,7 @@ Router.route('jam',{
         var sub = [
             Meteor.subscribe('samples'),
             Meteor.subscribe('jamList'),
-            Meteor.subscribe('zouzou', localStorage.getItem("zouzouId"))
+            Meteor.subscribe('zouzouList', that.params.jamId)
         ];
 
         return sub;

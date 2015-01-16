@@ -24,19 +24,14 @@
         </h1>
 
         <div id="samples" class="{{jamHeaderDragging}}" style="{{#if isHeaderShown}}display:none;{{/if}}">
-            {{#with samples}}
-                {{#if isTablet}}
-                    {{#each tracks}}
-                        <div class="sample">
-                            <h3 class="zouzou" style="background-color: #{{zouzou}};">{{name}}</h3>
-                        </div>
-                    {{/each}}
-                {{else}}
+            {{#if isTablet}}
+                {{> JamTablet}}
+            {{else}}
+                {{#with samples}}
                     {{> jamTree childs}}
-                {{/if}}
-            {{/with}}
+                {{/with}}
+            {{/if}}
         </div>
-
     </div>
 
 </template>
