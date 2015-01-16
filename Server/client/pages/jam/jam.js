@@ -57,7 +57,7 @@ var stopSound = function(elem){
 
 Template.jam.helpers({
   samples: function () {
-    return isTablet ? Jam.findOne() : Samples.findOne();
+    return Samples.findOne();
   },
   isTablet:function(){
     return isTablet;
@@ -123,7 +123,7 @@ Template.jamTree.helpers({
 });
 
 function onClickJamHeader() {
-  if( !Session.get('headerShown') || !Session.get('jamId'))
+  if( !Session.get('headerShown') || !Session.get('jamId') || !Session.get("nickname"))
     return;
 
   Session.set('headerShown',false);
@@ -311,12 +311,21 @@ Template.jam.events({
     //e.preventDefault();
   },
   'keyup #nickname': function(e, tmpl) {
-    Session.set('nickname', e.currentTarget.value);
+    var nick = e.currentTarget.value.trim();
+    Session.set('nickname', nick);
+
+    if( nick.length == 0)
+      nick = "Anonymous";
+
+    var zouzou = Zouzous.findOne({hexId:Session.get('zouzouId')});
+
+    if(!zouzou)
+      return;
     Zouzous.update({
-      _id: Zouzous.findOne({hexId:Session.get('zouzouId')})._id
+      _id: zouzou._id
     },{
       $set:{
-        nickname: e.currentTarget.value
+        nickname: nick
       }
     });
   },
@@ -328,9 +337,9 @@ Template.jam.events({
 
 Template.jam.created = function(){
 
-  Session.set('nickname', 'Anonymous');
+  //Session.set('nickname', 'Anonymous');
 
-  if( !Session.get("jamId") ){
+  if( !Session.get("jamId") || !Session.get("nickname") ){
     Session.set('headerShown', true);
     Session.set("jamHeaderMousePosInit", 666);
     Session.set("jamName", "No Jam");
@@ -354,17 +363,18 @@ Template.jam.created = function(){
         Router.go('/');
       },
       onReady: function(doc){
+
         Session.set("jamName", Jam.findOne({_id: Session.get('jamId')}).name);
-        var zouzou = Zouzous.findOne({jamId: Session.get("jamId")});
+        var zouzou = Zouzous.findOne({jamId: Session.get('jamId'), hexId: Session.get("zouzouId")});
+        console.log(zouzou);
         if (!zouzou) {
           Zouzous.insert({
             jamId: Session.get("jamId"),
             hexId: Session.get("zouzouId"),
-            nickname: Session.get("nickname")
+            nickname: Session.get("nickname") || "Anonymous"
           });
-        } else {
-          Session.set("nickname", zouzou.nickname);
         }
+        Session.set("nickname", (zouzou && zouzou.nickname) || Session.get("nickname"));
       }
     });
   });

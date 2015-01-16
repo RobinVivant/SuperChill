@@ -1,0 +1,15 @@
+
+<template name="JamTablet">
+    <div id="JamTablet">
+        <div class="leftPanel">
+          {{#each zouzous}}
+              <div style="background-color: #{{hexId}}; width:100%;height:50px;">{{nickname}}</div>
+          {{/each}}
+        </div>
+        <div class="rightPanel">
+          {{#each tracks}}
+            <div style="background-color: #{{zouzou}}">{{path}}</div>
+          {{/each}}
+        </div>
+    </div>
+</template>
