@@ -1,130 +1,104 @@
 ﻿using System;
 using IrrKlang;
+using CSharp._01.HelloWorld;
 
-namespace MySurfaceApplication
+
+public enum SoundEffect { Volume, Distortion, Echo, WavesReverb, Gargle, Compressor };
+
+public class SoundManager
 {
-    public class SoundManager
+    public const int BPM = 120;
+
+    ISoundEngine engine;
+
+    // <identifier, Loop>
+    System.Collections.Hashtable loops;
+    System.Collections.Hashtable loopStates;
+
+    // Lists of loop identifiers to delete and deactivate at next step
+    System.Collections.ArrayList deletedLoops;
+
+    int activeCount;
+    System.Timers.Timer timer;
+
+    public SoundManager()
     {
-        public const int BPM = 120;
+        engine = new ISoundEngine();
+        loops = new System.Collections.Hashtable();
+        loopStates = new System.Collections.Hashtable();
+        deletedLoops = new System.Collections.ArrayList();
 
-        ISoundEngine engine;
+        activeCount = 0;
 
-        // <identifier, Loop>
-        System.Collections.Hashtable loops;
+        timer = new System.Timers.Timer(4 * 1000 * BPM / 60);
+        timer.Elapsed += endOfLoop;
+    }
 
-        // Lists of loop identifiers to delete and deactivate at next step
-        System.Collections.ArrayList deletedLoops;
-        System.Collections.ArrayList activeLoops;
-
-        System.Timers.Timer timer;
-
-        public SoundManager()
+    public void addLoop(string id, string filePath, bool active)
+    {
+        loops.Add(id, new Loop(engine, filePath));
+        loopStates.Add(id, active);
+        if (activeCount == 0)
         {
-            engine = new ISoundEngine();
-            loops = new System.Collections.Hashtable();
-            deletedLoops = new System.Collections.ArrayList();
-            activeLoops = new System.Collections.ArrayList();
-
-            timer = new System.Timers.Timer(4 * 1000 * BPM / 60);
-            timer.Elapsed += endOfLoop;
-        }
-
-        public string addLoop(string id, string filePath, bool active)
-        {
-            loops.Add(id, new Loop(engine, "../.." + filePath, active));
-            if (active)
-            {
-                activeLoops.Add(id);
-                if (activeLoops.Count == 1)
-                {
-                    timer.Stop();
-                    endOfLoop();
-                }
-            }
-            return id;
-        }
-
-        public void removeLoop(string id)
-        {
-            deletedLoops.Add(id);
-        }
-
-
-
-        internal void toggleLoop(string loopId)
-        {
-            if (activeLoops.Contains(loopId))
-            {
-                deactivateLoop(loopId);
-            }
-            else if (loops.ContainsKey(loopId))
-            {
-                activateLoop(loopId);
-            }
-
-            printList(activeLoops);
-        }
-
-        void activateLoop(string loopId)
-        {
-            activeLoops.Add(loopId);
-            if (activeLoops.Count == 1)
-            {
-                timer.Stop();
-                endOfLoop();
-            }
-        }
-
-
-        public void deactivateLoop(string id)
-        {
-            activeLoops.Remove(id);
-        }
-
-
-
-
-
-
-
-        void endOfLoop(object sender, System.Timers.ElapsedEventArgs e)
-        {
-            Console.Out.WriteLine("loop");
             endOfLoop();
         }
+    }
 
-        void endOfLoop()
+    public void removeLoop(string id)
+    {
+        deletedLoops.Add(id);
+    }
+
+
+
+    internal void toggleLoop(string loopId)
+    {
+        loopStates[loopId] = !(bool)loopStates[loopId];
+    }
+
+
+
+    public void setEffectOnLoop(string loopId, SoundEffect effect, int value)
+    {
+        ((Loop)loops[loopId]).setEffect(effect, value);
+    }
+
+
+
+
+    void endOfLoop(object sender, System.Timers.ElapsedEventArgs e)
+    {
+        Console.Out.WriteLine("loop");
+        endOfLoop();
+    }
+
+    void endOfLoop()
+    {
+        timer.Enabled = true;
+        foreach (string loopId in deletedLoops)
         {
-            timer.Enabled = true;
-            foreach (int identifier in deletedLoops)
+            ((Loop)loops[loopId]).prepareForDestruction();
+            if ((bool)loopStates[loopId])
             {
-                loops.Remove(identifier);
-                activeLoops.Remove(identifier);
-            }
-            deletedLoops.Clear();
-            foreach (string id in activeLoops)
-            {
-                Loop l = (Loop)loops[id];
-                l.stop();
-                l.play();
+                activeCount--;
+                loopStates.Remove(loopId);
             }
         }
-
-
-
-
-
-
-
-
-        private static void printList(System.Collections.ArrayList list)
+        deletedLoops.Clear();
+        foreach (string loopId in loops.Keys)
         {
-            string r = "[";
-            foreach (Object element in list)
-            {
-                r += element + ", ";
-            }
-            Console.Out.WriteLine(r + "]");
+            ((Loop)loops[loopId]).setState((bool)loopStates[loopId]);
         }
+    }
+
+
+    private static void printList(System.Collections.ArrayList list)
+    {
+        string r = "[";
+        foreach (Object element in list)
+        {
+            r += element + ", ";
+        }
+        Console.Out.WriteLine(r + "]");
     }
 }
