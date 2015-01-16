@@ -142,6 +142,7 @@ namespace MySurfaceApplication
                         item.PreviewMouseDown += new MouseButtonEventHandler(handle_MouseDown);
                         item.Content = border;
                         item.Background = new SolidColorBrush(Colors.Transparent);
+                        item.Opacity = 0.5;
                         myScatterView.Items.Add(item);
                     })
                 );
@@ -168,12 +169,15 @@ namespace MySurfaceApplication
                 ScatterViewItem item = sender as ScatterViewItem;
                 string trackId = item.Name.Substring(1, item.Name.Length-1);
                 manager.toggleLoop(trackId);
-                if (item.Opacity == 1) 
-                {
-                    item.Opacity = 0.5;
-                } else 
+
+                string pos = item.ActualCenter.ToString();
+                Console.WriteLine(pos);
+                if (item.Opacity == 0.5) 
                 {
                     item.Opacity = 1;
+                } else 
+                {
+                    item.Opacity = 0.5;
                 }
             }
 
@@ -182,13 +186,13 @@ namespace MySurfaceApplication
                 ScatterViewItem item = sender as ScatterViewItem;
                 string trackId = item.Name.Substring(1, item.Name.Length - 1);
                 manager.toggleLoop(trackId);
-                if (item.Opacity == 1)
+                if (item.Opacity == 0.5)
                 {
-                    item.Opacity = 0.5;
+                    item.Opacity = 1;
                 }
                 else
                 {
-                    item.Opacity = 1;
+                    item.Opacity = 0.5;
                 }
             }
             public void DataReceived(string data)
