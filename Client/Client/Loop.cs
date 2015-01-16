@@ -20,7 +20,7 @@ namespace CSharp._01.HelloWorld
             engine = _engine;
             filePath = _filePath;
 
-            ISound l = engine.Play2D(filePath, true, false);
+            ISound l = engine.Play2D(filePath, true, true);
             if (l == null)
             {
                 throw new Exception("Could not load " + filePath);
