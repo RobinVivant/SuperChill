@@ -95,6 +95,9 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="ConnexionData.cs" />
+    <Compile Include="JamTracks.cs" />
+    <Compile Include="JamTracksData.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="DDPClient.NET\Net.DDP.Client\DDPClient.cs" />
     <Compile Include="DDPClient.NET\Net.DDP.Client\DDPConnector.cs" />
@@ -108,6 +111,7 @@
     <Compile Include="DDPClient.NET\Net.DDP.SignalR\DDPStream.cs" />
     <Compile Include="DDPClient.NET\Net.DDP.SignalR\SingletonDDPClient.cs" />
     <Compile Include="Loop.cs" />
+    <Compile Include="Sample.cs" />
     <Compile Include="SoundManager.cs" />
     <Compile Include="SurfaceWindow1.xaml.cs">
       <DependentUpon>SurfaceWindow1.xaml</DependentUpon>
