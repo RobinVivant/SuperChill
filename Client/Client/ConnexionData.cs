@@ -7,6 +7,7 @@ using System.Text;
 
 namespace MySurfaceApplication
 {
+
         public partial class ConnexionData : Dictionary<string, List<Sample> >, INotifyCollectionChanged, INotifyPropertyChanged
         {
             public ConnexionData() : base() { }

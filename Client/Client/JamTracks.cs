@@ -5,6 +5,7 @@ using System.Text;
 
 namespace MySurfaceApplication
 {
+
     public class JamTracks
     {
         string id;

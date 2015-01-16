@@ -7,6 +7,7 @@ using System.Text;
 
 namespace MySurfaceApplication
 {
+
     public partial class jamTracksData : List<JamTracks>, INotifyCollectionChanged, INotifyPropertyChanged
     {
         public jamTracksData() : base() { }
