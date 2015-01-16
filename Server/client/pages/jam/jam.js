@@ -84,7 +84,10 @@ Template.jam.helpers({
     return $(window).height()-100 ;
   },
   nickname: function(){
-    return Session.get('nickname');
+    var nick = Session.get('nickname');
+    if( nick == "Anonymous" )
+      return;
+    return nick;
   },
   jams: function(){
     return Jam.find({}, {fields:{
@@ -317,7 +320,7 @@ Template.jam.events({
     if( nick.length == 0)
       nick = "Anonymous";
 
-    var zouzou = Zouzous.findOne({hexId:Session.get('zouzouId')});
+    var zouzou = Zouzous.findOne({hexId:Session.get('zouzouId'), jamId:Session.get('jamId')});
 
     if(!zouzou)
       return;
@@ -358,23 +361,26 @@ Template.jam.created = function(){
   });
   Tracker.autorun(function () {
     Meteor.subscribe('jam-tracks', Session.get('jamId'));
+    Meteor.subscribe('zouzouList', Session.get('jamId'));
     Meteor.subscribe('jam', Session.get('jamId'), {
       onError: function(error){
         Router.go('/');
       },
       onReady: function(doc){
-
         Session.set("jamName", Jam.findOne({_id: Session.get('jamId')}).name);
         var zouzou = Zouzous.findOne({jamId: Session.get('jamId'), hexId: Session.get("zouzouId")});
-        console.log(zouzou);
         if (!zouzou) {
+          var nick = Session.get("nickname") || "Anonymous";
           Zouzous.insert({
             jamId: Session.get("jamId"),
             hexId: Session.get("zouzouId"),
-            nickname: Session.get("nickname") || "Anonymous"
+            nickname: nick
           });
+          Session.set("nickname", nick);
+        }else{
+          Session.set("nickname", zouzou.nickname);
         }
-        Session.set("nickname", (zouzou && zouzou.nickname) || Session.get("nickname"));
+
       }
     });
   });
