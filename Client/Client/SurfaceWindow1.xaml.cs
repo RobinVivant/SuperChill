@@ -138,6 +138,8 @@ namespace MySurfaceApplication
                         ScatterViewItem item = new ScatterViewItem();
                         item.Name = beginningLetter + trackId;
                         myScatterView.RegisterName(item.Name, item);
+                        item.PreviewTouchDown += new EventHandler<TouchEventArgs>(handle_TouchDown);
+                        item.PreviewMouseDown += new MouseButtonEventHandler(handle_MouseDown);
                         item.Content = border;
                         item.Background = new SolidColorBrush(Colors.Transparent);
                         myScatterView.Items.Add(item);
@@ -161,6 +163,34 @@ namespace MySurfaceApplication
                 );
             }
 
+            private void handle_MouseDown(object sender, MouseButtonEventArgs e)
+            {
+                ScatterViewItem item = sender as ScatterViewItem;
+                string trackId = item.Name.Substring(1, item.Name.Length-1);
+                manager.toggleLoop(trackId);
+                if (item.Opacity == 1) 
+                {
+                    item.Opacity = 0.5;
+                } else 
+                {
+                    item.Opacity = 1;
+                }
+            }
+
+            private void handle_TouchDown(object sender, TouchEventArgs e)
+            {
+                ScatterViewItem item = sender as ScatterViewItem;
+                string trackId = item.Name.Substring(1, item.Name.Length - 1);
+                manager.toggleLoop(trackId);
+                if (item.Opacity == 1)
+                {
+                    item.Opacity = 0.5;
+                }
+                else
+                {
+                    item.Opacity = 1;
+                }
+            }
             public void DataReceived(string data)
             {
                 info.log(data);
@@ -213,7 +243,7 @@ namespace MySurfaceApplication
                             {
                                 string id = added.Id;
                                 string jamName = added.Fields["name"].ToString();
-                                if (jamName == "Jam 1")
+                                if (jamName == "Jam 2")
                                 {
                                     myJamId = id;
                                 }
@@ -227,7 +257,7 @@ namespace MySurfaceApplication
 
                                 jamTracksList.Add(new JamTracks(id, jamId, zouzouColor, path));
                                 drawCircle(id, path, zouzouColor);
-                                manager.addLoop(id, path, true);
+                                manager.addLoop(id, "../.." + path, false);
                             }
                             else if (added.Collection == "zouzous")
                             {
@@ -253,7 +283,7 @@ namespace MySurfaceApplication
                             {
                                 string id = removed.Id;
                                 removeCircle(id);
-                                //manager.removeLoop(id);
+                                manager.removeLoop(id);
                             }
                         }
                         break;
