@@ -228,11 +228,11 @@ Template.jam.events({
       elem.show();
       elem.css('height', 'auto');
 
-      $(e.currentTarget).parent().parent().css('height', elem.parent().height()+10+'px');
+      $(e.currentTarget).parent().parent().css('height', elem.parent().height()+25+'px');
 
       $(e.currentTarget).parent().velocity('stop').velocity({
         properties: {
-          top: [0, $(e.currentTarget).parent().offset().top-110+'px']
+          top: [0, $(e.currentTarget).parent().offset().top-125+'px']
         }, options: {
           duration: 100
         }
