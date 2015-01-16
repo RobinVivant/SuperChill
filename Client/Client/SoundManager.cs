@@ -78,11 +78,9 @@ public class SoundManager
         foreach (string loopId in deletedLoops)
         {
             ((Loop)loops[loopId]).prepareForDestruction();
-            if ((bool)loopStates[loopId])
-            {
-                activeCount--;
-                loopStates.Remove(loopId);
-            }
+            loops.Remove(loopId);
+            if ((bool)loopStates[loopId]) activeCount--;
+            loopStates.Remove(loopId);
         }
         deletedLoops.Clear();
         foreach (string loopId in loops.Keys)
