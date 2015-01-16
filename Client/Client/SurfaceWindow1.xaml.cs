@@ -65,6 +65,9 @@ namespace MySurfaceApplication
     public class MeteorSubscriber : IDataSubscriber
     {
         ScatterView myScatterView;
+        // Name d'un ScatterViewItem = beginningLetter + trackId 
+        //car Name doit obligatoirement commencer par une lettre
+        string beginningLetter = "k";
         Logger info = new Logger("MeteorSubscriber.log");
         private SoundManager manager;
 
@@ -80,7 +83,7 @@ namespace MySurfaceApplication
             this.manager = new SoundManager();
         }
 
-        public void drawCircle(string trackPath, string zouzouColor)
+        public void drawCircle(string trackId, string trackPath, string zouzouColor)
         {
             string trackName;
             char[] delimiterChars = { '/', '.' };
@@ -89,14 +92,14 @@ namespace MySurfaceApplication
 
             //Console.WriteLine(trackName);
             //Console.WriteLine(zouzouColor);
-        
+
             myScatterView.Dispatcher.Invoke(DispatcherPriority.Normal,
                 new Action(delegate()
                 {
                     Border border = new Border();
                     var converter = new System.Windows.Media.BrushConverter();
                     var color = (Brush)converter.ConvertFromString("#" + zouzouColor);
-                    border.BorderBrush = color; 
+                    border.BorderBrush = color;
                     border.Background = color;
                     //border.BorderBrush = Brushes.White;
                     //border.BorderThickness = new Thickness(5);
@@ -118,12 +121,28 @@ namespace MySurfaceApplication
 
                     border.Child = content;
                     ScatterViewItem item = new ScatterViewItem();
+                    item.Name = beginningLetter + trackId;
+                    myScatterView.RegisterName(item.Name, item);
                     item.Content = border;
                     item.Background = new SolidColorBrush(Colors.Transparent);
                     myScatterView.Items.Add(item);
                 })
             );
+        }
 
+        public void removeCircle(string trackId)
+        {
+            myScatterView.Dispatcher.Invoke(DispatcherPriority.Normal,
+                new Action(delegate()
+                {
+                    object objectScatterViewItem = myScatterView.FindName(beginningLetter + trackId);
+                    if (objectScatterViewItem is ScatterViewItem)
+                    {
+                        ScatterViewItem wantedChild = objectScatterViewItem as ScatterViewItem;
+                        myScatterView.Items.Remove(wantedChild);
+                    }
+                })
+            );
         }
 
         public void DataReceived(string data)
@@ -142,7 +161,7 @@ namespace MySurfaceApplication
 
                     foreach (var binding in bindings)
                     {
-                        if (added.Collection == "samples") 
+                        if (added.Collection == "samples")
                         {
                             var childs = JsonConvert.DeserializeObject<Childs[]>(added.Fields["childs"].ToString());
                             for (int k = 0; k < childs.Count(); k++)
@@ -151,7 +170,7 @@ namespace MySurfaceApplication
                                 string instrumentName = childs[k].name.ToString();
                                 for (int i = 0; i < childsK.Count(); i++)
                                 {
-                                    var childsI = childs[k].childs.ElementAt(i);                                    
+                                    var childsI = childs[k].childs.ElementAt(i);
                                     for (int j = 0; j < childsI.Count; j++)
                                     {
                                         var key = childs[k].childs.ElementAt(i).ElementAt(j).Key.ToString();
@@ -183,8 +202,8 @@ namespace MySurfaceApplication
                             string jamId = added.Fields["jamId"].ToString();
                             string zouzouColor = added.Fields["zouzou"].ToString();
                             string path = added.Fields["path"].ToString();
-                            
-                            drawCircle(path, zouzouColor);
+                            Console.WriteLine("Track added : " + path);
+                            drawCircle(id, path, zouzouColor);
                             manager.addLoop(id, path, true);
                         }
                         else if (added.Collection == "zouzous")
@@ -201,10 +220,25 @@ namespace MySurfaceApplication
                         this.Bind(_messages, "jam-tracks", "jam-tracks", myJamId);
                     }
                     break;
-            }            
+                case "removed":
+                    var removed = JsonConvert.DeserializeObject<AddedMessage>(data);
+
+                    var removedBindings = _bindings[removed.Collection];
+
+                    foreach (var binding in removedBindings)
+                    {
+                        if (removed.Collection == "jam-tracks")
+                        {
+                            string id = removed.Id;
+                            Console.WriteLine("Removed Collection Jam Tracks");
+                            removeCircle(id);
+                        }
+                    }
+                    break;
+            }
         }
 
-        public void Bind<T>(List<T> list, string collectionName, string subscribeTo, params string [] args)
+        public void Bind<T>(List<T> list, string collectionName, string subscribeTo, params string[] args)
             where T : new()
         {
             if (!_bindings.ContainsKey(collectionName))
@@ -212,7 +246,7 @@ namespace MySurfaceApplication
 
             _bindings[collectionName].Add(new Binding<object>(list));
 
-            Client.Subscribe(subscribeTo,args);
+            Client.Subscribe(subscribeTo, args);
         }
 
         private interface IBinding<T>
