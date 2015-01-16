@@ -31,6 +31,13 @@ namespace Net.DDP.Client
             _connector.Connect(url);
         }
 
+        public void Pong()
+        {
+            string message = string.Format("\"msg\": \"pong\"");
+            message = "{" + message + "}";
+            _connector.Send(message);
+        }
+
         public void Call(string methodName, params string[] args)
         {
             string message = string.Format("\"msg\": \"method\",\"method\": \"{0}\",\"params\": [{1}],\"id\": \"{2}\"", methodName, this.CreateJSonArray(args), this.NextId().ToString());
