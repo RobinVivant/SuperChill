@@ -83,6 +83,7 @@ namespace MySurfaceApplication
             this.manager = new SoundManager();
         }
 
+        // Dessine un cercle sur la table surface correspondant à une track (avec la couleur du zouzou et le nom de la track)
         public void drawCircle(string trackId, string trackPath, string zouzouColor)
         {
             string trackName;
@@ -130,6 +131,7 @@ namespace MySurfaceApplication
             );
         }
 
+        // Supprime le cercle sur la table surface, correspondant à une track 
         public void removeCircle(string trackId)
         {
             myScatterView.Dispatcher.Invoke(DispatcherPriority.Normal,
@@ -156,7 +158,6 @@ namespace MySurfaceApplication
             {
                 case "added":
                     var added = JsonConvert.DeserializeObject<AddedMessage>(data);
-
                     var bindings = _bindings[added.Collection];
 
                     foreach (var binding in bindings)
@@ -202,7 +203,7 @@ namespace MySurfaceApplication
                             string jamId = added.Fields["jamId"].ToString();
                             string zouzouColor = added.Fields["zouzou"].ToString();
                             string path = added.Fields["path"].ToString();
-                            Console.WriteLine("Track added : " + path);
+
                             drawCircle(id, path, zouzouColor);
                             manager.addLoop(id, path, true);
                         }
@@ -222,7 +223,6 @@ namespace MySurfaceApplication
                     break;
                 case "removed":
                     var removed = JsonConvert.DeserializeObject<AddedMessage>(data);
-
                     var removedBindings = _bindings[removed.Collection];
 
                     foreach (var binding in removedBindings)
@@ -230,8 +230,8 @@ namespace MySurfaceApplication
                         if (removed.Collection == "jam-tracks")
                         {
                             string id = removed.Id;
-                            Console.WriteLine("Removed Collection Jam Tracks");
                             removeCircle(id);
+                            //manager.removeLoop(id);
                         }
                     }
                     break;
