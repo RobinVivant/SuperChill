@@ -228,7 +228,7 @@ Template.jam.events({
       elem.show();
       elem.css('height', 'auto');
 
-      $(e.currentTarget).parent().parent().css('height', elem.parent().height()+25+'px');
+      $(e.currentTarget).parent().parent().css('height', elem.parent().height()+'px');
 
       $(e.currentTarget).parent().velocity('stop').velocity({
         properties: {
