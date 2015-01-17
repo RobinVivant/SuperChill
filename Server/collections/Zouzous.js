@@ -23,8 +23,5 @@ if (Meteor.isServer) {
         return Zouzous.find({});
     });
 
-    Meteor.startup(function(){
-        //Zouzous.remove({});
-    });
 }
 
