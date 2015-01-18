@@ -171,7 +171,7 @@ function onDragEndJamHeader() {
       properties:{
         top: $(window).height()-100+'px'
       }, options:{
-        duration:'300',
+        duration:'150',
         queue: false
       }
     });
@@ -179,7 +179,7 @@ function onDragEndJamHeader() {
       properties:{
         top: 0
       }, options:{
-        duration:'300',
+        duration:'150',
         complete: function(){
           Session.set('headerShown',true);
           rollinBackHeader = false;
@@ -408,7 +408,7 @@ Template.jam.created = function(){
       Meteor.defer(function(){
         $('#nickname').velocity('stop').velocity({
           properties:{
-            opacity: 0
+            opacity: [0, 1]
           },options:{
             loop: true
           }
