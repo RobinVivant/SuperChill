@@ -138,8 +138,12 @@ namespace MySurfaceApplication
                         ScatterViewItem item = new ScatterViewItem();
                         item.Name = beginningLetter + trackId;
                         myScatterView.RegisterName(item.Name, item);
-                        item.PreviewTouchDown += new EventHandler<TouchEventArgs>(handle_TouchDown);
-                        item.PreviewMouseDown += new MouseButtonEventHandler(handle_MouseDown);
+                        //item.PreviewTouchDown += new EventHandler<TouchEventArgs>(handle_TouchDown);
+                        //item.PreviewMouseDown += new MouseButtonEventHandler(handle_MouseDown);
+                        //item.PreviewTouchUp += new EventHandler<TouchEventArgs>(handle_TouchUp);
+                        //item.PreviewMouseUp += new MouseButtonEventHandler(handle_MouseUp);
+                        TouchExtensions.AddPreviewHoldGestureHandler(item, new EventHandler<TouchEventArgs>(handle_HoldGesture));
+                        TouchExtensions.AddTapGestureHandler(item, new EventHandler<TouchEventArgs>(handle_TapGesture));
                         item.Content = border;
                         item.Background = new SolidColorBrush(Colors.Transparent);
                         item.Opacity = 0.5;
@@ -163,25 +167,12 @@ namespace MySurfaceApplication
                     })
                 );
             }
-
-            private void handle_MouseDown(object sender, MouseButtonEventArgs e)
+            private void handle_HoldGesture(object sender, TouchEventArgs e)
             {
-                ScatterViewItem item = sender as ScatterViewItem;
-                string trackId = item.Name.Substring(1, item.Name.Length-1);
-                manager.toggleLoop(trackId);
-
-                string pos = item.ActualCenter.ToString();
-                Console.WriteLine(pos);
-                if (item.Opacity == 0.5) 
-                {
-                    item.Opacity = 1;
-                } else 
-                {
-                    item.Opacity = 0.5;
-                }
+                // Do nothing
             }
 
-            private void handle_TouchDown(object sender, TouchEventArgs e)
+            private void handle_TapGesture(object sender, TouchEventArgs e)
             {
                 ScatterViewItem item = sender as ScatterViewItem;
                 string trackId = item.Name.Substring(1, item.Name.Length - 1);
@@ -195,6 +186,40 @@ namespace MySurfaceApplication
                     item.Opacity = 0.5;
                 }
             }
+
+            private void handle_MouseUp(object sender, MouseButtonEventArgs e)
+            {
+                ScatterViewItem item = sender as ScatterViewItem;
+                string trackId = item.Name.Substring(1, item.Name.Length-1);
+                manager.toggleLoop(trackId);
+
+                //string pos = item.ActualCenter.ToString();
+                //Console.WriteLine(pos);
+
+                if (item.Opacity == 0.5) 
+                {
+                    item.Opacity = 1;
+                } else 
+                {
+                    item.Opacity = 0.5;
+                }
+            }
+
+            private void handle_TouchUp(object sender, TouchEventArgs e)
+            {
+                ScatterViewItem item = sender as ScatterViewItem;
+                string trackId = item.Name.Substring(1, item.Name.Length - 1);
+                manager.toggleLoop(trackId);
+                if (item.Opacity == 0.5)
+                {
+                    item.Opacity = 1;
+                }
+                else
+                {
+                    item.Opacity = 0.5;
+                }
+            }
+
             public void DataReceived(string data)
             {
                 info.log(data);
