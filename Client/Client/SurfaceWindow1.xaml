@@ -5,7 +5,16 @@
     Title="Super Chill"
     >
 
-    <s:ScatterView Name="myScatterView">
-    </s:ScatterView>
+    <s:TagVisualizer 
+            Name="MyTagVisualizer" 
+            VerticalAlignment="Stretch"
+            HorizontalAlignment="Stretch"
+            Background="Black" 
+            Height="Auto" Width="Auto"
+            VisualizationAdded="OnVisualizationAdded"
+            >
+        <s:ScatterView Name="myScatterView">
+        </s:ScatterView>
+    </s:TagVisualizer>
     
 </s:SurfaceWindow>

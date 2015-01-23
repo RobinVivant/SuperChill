@@ -24,7 +24,6 @@ namespace MySurfaceApplication
 {
     public partial class SurfaceWindow1 : SurfaceWindow
     {
-
         ConnexionData samplesMap;
         jamTracksData jamTracksList;
         JamData jamList;
@@ -117,9 +116,7 @@ namespace MySurfaceApplication
                     item.Name = beginningLetter + trackId;
                     myScatterView.RegisterName(item.Name, item);
                     //item.PreviewTouchDown += new EventHandler<TouchEventArgs>(handle_TouchDown);
-                    //item.PreviewMouseDown += new MouseButtonEventHandler(handle_MouseDown);
                     //item.PreviewTouchUp += new EventHandler<TouchEventArgs>(handle_TouchUp);
-                    //item.PreviewMouseUp += new MouseButtonEventHandler(handle_MouseUp);
                     TouchExtensions.AddPreviewHoldGestureHandler(item, new EventHandler<TouchEventArgs>(handle_HoldGesture));
                     TouchExtensions.AddHoldGestureHandler(item, new EventHandler<TouchEventArgs>(handle_HoldGesture));
                     TouchExtensions.AddTapGestureHandler(item, new EventHandler<TouchEventArgs>(handle_TapGesture));
@@ -159,6 +156,7 @@ namespace MySurfaceApplication
             ScatterViewItem item = sender as ScatterViewItem;
             string trackId = item.Name.Substring(1, item.Name.Length - 1);
             manager.toggleLoop(trackId);
+
             if (item.Opacity == 0.5)
             {
                 item.Opacity = 1;
@@ -174,24 +172,7 @@ namespace MySurfaceApplication
             ScatterViewItem item = sender as ScatterViewItem;
             string trackId = item.Name.Substring(1, item.Name.Length - 1);
             manager.toggleLoop(trackId);
-            //string pos = item.ActualCenter.ToString();
-            //Console.WriteLine(pos);
 
-            if (item.Opacity == 0.5)
-            {
-                item.Opacity = 1;
-            }
-            else
-            {
-                item.Opacity = 0.5;
-            }
-        }
-
-        private void handle_TouchUp(object sender, TouchEventArgs e)
-        {
-            ScatterViewItem item = sender as ScatterViewItem;
-            string trackId = item.Name.Substring(1, item.Name.Length - 1);
-            manager.toggleLoop(trackId);
             if (item.Opacity == 0.5)
             {
                 item.Opacity = 1;
@@ -204,17 +185,14 @@ namespace MySurfaceApplication
 
         public class MeteorSubscriber : IDataSubscriber
         {
-            //
             List<Sample> sampleList;
             ConnexionData samplesMap;
             jamTracksData jamTracksList;
             JamData jamList;
             ZouzouData zouzouList;
-
             
             Logger info = new Logger("MeteorSubscriber.log");
             
-
             private static List<Message> _messages = new List<Message>();
 
             public DDPClient Client { get; set; }
@@ -227,9 +205,7 @@ namespace MySurfaceApplication
                 this.jamTracksList = jamTracksList;
                 this.jamList = jamList;
                 this.zouzouList = zouzouList;                                
-            }
-
-            
+            }            
 
             public void DataReceived(string data)
             {
@@ -305,6 +281,7 @@ namespace MySurfaceApplication
                                 string jamId = added.Fields["jamId"].ToString();
                                 string zouzouColor = added.Fields["hexId"].ToString();
                                 string zouzouName = added.Fields["nickname"].ToString();
+
                                 zouzouList.Add(new Zouzou(id, jamId, zouzouColor, zouzouName));
                             }
                         }
@@ -379,6 +356,9 @@ namespace MySurfaceApplication
         {
             InitializeComponent();
 
+            // Initialize tag definitions
+            InitializeDefinitions();
+
             // Add handlers for window availability events
             AddWindowAvailabilityHandlers();
 
@@ -407,6 +387,62 @@ namespace MySurfaceApplication
             subscriber.Bind(_messages, "jam", "jamList");
             //subscriber.Bind(_messages, "jam", "jam-tracks", "Zx4duhaPxeL9WRf7u");
             subscriber.Bind(_messages, "zouzous", "zouzouList");
+        }
+
+        private void InitializeDefinitions()
+        {
+            for (byte k = 1; k <= 5; k++)
+            {
+                TagVisualizationDefinition tagDef =
+                    new TagVisualizationDefinition();
+                // The tag value that this definition will respond to.
+                tagDef.Value = k;
+                // The .xaml file for the UI
+                tagDef.Source =
+                    new Uri("TagVisualization1.xaml", UriKind.Relative);
+                // The maximum number for this tag value.
+                tagDef.MaxCount = 2;
+                // The visualization stays for 2 seconds.
+                tagDef.LostTagTimeout = 2000.0;
+                // Orientation offset (default).
+                tagDef.OrientationOffsetFromTag = 0.0;
+                // Physical offset (horizontal inches, vertical inches).
+                tagDef.PhysicalCenterOffsetFromTag = new Vector(2.0, 2.0);
+                // Tag removal behavior (default).
+                tagDef.TagRemovedBehavior = TagRemovedBehavior.Fade;
+                // Orient UI to tag? (default).
+                tagDef.UsesTagOrientation = true;
+                // Add the definition to the collection.
+                MyTagVisualizer.Definitions.Add(tagDef);
+            }
+        }
+
+        private void OnVisualizationAdded(object sender, TagVisualizerEventArgs e)
+        {
+            TagVisualization1 filter = (TagVisualization1)e.TagVisualization;
+            switch (filter.VisualizedTag.Value)
+            {
+                case 1:
+                    filter.FilterType.Content = "Filtre 1";
+                    filter.myEllipse.Fill = SurfaceColors.Accent1Brush;
+                    break;
+                case 2:
+                    filter.FilterType.Content = "Filtre 2";
+                    filter.myEllipse.Fill = SurfaceColors.Accent2Brush;
+                    break;
+                case 3:
+                    filter.FilterType.Content = "Filtre 3";
+                    filter.myEllipse.Fill = SurfaceColors.Accent3Brush;
+                    break;
+                case 4:
+                    filter.FilterType.Content = "Filtre 4";
+                    filter.myEllipse.Fill = SurfaceColors.Accent4Brush;
+                    break;
+                default:
+                    filter.FilterType.Content = "UNKNOWN FILTER";
+                    filter.myEllipse.Fill = SurfaceColors.ControlAccentBrush;
+                    break;
+            }
         }
 
         protected void samplesChangedHandler(Object sender, PropertyChangedEventArgs e)
