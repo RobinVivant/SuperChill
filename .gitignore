@@ -70,3 +70,7 @@ packages/
 
 #Test files
 *.testsettings
+
+#Irrklang and 32/64 issue
+Client/Client/irrKlang.NET4.dll
+Client/Client/app.config
