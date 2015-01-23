@@ -1,8 +1,11 @@
 #JamTablet{
   margin-top:20px;
   display:flex;
+  display:-webkit-flex;
   flex-direction: row;
   flex-wrap: nowrap;
+  -webkit-flex-direction: row;
+  -webkit-flex-wrap: nowrap;
   align-items: stretch;
   width:100%;
   background-color:#d2d2d2;
@@ -22,31 +25,36 @@
 
   .leftPanel{
     flex-grow:1;
-    width:33%;
+    -webkit-flex-grow:1;
+    width:33.33%;
     overflow: auto;
     padding-right: 10px;
   }
 
   .middlePanel{
     flex-grow:1;
-    width:33%;
-    background-color: red;
+    -webkit-flex-grow:1;
+    width:33.33%;
     overflow: auto;
     padding-right: 10px;
+    overflow-x: hidden;
   }
   .rightPanel{
     flex-grow:1;
-    width:33%;
-    background-color: blue;
+    -webkit-flex-grow:1;
+    width:33.33%;
     overflow: auto;
+    margin-bottom:10px;
   }
 
   .trackItem{
     margin-bottom: 10px;
     height: 45px;
     background-color: #0e4311;
-    border: 3px solid black;
+    border: 3px solid #4b4b4b;
     margin-left: 28px;
+    min-width:250px;
+    cursor:pointer;
   }
 
   .checkBoxTrack{
@@ -58,7 +66,7 @@
     height:45px;
     background-color: white;
     border-radius: 50%;
-    border: 3px solid black;
+    border: 3px solid #4b4b4b;
   }
   .checkedTrack{
     background-color: #4b4b4b;
@@ -72,11 +80,11 @@
     border-radius: 50%;
     background-color: #d2d2d2;
     position: absolute;
-    border: 3px solid black;
+    border: 3px solid #4b4b4b;
     line-height: 100px;
     text-align:center;
     i{
-      color: black;
+      color: #4b4b4b;
       height: 100%;
       line-height: 100px;
       margin-top: 4px;
@@ -93,6 +101,29 @@
     white-space: nowrap;
     width: 74%;
     text-align:right;
+  }
+
+  .trackGroup{
+    margin-left:0;
+  }
+
+  .trackGroupSelected{
+    border-radius: 4px 0 0 4px;
+    border:none !important;
+    width: 104%;
+    height: 51px;
+    .trackName{
+      line-height: 51px;
+      text-align: left;
+    }
+  }
+
+  .effects-header{
+    height: 45px;
+    border-bottom: 3px solid #4b4b4b;
+    text-align:center;
+    line-height: 45px;
+    font-size: 1.5em;
   }
 
 }

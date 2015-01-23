@@ -1,6 +1,7 @@
 
 Session.setDefault('trackFilters', {});
 Session.setDefault('tracksToGroup', {});
+Session.setDefault("tracksGroups", []);
 
 Template.JamTablet.helpers({
     tracks: function () {
@@ -22,16 +23,29 @@ Template.JamTablet.helpers({
             .replace(/(\/.*\/)*/g, '');
     },
     verticalSectionHeight: function(){
-        return $(window).height()-150+'px';
+        return $(window).height()-160+'px';
     },
     checkedTrack: function(){
         var tracks = Session.get('tracksToGroup');
         return tracks[this._id] ? "checkedTrack" : "";
+    },
+    tracksGroups: function(){
+        return Session.get("tracksGroups");
+    },
+    isGroupSelected: function(){
+        if( Session.get('selectedGroup') === this.color )
+            return 'trackGroupSelected';
+    },
+    getSelectedGroupColor: function(){
+        return Session.get('selectedGroup');
+    },
+    shouldDisplayEffects: function(){
+        return Session.get('selectedGroup');
     }
 });
 
 Template.JamTablet.events({
-    'click .trackItem': function(e, tmpl){
+    'click .leftPanel .trackItem': function(e, tmpl){
         var trs = Session.get('tracksToGroup');
         if(trs[this._id]){
             trs[this._id] = undefined;
@@ -42,12 +56,10 @@ Template.JamTablet.events({
                     },options:{
                         duration: 200,
                         complete: function(){
-
-                                $('.createGroupButton').hide();
-
+                            $('.createGroupButton').hide();
                         }
                     }
-                })
+                });
             }
         }else{
             if( Object.keys(trs).length === 0 ){
@@ -60,39 +72,30 @@ Template.JamTablet.events({
                     },options:{
                         duration: 200
                     }
-                })
+                });
             }
             trs[this._id] = true;
         }
         Session.set('tracksToGroup', trs);
     },
-    'click .zouzouItem': function(e, tmpl){
-        var id = $(e.currentTarget).attr('data-id');
-        var filters = Session.get('trackFilters');
-
-        if( filters[id]){
-            filters[id] = undefined;
-            $(e.currentTarget).velocity('stop').velocity({
-                properties:{
-                    borderRadius : '50%'
-                }, options:{
-                    duration: 100,
-                    complete: function(){
-                        $(e.currentTarget).css('border-radius', '50%');
-                    }
+    'click .createGroupButton': function(e, tmpl){
+        var grps = Session.get("tracksGroups");
+        grps.push({color: Random.hexString(6), name: chance.first(), tracks: Session.get('tracksToGroup')});
+        Session.set("tracksGroups", grps);
+        Session.set('tracksToGroup', {});
+        $('.createGroupButton').velocity('stop').velocity({
+            properties:{
+                opacity: [0, 1]
+            },options:{
+                duration: 200,
+                complete: function(){
+                    $('.createGroupButton').hide();
                 }
-            })
-        }else{
-            filters[id] = true;
-            $(e.currentTarget).velocity('stop').velocity({
-                properties:{
-                    borderRadius : [0, '50%']
-                }, options:{
-                    duration: 100
-                }
-            })
-        }
-        Session.set('trackFilters', filters);
+            }
+        })
+    },
+    'click .trackGroup': function(){
+        Session.set('selectedGroup', this.color);
     }
 });
 

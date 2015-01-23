@@ -1,7 +1,7 @@
 
 
 Template.defaultLayout.created = function(){
-  isTablet = false;//(new MobileDetect(window.navigator.userAgent)).tablet();
+  isTablet = true;//(new MobileDetect(window.navigator.userAgent)).tablet();
 };
 
 
