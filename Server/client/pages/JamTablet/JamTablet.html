@@ -3,12 +3,10 @@
     <div id="JamTablet">
         <div class="leftPanel" style="height: {{verticalSectionHeight}}">
             {{#each tracks}}
-                {{#if displayTrack this}}
-                    <div class="trackItem" style="background-color: #{{zouzou}}">
-                        <div class="checkBoxTrack {{checkedTrack}}"></div>
-                        <div class="trackName">{{trackName path}}</div>
-                    </div>
-                {{/if}}
+                <div class="trackItem {{checkedTrack}}">
+                    <div class="checkBoxTrack"  style="background-color: #{{zouzou}}"></div>
+                    <div class="trackName">{{trackName path}}</div>
+                </div>
             {{/each}}
             <div class="createGroupButton">
                 <i class="fa fa-plus fa-5x"></i>
@@ -17,16 +15,16 @@
         <div class="middlePanel" style="height: {{verticalSectionHeight}}">
             {{#each tracksGroups}}
                 <div class="trackItem trackGroup {{isGroupSelected}}" style="background-color: #{{color}};">
-                    <div class="trackName">{{name}}</div>
+                    <i class="fa fa-trash-o fa-2x"></i>
+                    <div class="groupName">{{name}}</div>
                 </div>
             {{/each}}
         </div>
         <div class="rightPanel"
              style="height: {{verticalSectionHeight}};
                      background-color:#{{getSelectedGroupColor}};
-                     {{#if shouldDisplayEffects}}{{else}}visibility:hidden;{{/if}}
+                 {{#if shouldDisplayEffects}}{{else}}visibility:hidden;{{/if}}
                      ">
-
         </div>
     </div>
 </template>

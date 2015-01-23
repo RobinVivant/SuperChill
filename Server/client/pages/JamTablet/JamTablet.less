@@ -45,34 +45,40 @@
     width:33.33%;
     overflow: auto;
     margin-bottom:10px;
+    border-radius: 4px;
   }
 
   .trackItem{
     margin-bottom: 10px;
     height: 45px;
-    background-color: #0e4311;
-    border: 3px solid #4b4b4b;
+    background-color: #d2d2d2;
+    border: 2px solid #4b4b4b;
     margin-left: 28px;
     min-width:250px;
     cursor:pointer;
+    border-radius: 4px;
   }
 
   .checkBoxTrack{
-    top: -3px;
-    left: -30px;
+    top: -2px;
+    left: -26px;
     float:left;
     position: relative;
     width: 45px;
     height:45px;
     background-color: white;
     border-radius: 50%;
-    border: 3px solid #4b4b4b;
+    border: 2px solid #4b4b4b;
   }
   .checkedTrack{
     background-color: #4b4b4b;
+    & .trackName{
+      color:#d2d2d2;
+    }
   }
 
   .createGroupButton{
+    z-index: 100;
     display: none;
     opacity: 0;
     height: 100px;
@@ -101,20 +107,52 @@
     white-space: nowrap;
     width: 74%;
     text-align:right;
+    color: #4b4b4b;
+    font-weight: bold;
   }
 
-  .trackGroup{
-    margin-left:0;
+  .groupName{
+    font-size: 1.2em;
+    line-height: 45px;
+    margin-right: 10px;
+    float:right;
+    overflow:hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    width: 82%;
+    text-align:right;
+    color: white;
+    font-weight: bold;
+  }
+
+  .trackGroup {
+    margin-left: 0;
+    border: 0;
+    border-radius: 4px;
+     i{
+       width: auto;
+       line-height: 45px;
+       margin-left: 10px;
+       font-size:1.5em;
+       opacity: 0.8;
+
+       &:hover, &:active{
+         opacity: 1;
+       }
+     }
   }
 
   .trackGroupSelected{
     border-radius: 4px 0 0 4px;
     border:none !important;
     width: 104%;
-    height: 51px;
-    .trackName{
-      line-height: 51px;
+    height: 55px;
+    .groupName{
+      line-height: 55px;
       text-align: left;
+    }
+    i{
+      line-height: 55px;
     }
   }
 

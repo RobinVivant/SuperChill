@@ -1,15 +1,9 @@
 
-Session.setDefault('trackFilters', {});
 Session.setDefault('tracksToGroup', {});
-Session.setDefault("tracksGroups", []);
 
 Template.JamTablet.helpers({
     tracks: function () {
         return JamTracks.find();
-    },
-    displayTrack: function(track){
-        var filters = Session.get('trackFilters');
-        return Object.keys(filters).length === 0 || filters[track.zouzou];
     },
     zouzous: function(){
         return Zouzous.find({jamId: Session.get("jamId")});
@@ -30,17 +24,19 @@ Template.JamTablet.helpers({
         return tracks[this._id] ? "checkedTrack" : "";
     },
     tracksGroups: function(){
-        return Session.get("tracksGroups");
+        return TrackGroups.find().fetch();//Session.get("tracksGroups");
     },
     isGroupSelected: function(){
-        if( Session.get('selectedGroup') === this.color )
+        if( Session.get('selectedGroup') === this._id )
             return 'trackGroupSelected';
     },
     getSelectedGroupColor: function(){
-        return Session.get('selectedGroup');
+        var group = TrackGroups.findOne({_id:Session.get('selectedGroup')});
+        if( group )
+            return group.color;
     },
     shouldDisplayEffects: function(){
-        return Session.get('selectedGroup');
+        return Session.get('selectedGroup') ? true : false;
     }
 });
 
@@ -52,6 +48,7 @@ Template.JamTablet.events({
             if( Object.keys(trs).length === 1 ){
                 $('.createGroupButton').velocity('stop').velocity({
                     properties:{
+                        scale: [0, 1],
                         opacity: [0, 1]
                     },options:{
                         duration: 200,
@@ -68,6 +65,7 @@ Template.JamTablet.events({
                 $('.createGroupButton').css('left', $('.leftPanel').width()-35 +'px');
                 $('.createGroupButton').velocity('stop').velocity({
                     properties:{
+                        scale: [1, 0],
                         opacity: [1, 0]
                     },options:{
                         duration: 200
@@ -79,12 +77,56 @@ Template.JamTablet.events({
         Session.set('tracksToGroup', trs);
     },
     'click .createGroupButton': function(e, tmpl){
-        var grps = Session.get("tracksGroups");
-        grps.push({color: Random.hexString(6), name: chance.first(), tracks: Session.get('tracksToGroup')});
-        Session.set("tracksGroups", grps);
+        //var grps = TrackGroups.find().fetch();
+
+        var c;
+
+        c = hslToRgb(Random.fraction(), 1, 0.3);
+        c = rgbToHex(c[0], c[1], c[2]).substring(1);
+/*
+        if( grps.length == 0) {
+            c = hslToRgb(Random.fraction()%0.75, 1, 0.3);
+            c = rgbToHex(c[0], c[1], c[2]).substring(1);
+        }else{
+
+            var zzHue = [];
+
+            for(var i in grps ){
+                var rgb = hexToRgb('#'+grps[i].color);
+                var hue = rgbToHsl(rgb.r, rgb.g, rgb.b)[0];
+                zzHue.push(hue);
+            }
+
+            var keys = zzHue.sort();
+            var index = keys.length-1;
+            var distance = Math.abs(1-keys[index]);
+            for( var i in keys){
+                if( i == 0 ){
+                    continue;
+                }
+                var d = Math.abs(keys[i-1]-keys[i]);
+
+                if( d >= distance ){
+                    distance = d;
+                    index = i-1;
+                }
+            }
+
+            c = hslToRgb((keys[index] + (distance/2 || 0.5)) % 0.75, 1, 0.3);
+            c = rgbToHex(c[0], c[1], c[2]).substring(1);
+        }
+*/
+        TrackGroups.insert({
+            color: c,
+            name: chance.first(),
+            jamId: Session.get('jamId'),
+            tracks: Session.get('tracksToGroup')
+        });
+
         Session.set('tracksToGroup', {});
         $('.createGroupButton').velocity('stop').velocity({
             properties:{
+                scale: [0, 1],
                 opacity: [0, 1]
             },options:{
                 duration: 200,
@@ -94,11 +136,32 @@ Template.JamTablet.events({
             }
         })
     },
-    'click .trackGroup': function(){
-        Session.set('selectedGroup', this.color);
+    'click .groupName': function(){
+        Session.set('selectedGroup', this._id);
+    },
+    'click .trackGroup > i': function(e, tpl){
+        var that = this;
+        $(e.currentTarget).parent().velocity({
+            properties:{
+                scale: [0, 1],
+                opacity: [0, 1]
+            },options:{
+                duration: 200,
+                complete: function(){
+                    TrackGroups.remove({_id: that._id});
+                }
+            }
+        })
+
     }
+
 });
 
 Template.JamTablet.created = function(){
+    Tracker.autorun(function () {
 
+        if(Session.get('jamId')){
+            Meteor.subscribe('track-groups', Session.get('jamId'));
+        }
+    });
 };

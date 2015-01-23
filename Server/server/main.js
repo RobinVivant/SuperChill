@@ -2,6 +2,7 @@
 Meteor.methods({
     resetDB: function(){
         JamTracks.remove({});
+        TrackGroups.remove({});
         Jam.remove({});
         Jam.insert({
             name: "Jam 1"
