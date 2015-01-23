@@ -35,16 +35,29 @@ namespace MySurfaceApplication
             }
         }
 
-        public new bool Remove(Jam Jam)
+        public new bool Remove(string id)
         {
-            if (base.Contains(Jam))
+            Jam jam = this.findById(id);
+            if (base.Contains(jam))
             {
-                bool result = base.Remove(Jam);
-                this.OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, Jam, base.IndexOf(Jam)));
+                bool result = base.Remove(jam);
+                this.OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, jam, base.IndexOf(jam)));
                 this.OnPropertyChanged(new PropertyChangedEventArgs("Removed"));
                 return result;
             }
             return false;
+        }
+
+        public Jam findById(string id)
+        {
+            foreach (var jam in this)
+            {
+                if (jam.Id == id)
+                {
+                    return jam;
+                }
+            }
+            return null;
         }
 
         public new void Clear()

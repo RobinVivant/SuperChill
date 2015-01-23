@@ -35,16 +35,29 @@ namespace MySurfaceApplication
             }
         }
 
-        public new bool Remove(Zouzou Zouzou)
+        public new bool Remove(string id)
         {
-            if (base.Contains(Zouzou))
+            Zouzou zouzou = this.findById(id);
+            if (base.Contains(zouzou))
             {
-                bool result = base.Remove(Zouzou);
-                this.OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, Zouzou, base.IndexOf(Zouzou)));
+                bool result = base.Remove(zouzou);
+                this.OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, zouzou, base.IndexOf(zouzou)));
                 this.OnPropertyChanged(new PropertyChangedEventArgs("Removed"));
                 return result;
             }
             return false;
+        }
+
+        public Zouzou findById(string id)
+        {
+            foreach (var zouzou in this)
+            {
+                if (zouzou.Id == id)
+                {
+                    return zouzou;
+                }
+            }
+            return null;
         }
 
         public new void Clear()
