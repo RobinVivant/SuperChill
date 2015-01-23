@@ -30,49 +30,49 @@ namespace MySurfaceApplication
         JamData jamList;
         ZouzouData zouzouList;
         private SoundManager manager;
+
         // Name d'un ScatterViewItem = beginningLetter + trackId 
         //car Name doit obligatoirement commencer par une lettre
         string beginningLetter = "k";
 
-        public class Message
+        Logger info = new Logger("Surface.log");
+        private static List<Message> _messages = new List<Message>();
+
+        public SurfaceWindow1()
         {
-            [JsonProperty("msg")]
-            public string Type { get; set; }
-        }
+            InitializeComponent();
 
-        public abstract class Collection : Message
-        {
-            [JsonProperty("collection")]
-            public string CollectionName { get; set; }
+            // Initialize tag definitions
+            InitializeDefinitions();
 
-            public string Id { get; set; }
+            // Add handlers for window availability events
+            AddWindowAvailabilityHandlers();
 
-            public Dictionary<string, object> Fields { get; set; }
-        }
+            this.manager = new SoundManager();
 
-        public class AddedMessage : Message
-        {
-            public string Collection { get; set; }
+            jamList = new JamData();
+            jamList.PropertyChanged += new PropertyChangedEventHandler(jamChangedHandler);
+            zouzouList = new ZouzouData();
+            zouzouList.PropertyChanged += new PropertyChangedEventHandler(zouzouChangedHandler);
+            jamTracksList = new jamTracksData();
+            jamTracksList.PropertyChanged += new PropertyChangedEventHandler(jamTracksChangedHandler);
+            samplesMap = new SampleData();
+            samplesMap.PropertyChanged += new PropertyChangedEventHandler(samplesChangedHandler);
 
-            public string Id { get; set; }
+            var subscriber = new MeteorSubscriber(ref samplesMap, ref jamTracksList, ref jamList, ref zouzouList);
+            var client = new DDPClient(subscriber);
 
-            public Dictionary<string, object> Fields { get; set; }
-        }
+            // TODO; hack
+            subscriber.Client = client;
 
-        public class Childs : Message
-        {
-            public string name { get; set; }
+            client.Connect("superchill.meteor.com");
 
-            public IEnumerable<IDictionary<string, object>> childs { get; set; }
-        }
-
-        public class ChangedMessage : Message
-        {
-            public string Collection { get; set; }
-
-            public string Id { get; set; }
-
-            public Dictionary<string, object> Fields { get; set; }
+            // ..., nom de la collection, nom de la subscription
+            subscriber.Bind(_messages, "samples", "samples");
+            //subscriber.Bind(_messages, "jam", "jam", "Zx4duhaPxeL9WRf7u");
+            subscriber.Bind(_messages, "jam", "jamList");
+            //subscriber.Bind(_messages, "jam", "jam-tracks", "Zx4duhaPxeL9WRf7u");
+            subscriber.Bind(_messages, "zouzous", "zouzouList");
         }
 
         // Dessine un cercle sur la table surface correspondant à une track (avec la couleur du zouzou et le nom de la track)
@@ -183,211 +183,7 @@ namespace MySurfaceApplication
                 item.Opacity = 0.5;
             }
         }
-
-        public class MeteorSubscriber : IDataSubscriber
-        {
-            //
-            SampleData samplesList;
-            jamTracksData jamTracksList;
-            JamData jamList;
-            ZouzouData zouzouList;
-            
-            Logger info = new Logger("MeteorSubscriber.log");
-            
-            private static List<Message> _messages = new List<Message>();
-
-            public DDPClient Client { get; set; }
-
-            private readonly Dictionary<string, List<IBinding<object>>> _bindings = new Dictionary<string, List<IBinding<object>>>();
-
-            public MeteorSubscriber(ref SampleData samplesList,ref jamTracksData jamTracksList, ref JamData jamList, ref ZouzouData zouzouList)
-            {
-                this.samplesList = samplesList;
-                this.jamTracksList = jamTracksList;
-                this.jamList = jamList;
-                this.zouzouList = zouzouList;                                
-            }            
-
-            public void DataReceived(string data)
-            {
-                info.log(data);
-
-                var message = JsonConvert.DeserializeObject<Message>(data);
-                string myJamId = "";
-
-                switch (message.Type)
-                {
-                    case "ping":
-                        Client.Pong();
-                        break;
-
-                    case "added":
-                        var added = JsonConvert.DeserializeObject<AddedMessage>(data);
-                        var bindings = _bindings[added.Collection];
-
-                        foreach (var binding in bindings)
-                        {
-                            if (added.Collection == "samples")
-                            {
-                                var childs = JsonConvert.DeserializeObject<Childs[]>(added.Fields["childs"].ToString());
-                                for (int k = 0; k < childs.Count(); k++)
-                                {
-                                    var childsK = childs[k].childs;
-                                    string instrumentName = childs[k].name.ToString();
-                                    for (int i = 0; i < childsK.Count(); i++)
-                                    {
-                                        var childsI = childs[k].childs.ElementAt(i);
-                                        samplesList.Add(new Sample(childsI.Values.ElementAt(0).ToString(), childsI.Values.ElementAt(1).ToString(),instrumentName));
-                                        for (int j = 0; j < childsI.Count; j++)
-                                        {
-                                            var key = childs[k].childs.ElementAt(i).ElementAt(j).Key.ToString();
-                                            var value = childs[k].childs.ElementAt(i).ElementAt(j).Value.ToString();
-                                            if (key == "name")
-                                            {
-
-                                            }
-                                            else if (key == "path")
-                                            {
-
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                            else if (added.Collection == "jam")
-                            {
-                                string id = added.Id;
-                                string jamName = added.Fields["name"].ToString();
-                                jamList.Add(new Jam(id, jamName));
-                                if (jamName == "Jam 2")
-                                {
-                                    myJamId = id;
-                                }
-                            }
-                            else if (added.Collection == "jam-tracks")
-                            {
-                                string id = added.Id;
-                                string jamId = added.Fields["jamId"].ToString();
-                                string zouzouColor = added.Fields["zouzou"].ToString();
-                                string path = added.Fields["path"].ToString();
-
-                                jamTracksList.Add(new JamTracks(id, jamId, zouzouColor, path));
-                                
-                            }
-                            else if (added.Collection == "zouzous")
-                            {
-                                string id = added.Id;
-                                string jamId = added.Fields["jamId"].ToString();
-                                string zouzouColor = added.Fields["hexId"].ToString();
-                                string zouzouName = added.Fields["nickname"].ToString();
-
-                                zouzouList.Add(new Zouzou(id, jamId, zouzouColor, zouzouName));
-                            }
-                        }
-                        if (myJamId.Length > 0)
-                        {
-                            this.Bind(_messages, "jam", "jam", myJamId);
-                            this.Bind(_messages, "jam-tracks", "jam-tracks", myJamId);
-                        }
-                        break;
-                    case "removed":
-                        var removed = JsonConvert.DeserializeObject<AddedMessage>(data);
-                        var removedBindings = _bindings[removed.Collection];
-
-                        foreach (var binding in removedBindings)
-                        {
-                            if (removed.Collection == "jam-tracks")
-                            {
-                                string id = removed.Id;
-                                jamTracksList.Remove(id);                                
-                            }
-                        }
-                        break;
-                }
-            }
-
-            public void Bind<T>(List<T> list, string collectionName, string subscribeTo, params string[] args)
-                where T : new()
-            {
-                if (!_bindings.ContainsKey(collectionName))
-                    _bindings.Add(collectionName, new List<IBinding<object>>());
-
-                _bindings[collectionName].Add(new Binding<object>(list));
-
-                Client.Subscribe(subscribeTo, args);
-            }
-
-            private interface IBinding<T>
-                where T : new()
-            {
-                T Target { get; }
-            }
-
-            private class Binding<T> : IBinding<T>
-                where T : new()
-            {
-                public T Target { get; private set; }
-
-                public Binding(T target)
-                {
-                    Target = target;
-                }
-
-                public string ToString()
-                {
-                    return Target.ToString();
-                }
-            }
-        }
-
-        /// <summary>
-        /// Interaction logic for SurfaceWindow1.xaml
-        /// </summary>
-
-        Logger info = new Logger("Surface.log");
-
-        private static List<Message> _messages = new List<Message>();
-
-        /// <summary>
-        /// Default constructor.
-        /// </summary>
-        public SurfaceWindow1()
-        {
-            InitializeComponent();
-
-            // Initialize tag definitions
-            InitializeDefinitions();
-
-            // Add handlers for window availability events
-            AddWindowAvailabilityHandlers();
-
-            this.manager = new SoundManager();
-
-            jamList = new JamData();
-            jamList.PropertyChanged += new PropertyChangedEventHandler(jamChangedHandler);
-            zouzouList = new ZouzouData();
-            zouzouList.PropertyChanged += new PropertyChangedEventHandler(zouzouChangedHandler);
-            jamTracksList = new jamTracksData();
-            jamTracksList.PropertyChanged += new PropertyChangedEventHandler(jamTracksChangedHandler);
-            samplesMap = new SampleData();
-            samplesMap.PropertyChanged += new PropertyChangedEventHandler(samplesChangedHandler);
-
-            var subscriber = new MeteorSubscriber(ref samplesMap,ref jamTracksList,ref jamList,ref zouzouList);
-            var client = new DDPClient(subscriber);
-
-            // TODO; hack
-            subscriber.Client = client;
-
-            client.Connect("superchill.meteor.com");
-
-            // ..., nom de la collection, nom de la subscription
-            subscriber.Bind(_messages, "samples", "samples");
-            //subscriber.Bind(_messages, "jam", "jam", "Zx4duhaPxeL9WRf7u");
-            subscriber.Bind(_messages, "jam", "jamList");
-            //subscriber.Bind(_messages, "jam", "jam-tracks", "Zx4duhaPxeL9WRf7u");
-            subscriber.Bind(_messages, "zouzous", "zouzouList");
-        }
-
+                
         private void InitializeDefinitions()
         {
             for (byte k = 1; k <= 5; k++)

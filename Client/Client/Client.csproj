@@ -88,6 +88,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="MeteorSubscriber.cs" />
     <Compile Include="TagVisualization1.xaml.cs">
       <DependentUpon>TagVisualization1.xaml</DependentUpon>
     </Compile>
