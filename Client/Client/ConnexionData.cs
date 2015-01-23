@@ -70,6 +70,24 @@ namespace MySurfaceApplication
                 return false;
             }
 
+            public KeyValuePair<string, Sample> findSample(string path)
+            {
+                foreach (var keyValue in this)
+                {
+                    foreach (var sample in keyValue.Key)
+                    {
+                        Console.WriteLine(sample+"  "+path);
+                        /*if (sample.Path == path)
+                        {
+                            Console.WriteLine("ooooooooooooo");
+                            return new KeyValuePair<string, Sample>(keyValue.Key, sample);
+                        }*/
+                    }
+                }
+                Console.WriteLine("nnnnnnnnnnnnnnnnnnnnn");
+                return new KeyValuePair<string, Sample>("null", null);
+            }
+
             public new void Clear()
             {
                 base.Clear();

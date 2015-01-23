@@ -25,7 +25,7 @@ namespace MySurfaceApplication
     public partial class SurfaceWindow1 : SurfaceWindow
     {
 
-        ConnexionData samplesMap;
+        SampleData samplesMap;
         jamTracksData jamTracksList;
         JamData jamList;
         ZouzouData zouzouList;
@@ -205,8 +205,7 @@ namespace MySurfaceApplication
         public class MeteorSubscriber : IDataSubscriber
         {
             //
-            List<Sample> sampleList;
-            ConnexionData samplesMap;
+            SampleData samplesList;
             jamTracksData jamTracksList;
             JamData jamList;
             ZouzouData zouzouList;
@@ -221,9 +220,9 @@ namespace MySurfaceApplication
 
             private readonly Dictionary<string, List<IBinding<object>>> _bindings = new Dictionary<string, List<IBinding<object>>>();
 
-            public MeteorSubscriber(ref ConnexionData samplesMap,ref jamTracksData jamTracksList, ref JamData jamList, ref ZouzouData zouzouList)
+            public MeteorSubscriber(ref SampleData samplesList,ref jamTracksData jamTracksList, ref JamData jamList, ref ZouzouData zouzouList)
             {
-                this.samplesMap = samplesMap;
+                this.samplesList = samplesList;
                 this.jamTracksList = jamTracksList;
                 this.jamList = jamList;
                 this.zouzouList = zouzouList;                                
@@ -257,11 +256,10 @@ namespace MySurfaceApplication
                                 {
                                     var childsK = childs[k].childs;
                                     string instrumentName = childs[k].name.ToString();
-                                    sampleList = new List<Sample>();
                                     for (int i = 0; i < childsK.Count(); i++)
                                     {
                                         var childsI = childs[k].childs.ElementAt(i);
-                                        sampleList.Add(new Sample(childsI.Values.ElementAt(0).ToString(), childsI.Values.ElementAt(1).ToString()));
+                                        samplesList.Add(new Sample(childsI.Values.ElementAt(0).ToString(), childsI.Values.ElementAt(1).ToString(),instrumentName));
                                         for (int j = 0; j < childsI.Count; j++)
                                         {
                                             var key = childs[k].childs.ElementAt(i).ElementAt(j).Key.ToString();
@@ -276,7 +274,6 @@ namespace MySurfaceApplication
                                             }
                                         }
                                     }
-                                    samplesMap.Add(instrumentName, sampleList);
                                 }
                             }
                             else if (added.Collection == "jam")
@@ -390,7 +387,7 @@ namespace MySurfaceApplication
             zouzouList.PropertyChanged += new PropertyChangedEventHandler(zouzouChangedHandler);
             jamTracksList = new jamTracksData();
             jamTracksList.PropertyChanged += new PropertyChangedEventHandler(jamTracksChangedHandler);
-            samplesMap = new ConnexionData();
+            samplesMap = new SampleData();
             samplesMap.PropertyChanged += new PropertyChangedEventHandler(samplesChangedHandler);
 
             var subscriber = new MeteorSubscriber(ref samplesMap,ref jamTracksList,ref jamList,ref zouzouList);
