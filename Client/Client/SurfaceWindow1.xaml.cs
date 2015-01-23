@@ -143,7 +143,9 @@ namespace MySurfaceApplication
                         //item.PreviewTouchUp += new EventHandler<TouchEventArgs>(handle_TouchUp);
                         //item.PreviewMouseUp += new MouseButtonEventHandler(handle_MouseUp);
                         TouchExtensions.AddPreviewHoldGestureHandler(item, new EventHandler<TouchEventArgs>(handle_HoldGesture));
+                        TouchExtensions.AddHoldGestureHandler(item, new EventHandler<TouchEventArgs>(handle_HoldGesture));
                         TouchExtensions.AddTapGestureHandler(item, new EventHandler<TouchEventArgs>(handle_TapGesture));
+                        item.PreviewMouseUp += new MouseButtonEventHandler(handle_MouseUp);
                         item.Content = border;
                         item.Background = new SolidColorBrush(Colors.Transparent);
                         item.Opacity = 0.5;
@@ -167,9 +169,11 @@ namespace MySurfaceApplication
                     })
                 );
             }
+
             private void handle_HoldGesture(object sender, TouchEventArgs e)
             {
                 // Do nothing
+                e.Handled = true;
             }
 
             private void handle_TapGesture(object sender, TouchEventArgs e)
@@ -192,7 +196,6 @@ namespace MySurfaceApplication
                 ScatterViewItem item = sender as ScatterViewItem;
                 string trackId = item.Name.Substring(1, item.Name.Length-1);
                 manager.toggleLoop(trackId);
-
                 //string pos = item.ActualCenter.ToString();
                 //Console.WriteLine(pos);
 
