@@ -1,5 +1,6 @@
 
 Session.setDefault('trackFilters', {});
+Session.setDefault('tracksToGroup', {});
 
 Template.JamTablet.helpers({
     tracks: function () {
@@ -19,10 +20,52 @@ Template.JamTablet.helpers({
             .replace(/[0-9]*/g, '')
             .trim()
             .replace(/(\/.*\/)*/g, '');
+    },
+    verticalSectionHeight: function(){
+        return $(window).height()-150+'px';
+    },
+    checkedTrack: function(){
+        var tracks = Session.get('tracksToGroup');
+        return tracks[this._id] ? "checkedTrack" : "";
     }
 });
 
-Template.jam.events({
+Template.JamTablet.events({
+    'click .trackItem': function(e, tmpl){
+        var trs = Session.get('tracksToGroup');
+        if(trs[this._id]){
+            trs[this._id] = undefined;
+            if( Object.keys(trs).length === 1 ){
+                $('.createGroupButton').velocity('stop').velocity({
+                    properties:{
+                        opacity: [0, 1]
+                    },options:{
+                        duration: 200,
+                        complete: function(){
+
+                                $('.createGroupButton').hide();
+
+                        }
+                    }
+                })
+            }
+        }else{
+            if( Object.keys(trs).length === 0 ){
+                $('.createGroupButton').show();
+                $('.createGroupButton').css('bottom', ($('.leftPanel').height()-50)/2 +'px');
+                $('.createGroupButton').css('left', $('.leftPanel').width()-35 +'px');
+                $('.createGroupButton').velocity('stop').velocity({
+                    properties:{
+                        opacity: [1, 0]
+                    },options:{
+                        duration: 200
+                    }
+                })
+            }
+            trs[this._id] = true;
+        }
+        Session.set('tracksToGroup', trs);
+    },
     'click .zouzouItem': function(e, tmpl){
         var id = $(e.currentTarget).attr('data-id');
         var filters = Session.get('trackFilters');
@@ -52,3 +95,7 @@ Template.jam.events({
         Session.set('trackFilters', filters);
     }
 });
+
+Template.JamTablet.created = function(){
+
+};

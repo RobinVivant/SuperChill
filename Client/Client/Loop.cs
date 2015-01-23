@@ -32,6 +32,7 @@ namespace CSharp._01.HelloWorld
         {
             if (sound != null)
             {
+                sound.Stop();
                 sound.Dispose();
             }
         }

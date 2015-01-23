@@ -81,6 +81,8 @@
   #samples{
     padding-left: 10px;
     padding-right: 10px;
+    margin-top: 25px;
+    overflow: hidden;
     top:100px;
     right:0;
     left:0;
@@ -98,13 +100,12 @@
     }
 
     .groupHeader{
-      margin-top: 10px;
+      margin-bottom: 10px;
     }
 
     .sample{
       color: black;
       background-color: #d2d2d2
-
     }
 
     .groupHeaderSwitch{
@@ -144,8 +145,11 @@
       margin-top:10px;
       cursor: pointer;
       display:flex;
+      display:-webkit-flex;
       flex-direction: row;
       flex-wrap: nowrap;
+      -webkit-flex-direction: row;
+      -webkit-flex-wrap: nowrap;
       width:100%;
 
       h3{
@@ -164,6 +168,7 @@
 
       .blank {
         flex-basis: 10px;
+        -webkit-flex-basis: 10px;
         background-color: #d2d2d2 ;
       }
 

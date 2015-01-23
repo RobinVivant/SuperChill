@@ -1,19 +1,24 @@
 
 <template name="JamTablet">
     <div id="JamTablet">
-        <div class="leftPanel">
-          {{#each zouzous}}
-              <div class="zouzouItem" data-id="{{hexId}}" style="background-color: #{{hexId}};">{{nickname}}</div>
-          {{/each}}
-        </div>
-        <div class="rightPanel">
+        <div class="leftPanel" style="height: {{verticalSectionHeight}}">
           {{#each tracks}}
             {{#if displayTrack this}}
                 <div class="trackItem" style="background-color: #{{zouzou}}">
+                    <div class="checkBoxTrack {{checkedTrack}}"></div>
                     <div class="trackName">{{trackName path}}</div>
                 </div>
             {{/if}}
           {{/each}}
+            <div class="createGroupButton">
+              <i class="fa fa-plus fa-5x"></i>
+            </div>
+        </div>
+        <div class="middlePanel" style="height: {{verticalSectionHeight}}">
+
+        </div>
+        <div class="rightPanel" style="height: {{verticalSectionHeight}}">
+
         </div>
     </div>
 </template>

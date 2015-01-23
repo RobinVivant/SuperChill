@@ -10,7 +10,7 @@ var playTarget;
 var isSampleSelected = function(path){
   return  JamTracks.findOne({
     path: path,
-    zouzou: localStorage.getItem("zouzouId")
+    zouzou: Session.get('zouzouId')
   });
 };
 
@@ -25,7 +25,7 @@ var playSound = function(elem, context){
     createjs.Sound.play(id);
     $(elem).velocity('stop');
     Meteor.defer(function(){
-      $(elem).css('background-color','#'+localStorage.getItem('zouzouId'));
+      $(elem).css('background-color','#'+Session.get('zouzouId'));
     });
   }
 
@@ -49,7 +49,7 @@ var playSound = function(elem, context){
 var stopSound = function(elem){
   $(elem).velocity('stop');
   Meteor.defer(function(){
-    $(elem).css('background-color','#'+localStorage.getItem('zouzouId'));
+    $(elem).css('background-color','#'+Session.get('zouzouId'));
   });
   loadedSounds = [];
   createjs.Sound.removeAllSounds();
@@ -171,7 +171,7 @@ function onDragEndJamHeader() {
       properties:{
         top: $(window).height()-100+'px'
       }, options:{
-        duration:'300',
+        duration:'150',
         queue: false
       }
     });
@@ -179,7 +179,7 @@ function onDragEndJamHeader() {
       properties:{
         top: 0
       }, options:{
-        duration:'300',
+        duration:'150',
         complete: function(){
           Session.set('headerShown',true);
           rollinBackHeader = false;
@@ -201,7 +201,7 @@ Template.jam.events({
       });
     }else{
       JamTracks.insert({
-        zouzou: localStorage.getItem("zouzouId"),
+        zouzou: Session.get('zouzouId'),
         jamId: Session.get('jamId'),
         path : this.path
       });
@@ -228,11 +228,11 @@ Template.jam.events({
       elem.show();
       elem.css('height', 'auto');
 
-      $(e.currentTarget).parent().parent().css('height', elem.parent().height()+10+'px');
+      $(e.currentTarget).parent().parent().css('height', elem.parent().height()+'px');
 
       $(e.currentTarget).parent().velocity('stop').velocity({
         properties: {
-          top: [0, $(e.currentTarget).parent().offset().top-110+'px']
+          top: [0, $(e.currentTarget).parent().offset().top-125+'px']
         }, options: {
           duration: 100
         }
@@ -321,9 +321,6 @@ Template.jam.events({
     }
     Session.set('nickname', nick);
 
-    if( nick.length == 0)
-      nick = "Anonymous";
-
     var zouzou = Zouzous.findOne({hexId:Session.get('zouzouId'), jamId:Session.get('jamId')});
 
     if(!zouzou)
@@ -354,11 +351,21 @@ Template.jam.created = function(){
 
   Session.set("jamHeaderTop", $(window).height()-100);
 
+  var zId = JSON.parse(localStorage.getItem("zouzouId")) ||  {};
+  localStorage.setItem("zouzouId", JSON.stringify(zId));
+  Session.set("zouzouId",zId[Session.get('jamId')] || '4b4b4b');
+
+  var id = localStorage.getItem("sessionId");
+  if( !id){
+    id = Random.hexString(12);
+    localStorage.setItem("sessionId", id);
+  }
+  Session.set("sessionId", id);
+
 
   Tracker.autorun(function () {
-    Session.set('hexColorBg','#'+('000000' + (('0xffffff' ^ ('0x'+localStorage.getItem('zouzouId'))).toString(16))).slice(-6));
+    Session.set('hexColorBg','#'+('000000' + (('0xffffff' ^ ('0x'+Session.get('zouzouId'))).toString(16))).slice(-6));
   });
-
 
   Tracker.autorun(function () {
     window.history.replaceState(Session.get('jamName'), Session.get('jamName'), '/'+Session.get('jamId'));
@@ -372,23 +379,66 @@ Template.jam.created = function(){
       },
       onReady: function(doc){
         Session.set("jamName", Jam.findOne({_id: Session.get('jamId')}).name);
-        var zouzou = Zouzous.findOne({jamId: Session.get('jamId'), hexId: Session.get("zouzouId")});
-        if (!zouzou) {
-          var nick = Session.get("nickname") || "Anonymous";
+
+        var z = Zouzous.findOne({jamId: Session.get('jamId'), sessionId: Session.get("sessionId")});
+        if( !z ){
           Zouzous.insert({
             jamId: Session.get("jamId"),
-            hexId: Session.get("zouzouId"),
-            nickname: nick
+            nickname: Session.get("nickname"),
+            sessionId: Session.get("sessionId")
+          }, function(error, id){
+            var doc = Zouzous.findOne({_id: id});
+            var zId = JSON.parse(localStorage.getItem("zouzouId"));
+            zId[Session.get('jamId')] = doc.hexId;
+            localStorage.setItem("zouzouId", JSON.stringify(zId));
+            Session.set("zouzouId",doc.hexId);
+            Session.set("nickname", doc.nickname);
           });
-          Session.set("nickname", nick);
         }else{
-          Session.set("nickname", zouzou.nickname);
+          Session.set("nickname", z.nickname);
+          Session.set("zouzouId",z.hexId);
         }
-
       }
     });
   });
 
+
+  Tracker.autorun(function () {
+    if(Session.get('jamId') && (!Session.get('nickname') || Session.get('nickname').length == 0)){
+      Meteor.defer(function(){
+        $('#nickname').velocity('stop').velocity({
+          properties:{
+            opacity: [0, 1]
+          },options:{
+            loop: true
+          }
+        });
+      });
+    }else{
+      $('#nickname').velocity('stop').velocity({
+        properties:{
+          opacity: 1
+        },options:{
+        }
+      });
+    }
+  });
+
+  Tracker.autorun(function () {
+    if(!Session.get('jamId')){
+      Meteor.defer(function(){
+        $('.jamHeader').velocity('stop').velocity({
+          properties:{
+            color: ['#000', '#fff'],
+            backgroundColor: ['#fff', '#4b4b4b']
+          },options:{
+            loop: true
+          }
+        });
+      });
+    }else{
+      $('.jamHeader').velocity('stop').css('color', 'white');
+    }
+  });
+
 };
-
-
