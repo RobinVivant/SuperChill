@@ -34,7 +34,7 @@ namespace MySurfaceApplication
             {
                 bool result = base.Remove(jamTracks);
                 this.OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, jamTracks, base.IndexOf(jamTracks)));
-                this.OnPropertyChanged(new PropertyChangedEventArgs("Removed"));
+                this.OnPropertyChanged(jamTracks, new PropertyChangedEventArgs("Removed"));
                 return result;
             }
             return false;
