@@ -60,6 +60,18 @@ namespace MySurfaceApplication
             return null;
         }
 
+        public Jam findByName(string name)
+        {
+            foreach (var jam in this)
+            {
+                if (jam.Name == name)
+                {
+                    return jam;
+                }
+            }
+            return null;
+        }
+
         public new void Clear()
         {
             base.Clear();
