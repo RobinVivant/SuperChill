@@ -27,6 +27,12 @@ namespace MySurfaceApplication
 
         ConnexionData samplesMap;
         jamTracksData jamTracksList;
+        JamData jamList;
+        ZouzouData zouzouList;
+        private SoundManager manager;
+        // Name d'un ScatterViewItem = beginningLetter + trackId 
+        //car Name doit obligatoirement commencer par une lettre
+        string beginningLetter = "k";
 
         public class Message
         {
@@ -69,19 +75,145 @@ namespace MySurfaceApplication
             public Dictionary<string, object> Fields { get; set; }
         }
 
+        // Dessine un cercle sur la table surface correspondant à une track (avec la couleur du zouzou et le nom de la track)
+        public void drawCircle(string trackId, string trackPath, string zouzouColor)
+        {
+            string trackName;
+            char[] delimiterChars = { '/', '.' };
+            string[] words = trackPath.Split(delimiterChars);
+            trackName = words[words.Length - 2];
+
+            //Console.WriteLine(trackName);
+            //Console.WriteLine(zouzouColor);
+
+            myScatterView.Dispatcher.Invoke(DispatcherPriority.Normal,
+                new Action(delegate()
+                {
+                    Border border = new Border();
+                    var converter = new System.Windows.Media.BrushConverter();
+                    var color = (Brush)converter.ConvertFromString("#" + zouzouColor);
+                    border.BorderBrush = color;
+                    border.Background = color;
+                    //border.BorderBrush = Brushes.White;
+                    //border.BorderThickness = new Thickness(5);
+                    border.CornerRadius = new CornerRadius(130);
+                    border.Height = 130;
+                    border.Width = 130;
+
+                    TextBlock content = new TextBlock();
+                    content.Text = trackName;
+                    content.Foreground = new SolidColorBrush(Colors.White);
+                    content.FontWeight = FontWeights.Bold;
+                    content.FontSize = 14;
+                    content.Height = 40;
+                    content.Width = 100;
+                    content.HorizontalAlignment = HorizontalAlignment.Center;
+                    content.VerticalAlignment = VerticalAlignment.Center;
+                    content.TextAlignment = TextAlignment.Center;
+                    content.TextWrapping = TextWrapping.Wrap;
+
+                    border.Child = content;
+                    ScatterViewItem item = new ScatterViewItem();
+                    item.Name = beginningLetter + trackId;
+                    myScatterView.RegisterName(item.Name, item);
+                    //item.PreviewTouchDown += new EventHandler<TouchEventArgs>(handle_TouchDown);
+                    //item.PreviewMouseDown += new MouseButtonEventHandler(handle_MouseDown);
+                    //item.PreviewTouchUp += new EventHandler<TouchEventArgs>(handle_TouchUp);
+                    //item.PreviewMouseUp += new MouseButtonEventHandler(handle_MouseUp);
+                    TouchExtensions.AddPreviewHoldGestureHandler(item, new EventHandler<TouchEventArgs>(handle_HoldGesture));
+                    TouchExtensions.AddHoldGestureHandler(item, new EventHandler<TouchEventArgs>(handle_HoldGesture));
+                    TouchExtensions.AddTapGestureHandler(item, new EventHandler<TouchEventArgs>(handle_TapGesture));
+                    item.PreviewMouseUp += new MouseButtonEventHandler(handle_MouseUp);
+                    item.Content = border;
+                    item.Background = new SolidColorBrush(Colors.Transparent);
+                    item.Opacity = 0.5;
+                    myScatterView.Items.Add(item);
+                })
+            );
+        }
+
+        // Supprime le cercle sur la table surface, correspondant à une track 
+        public void removeCircle(string trackId)
+        {
+            myScatterView.Dispatcher.Invoke(DispatcherPriority.Normal,
+                new Action(delegate()
+                {
+                    object objectScatterViewItem = myScatterView.FindName(beginningLetter + trackId);
+                    if (objectScatterViewItem is ScatterViewItem)
+                    {
+                        ScatterViewItem wantedChild = objectScatterViewItem as ScatterViewItem;
+                        myScatterView.Items.Remove(wantedChild);
+                    }
+                })
+            );
+        }
+
+        private void handle_HoldGesture(object sender, TouchEventArgs e)
+        {
+            // Do nothing
+            e.Handled = true;
+        }
+
+        private void handle_TapGesture(object sender, TouchEventArgs e)
+        {
+            ScatterViewItem item = sender as ScatterViewItem;
+            string trackId = item.Name.Substring(1, item.Name.Length - 1);
+            manager.toggleLoop(trackId);
+            if (item.Opacity == 0.5)
+            {
+                item.Opacity = 1;
+            }
+            else
+            {
+                item.Opacity = 0.5;
+            }
+        }
+
+        private void handle_MouseUp(object sender, MouseButtonEventArgs e)
+        {
+            ScatterViewItem item = sender as ScatterViewItem;
+            string trackId = item.Name.Substring(1, item.Name.Length - 1);
+            manager.toggleLoop(trackId);
+            //string pos = item.ActualCenter.ToString();
+            //Console.WriteLine(pos);
+
+            if (item.Opacity == 0.5)
+            {
+                item.Opacity = 1;
+            }
+            else
+            {
+                item.Opacity = 0.5;
+            }
+        }
+
+        private void handle_TouchUp(object sender, TouchEventArgs e)
+        {
+            ScatterViewItem item = sender as ScatterViewItem;
+            string trackId = item.Name.Substring(1, item.Name.Length - 1);
+            manager.toggleLoop(trackId);
+            if (item.Opacity == 0.5)
+            {
+                item.Opacity = 1;
+            }
+            else
+            {
+                item.Opacity = 0.5;
+            }
+        }
+
         public class MeteorSubscriber : IDataSubscriber
         {
             //
             List<Sample> sampleList;
             ConnexionData samplesMap;
             jamTracksData jamTracksList;
+            JamData jamList;
+            ZouzouData zouzouList;
 
-            ScatterView myScatterView;
-            // Name d'un ScatterViewItem = beginningLetter + trackId 
-            //car Name doit obligatoirement commencer par une lettre
-            string beginningLetter = "k";
+            
             Logger info = new Logger("MeteorSubscriber.log");
-            private SoundManager manager;
+            
 
             private static List<Message> _messages = new List<Message>();
 
@@ -89,139 +221,15 @@ namespace MySurfaceApplication
 
             private readonly Dictionary<string, List<IBinding<object>>> _bindings = new Dictionary<string, List<IBinding<object>>>();
 
-            public MeteorSubscriber(ref ScatterView scatterView,ref ConnexionData samplesMap,ref jamTracksData jamTracksList)
+            public MeteorSubscriber(ref ConnexionData samplesMap,ref jamTracksData jamTracksList, ref JamData jamList, ref ZouzouData zouzouList)
             {
                 this.samplesMap = samplesMap;
                 this.jamTracksList = jamTracksList;
-                this.myScatterView = scatterView;
-                this.manager = new SoundManager();
+                this.jamList = jamList;
+                this.zouzouList = zouzouList;                                
             }
 
-            // Dessine un cercle sur la table surface correspondant à une track (avec la couleur du zouzou et le nom de la track)
-            public void drawCircle(string trackId, string trackPath, string zouzouColor)
-            {
-                string trackName;
-                char[] delimiterChars = { '/', '.' };
-                string[] words = trackPath.Split(delimiterChars);
-                trackName = words[words.Length - 2];
-
-                //Console.WriteLine(trackName);
-                //Console.WriteLine(zouzouColor);
-
-                myScatterView.Dispatcher.Invoke(DispatcherPriority.Normal,
-                    new Action(delegate()
-                    {
-                        Border border = new Border();
-                        var converter = new System.Windows.Media.BrushConverter();
-                        var color = (Brush)converter.ConvertFromString("#" + zouzouColor);
-                        border.BorderBrush = color;
-                        border.Background = color;
-                        //border.BorderBrush = Brushes.White;
-                        //border.BorderThickness = new Thickness(5);
-                        border.CornerRadius = new CornerRadius(130);
-                        border.Height = 130;
-                        border.Width = 130;
-
-                        TextBlock content = new TextBlock();
-                        content.Text = trackName;
-                        content.Foreground = new SolidColorBrush(Colors.White);
-                        content.FontWeight = FontWeights.Bold;
-                        content.FontSize = 14;
-                        content.Height = 40;
-                        content.Width = 100;
-                        content.HorizontalAlignment = HorizontalAlignment.Center;
-                        content.VerticalAlignment = VerticalAlignment.Center;
-                        content.TextAlignment = TextAlignment.Center;
-                        content.TextWrapping = TextWrapping.Wrap;
-
-                        border.Child = content;
-                        ScatterViewItem item = new ScatterViewItem();
-                        item.Name = beginningLetter + trackId;
-                        myScatterView.RegisterName(item.Name, item);
-                        //item.PreviewTouchDown += new EventHandler<TouchEventArgs>(handle_TouchDown);
-                        //item.PreviewMouseDown += new MouseButtonEventHandler(handle_MouseDown);
-                        //item.PreviewTouchUp += new EventHandler<TouchEventArgs>(handle_TouchUp);
-                        //item.PreviewMouseUp += new MouseButtonEventHandler(handle_MouseUp);
-                        TouchExtensions.AddPreviewHoldGestureHandler(item, new EventHandler<TouchEventArgs>(handle_HoldGesture));
-                        TouchExtensions.AddHoldGestureHandler(item, new EventHandler<TouchEventArgs>(handle_HoldGesture));
-                        TouchExtensions.AddTapGestureHandler(item, new EventHandler<TouchEventArgs>(handle_TapGesture));
-                        item.PreviewMouseUp += new MouseButtonEventHandler(handle_MouseUp);
-                        item.Content = border;
-                        item.Background = new SolidColorBrush(Colors.Transparent);
-                        item.Opacity = 0.5;
-                        myScatterView.Items.Add(item);
-                    })
-                );
-            }
-
-            // Supprime le cercle sur la table surface, correspondant à une track 
-            public void removeCircle(string trackId)
-            {
-                myScatterView.Dispatcher.Invoke(DispatcherPriority.Normal,
-                    new Action(delegate()
-                    {
-                        object objectScatterViewItem = myScatterView.FindName(beginningLetter + trackId);
-                        if (objectScatterViewItem is ScatterViewItem)
-                        {
-                            ScatterViewItem wantedChild = objectScatterViewItem as ScatterViewItem;
-                            myScatterView.Items.Remove(wantedChild);
-                        }
-                    })
-                );
-            }
-
-            private void handle_HoldGesture(object sender, TouchEventArgs e)
-            {
-                // Do nothing
-                e.Handled = true;
-            }
-
-            private void handle_TapGesture(object sender, TouchEventArgs e)
-            {
-                ScatterViewItem item = sender as ScatterViewItem;
-                string trackId = item.Name.Substring(1, item.Name.Length - 1);
-                manager.toggleLoop(trackId);
-                if (item.Opacity == 0.5)
-                {
-                    item.Opacity = 1;
-                }
-                else
-                {
-                    item.Opacity = 0.5;
-                }
-            }
-
-            private void handle_MouseUp(object sender, MouseButtonEventArgs e)
-            {
-                ScatterViewItem item = sender as ScatterViewItem;
-                string trackId = item.Name.Substring(1, item.Name.Length-1);
-                manager.toggleLoop(trackId);
-                //string pos = item.ActualCenter.ToString();
-                //Console.WriteLine(pos);
-
-                if (item.Opacity == 0.5) 
-                {
-                    item.Opacity = 1;
-                } else 
-                {
-                    item.Opacity = 0.5;
-                }
-            }
-
-            private void handle_TouchUp(object sender, TouchEventArgs e)
-            {
-                ScatterViewItem item = sender as ScatterViewItem;
-                string trackId = item.Name.Substring(1, item.Name.Length - 1);
-                manager.toggleLoop(trackId);
-                if (item.Opacity == 0.5)
-                {
-                    item.Opacity = 1;
-                }
-                else
-                {
-                    item.Opacity = 0.5;
-                }
-            }
+            
 
             public void DataReceived(string data)
             {
@@ -275,6 +283,7 @@ namespace MySurfaceApplication
                             {
                                 string id = added.Id;
                                 string jamName = added.Fields["name"].ToString();
+                                jamList.Add(new Jam(id, jamName));
                                 if (jamName == "Jam 2")
                                 {
                                     myJamId = id;
@@ -288,8 +297,7 @@ namespace MySurfaceApplication
                                 string path = added.Fields["path"].ToString();
 
                                 jamTracksList.Add(new JamTracks(id, jamId, zouzouColor, path));
-                                drawCircle(id, path, zouzouColor);
-                                manager.addLoop(id, "../.." + path, false);
+                                
                             }
                             else if (added.Collection == "zouzous")
                             {
@@ -297,6 +305,7 @@ namespace MySurfaceApplication
                                 string jamId = added.Fields["jamId"].ToString();
                                 string zouzouColor = added.Fields["hexId"].ToString();
                                 string zouzouName = added.Fields["nickname"].ToString();
+                                zouzouList.Add(new Zouzou(id, jamId, zouzouColor, zouzouName));
                             }
                         }
                         if (myJamId.Length > 0)
@@ -314,8 +323,7 @@ namespace MySurfaceApplication
                             if (removed.Collection == "jam-tracks")
                             {
                                 string id = removed.Id;
-                                removeCircle(id);
-                                manager.removeLoop(id);
+                                jamTracksList.Remove(id);                                
                             }
                         }
                         break;
@@ -374,12 +382,18 @@ namespace MySurfaceApplication
             // Add handlers for window availability events
             AddWindowAvailabilityHandlers();
 
+            this.manager = new SoundManager();
+
+            jamList = new JamData();
+            jamList.PropertyChanged += new PropertyChangedEventHandler(jamChangedHandler);
+            zouzouList = new ZouzouData();
+            zouzouList.PropertyChanged += new PropertyChangedEventHandler(zouzouChangedHandler);
             jamTracksList = new jamTracksData();
             jamTracksList.PropertyChanged += new PropertyChangedEventHandler(jamTracksChangedHandler);
             samplesMap = new ConnexionData();
             samplesMap.PropertyChanged += new PropertyChangedEventHandler(samplesChangedHandler);
 
-            var subscriber = new MeteorSubscriber(ref myScatterView,ref samplesMap,ref jamTracksList);
+            var subscriber = new MeteorSubscriber(ref samplesMap,ref jamTracksList,ref jamList,ref zouzouList);
             var client = new DDPClient(subscriber);
 
             // TODO; hack
@@ -405,13 +419,32 @@ namespace MySurfaceApplication
 
         protected void jamTracksChangedHandler(Object sender, PropertyChangedEventArgs e)
         {
+            JamTracks jamTracks = sender as JamTracks;
             if (e.PropertyName == "Added")
             {
-                for (int i = 0; i < jamTracksList.Count; i++)
-                {
-                    JamTracks jamI = (JamTracks)jamTracksList.ElementAt(i);
-                    info.log(jamI.Path);
-                }
+                drawCircle(jamTracks.Id, jamTracks.Path, jamTracks.ZouzouColor);
+                manager.addLoop(jamTracks.Id, "../.." + jamTracks.Path, false);
+            }
+            else if (e.PropertyName == "Removed")
+            {
+                removeCircle(jamTracks.Id);
+                manager.removeLoop(jamTracks.Id);
+            }
+        }
+
+        protected void jamChangedHandler(Object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == "Added")
+            {
+                
+            }
+        }
+
+        protected void zouzouChangedHandler(Object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == "Added")
+            {
+
             }
         }
         /// <summary>

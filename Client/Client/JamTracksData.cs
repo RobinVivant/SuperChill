@@ -23,20 +23,32 @@ namespace MySurfaceApplication
             {
                 base.Add(jamTracks);
                 this.OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, jamTracks, base.IndexOf(jamTracks)));
-                this.OnPropertyChanged(new PropertyChangedEventArgs("Added"));
+                this.OnPropertyChanged(jamTracks, new PropertyChangedEventArgs("Added"));
             }
         }
 
-        public new bool Remove(JamTracks jamTracks)
+        public new bool Remove(string id)
         {
-                if (base.Contains(jamTracks))
-                {
-                    bool result = base.Remove(jamTracks);
-                    this.OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, jamTracks, base.IndexOf(jamTracks)));
-                    this.OnPropertyChanged(new PropertyChangedEventArgs("Removed"));
-                    return result;
-                }
+            JamTracks jamTracks = this.findById(id);
+            if (jamTracks != null || base.Contains(jamTracks))
+            {
+                bool result = base.Remove(jamTracks);
+                this.OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, jamTracks, base.IndexOf(jamTracks)));
+                this.OnPropertyChanged(new PropertyChangedEventArgs("Removed"));
+                return result;
+            }
             return false;
+        }
+
+        public JamTracks findById(string id)
+        {
+            foreach(var jamTrack in this){
+                if (jamTrack.Id == id)
+                {
+                    return jamTrack;
+                }
+            }
+            return null;
         }
 
         public new void Clear()
@@ -44,6 +56,14 @@ namespace MySurfaceApplication
             base.Clear();
             this.OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
             this.OnPropertyChanged(new PropertyChangedEventArgs("Cleared"));
+        }
+
+        private void OnPropertyChanged(PropertyChangedEventArgs e)
+        {
+            if (this.PropertyChanged != null)
+            {
+                this.PropertyChanged(this, e);
+            }
         }
 
         protected virtual void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
@@ -54,11 +74,11 @@ namespace MySurfaceApplication
             }
         }
 
-        protected virtual void OnPropertyChanged(PropertyChangedEventArgs e)
+        protected virtual void OnPropertyChanged(JamTracks jamTracks,PropertyChangedEventArgs e)
         {
             if (this.PropertyChanged != null)
             {
-                this.PropertyChanged(this, e);
+                this.PropertyChanged(jamTracks, e);
             }
         }
     }

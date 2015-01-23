@@ -21,7 +21,16 @@ namespace MySurfaceApplication
             this.path = path;
         }
 
-        public string Id { get { return this.Id; } set { ;} }
+        public string Id { 
+            get 
+            { 
+                return this.id; 
+            } 
+            set 
+            {
+
+            } 
+        }
         public string JamId { get { return this.jamId; } set { ;} }
         public string ZouzouColor { get { return this.zouzouColor; } set { ;} }
         public string Path { get { return this.path; } set { ;} }
