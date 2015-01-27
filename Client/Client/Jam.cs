@@ -28,5 +28,11 @@ namespace MySurfaceApplication
             get { return name;}
             set { ;}
         }
+
+
+        public override string ToString()
+        {
+            return name;
+        }
     }
 }

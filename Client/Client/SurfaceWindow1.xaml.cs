@@ -19,6 +19,7 @@ using Newtonsoft.Json;
 using Net.DDP.Client;
 using System.Windows.Threading;
 using System.ComponentModel;
+using System.Collections.ObjectModel;
 
 namespace MySurfaceApplication
 {
@@ -30,6 +31,8 @@ namespace MySurfaceApplication
         JamData jamList;
         ZouzouData zouzouList;
         private SoundManager manager;
+        ObservableCollection<Jam> jams = new ObservableCollection<Jam>();
+        MeteorSubscriber subscriber;
 
         // Name d'un ScatterViewItem = beginningLetter + trackId 
         //car Name doit obligatoirement commencer par une lettre
@@ -59,7 +62,7 @@ namespace MySurfaceApplication
             samplesMap = new SampleData();
             samplesMap.PropertyChanged += new PropertyChangedEventHandler(samplesChangedHandler);
 
-            var subscriber = new MeteorSubscriber(ref samplesMap, ref jamTracksList, ref jamList, ref zouzouList);
+            subscriber = new MeteorSubscriber(ref samplesMap, ref jamTracksList, ref jamList, ref zouzouList);
             var client = new DDPClient(subscriber);
 
             // TODO; hack
@@ -72,7 +75,7 @@ namespace MySurfaceApplication
             //subscriber.Bind(_messages, "jam", "jam", "Zx4duhaPxeL9WRf7u");
             subscriber.Bind(_messages, "jam", "jamList");
             //subscriber.Bind(_messages, "jam", "jam-tracks", "Zx4duhaPxeL9WRf7u");
-            subscriber.Bind(_messages, "zouzous", "zouzouList");
+            subscriber.Bind(_messages, "zouzous", "zouzouList");            
         }
 
         // Dessine un cercle sur la table surface correspondant à une track (avec la couleur du zouzou et le nom de la track)
@@ -88,6 +91,7 @@ namespace MySurfaceApplication
 
             myScatterView.Dispatcher.Invoke(DispatcherPriority.Normal,
                 new Action(delegate()
+
                 {
                     Border border = new Border();
                     var converter = new System.Windows.Media.BrushConverter();
@@ -252,7 +256,7 @@ namespace MySurfaceApplication
         {
             JamTracks jamTracks = sender as JamTracks;
             if (e.PropertyName == "Added")
-            {
+            {                
                 drawCircle(jamTracks.Id, jamTracks.Path, jamTracks.ZouzouColor);
                 manager.addLoop(jamTracks.Id, "../.." + jamTracks.Path, false);
             }
@@ -265,9 +269,14 @@ namespace MySurfaceApplication
 
         protected void jamChangedHandler(Object sender, PropertyChangedEventArgs e)
         {
+            Jam jam = sender as Jam;
             if (e.PropertyName == "Added")
             {
-                
+                App.Current.Dispatcher.Invoke((Action)delegate
+                {
+                    jams.Add(jam);
+                    drawJam(jam);
+                });
             }
         }
 
@@ -342,6 +351,75 @@ namespace MySurfaceApplication
         private void OnWindowUnavailable(object sender, EventArgs e)
         {
             //TODO: disable audio, animations here
+        }
+
+        ObservableCollection<Jam> JamsListBox
+        {
+            get { return jams; }
+        }
+
+        public void drawJam(Jam jam)
+        {
+
+            myScatterView.Dispatcher.Invoke(DispatcherPriority.Normal,
+                new Action(delegate()
+                {
+                    Border border = new Border();
+                    var converter = new System.Windows.Media.BrushConverter();
+                    border.BorderBrush = Brushes.AliceBlue;
+                    border.Background = Brushes.LightSkyBlue;
+                    //border.BorderBrush = Brushes.White;
+                    //border.BorderThickness = new Thickness(5);
+                    border.CornerRadius = new CornerRadius(130);
+                    border.Height = 200;
+                    border.Width = 200;
+
+                    TextBlock content = new TextBlock();
+                    content.Text = jam.Name;
+                    content.Foreground = new SolidColorBrush(Colors.White);
+                    content.FontWeight = FontWeights.Bold;
+                    content.FontSize = 30;
+                    content.Height = 40;
+                    content.Width = 100;
+                    content.HorizontalAlignment = HorizontalAlignment.Center;
+                    content.VerticalAlignment = VerticalAlignment.Center;
+                    content.TextAlignment = TextAlignment.Center;
+                    content.TextWrapping = TextWrapping.Wrap;
+
+                    border.Child = content;
+                    ScatterViewItem item = new ScatterViewItem();
+                    item.Name = beginningLetter + jam.Id;
+                    myScatterView.RegisterName(item.Name, item);
+                    //item.PreviewTouchDown += new EventHandler<TouchEventArgs>(handle_TouchDown);
+                    //item.PreviewTouchUp += new EventHandler<TouchEventArgs>(handle_TouchUp);
+                    TouchExtensions.AddTapGestureHandler(item, new EventHandler<TouchEventArgs>(handle_JamTapGesture));
+                    item.PreviewMouseUp += new MouseButtonEventHandler(handle_JamMouseUp);
+                    item.Content = border;
+                    item.Background = new SolidColorBrush(Colors.Transparent);
+                    item.Opacity = 0.85;
+                    item.MinHeight = 200;
+                    item.MinWidth = 200;
+                    myScatterView.Items.Add(item);
+                })
+            );
+        }
+
+        private void handle_JamTapGesture(object sender, TouchEventArgs e)
+        {
+            ScatterViewItem item = sender as ScatterViewItem;
+            string jamId = item.Name.Substring(1, item.Name.Length - 1);
+            myScatterView.Items.Clear();
+            subscriber.Bind(_messages, "jam", "jam", jamId);
+            subscriber.Bind(_messages, "jam-tracks", "jam-tracks", jamId);
+        }
+
+        private void handle_JamMouseUp(object sender, MouseButtonEventArgs e)
+        {
+            ScatterViewItem item = sender as ScatterViewItem;
+            string jamId = item.Name.Substring(1, item.Name.Length - 1);
+            myScatterView.Items.Clear();
+            subscriber.Bind(_messages, "jam", "jam", jamId);
+            subscriber.Bind(_messages, "jam-tracks", "jam-tracks", jamId);
         }
     }
 }

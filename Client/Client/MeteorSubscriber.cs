@@ -123,11 +123,7 @@ namespace MySurfaceApplication
                         {
                             string id = added.Id;
                             string jamName = added.Fields["name"].ToString();
-                            jamList.Add(new Jam(id, jamName));
-                            if (jamName == "Jam 2")
-                            {
-                                myJamId = id;
-                            }
+                            jamList.Add(new Jam(id, jamName));                            
                         }
                         else if (added.Collection == "jam-tracks")
                         {
