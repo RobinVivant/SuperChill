@@ -183,6 +183,7 @@ function onDragEndJamHeader() {
         complete: function(){
           Session.set('headerShown',true);
           rollinBackHeader = false;
+          Session.set("jamHeaderTop", $(window).height()-100); 
         }
       }
     });

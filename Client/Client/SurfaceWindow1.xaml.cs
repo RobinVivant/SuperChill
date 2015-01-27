@@ -21,6 +21,7 @@ using System.Windows.Threading;
 using System.ComponentModel;
 using System.Collections.ObjectModel;
 
+
 namespace MySurfaceApplication
 {
     public partial class SurfaceWindow1 : SurfaceWindow
@@ -33,6 +34,11 @@ namespace MySurfaceApplication
         private SoundManager manager;
         ObservableCollection<Jam> jams = new ObservableCollection<Jam>();
         MeteorSubscriber subscriber;
+
+        LeapListener LeapListener;
+        Leap.Controller LeapController;
+
+        Object thisLock = new Object();
 
         // Name d'un ScatterViewItem = beginningLetter + trackId 
         //car Name doit obligatoirement commencer par une lettre
@@ -52,6 +58,15 @@ namespace MySurfaceApplication
             AddWindowAvailabilityHandlers();
 
             this.manager = new SoundManager();
+
+            // Create a sample listener and controller
+            LeapListener = new LeapListener();
+            LeapController = new Leap.Controller();
+
+            LeapListener.OnHandOrientationChange += new LeapListener.onHandOrientationChange(handleLeapMotion);
+
+            // Have the sample listener receive events from the controller
+            LeapController.AddListener(LeapListener);
 
             jamList = new JamData();
             jamList.PropertyChanged += new PropertyChangedEventHandler(jamChangedHandler);
@@ -76,6 +91,15 @@ namespace MySurfaceApplication
             subscriber.Bind(_messages, "jam", "jamList");
             //subscriber.Bind(_messages, "jam", "jam-tracks", "Zx4duhaPxeL9WRf7u");
             subscriber.Bind(_messages, "zouzous", "zouzouList");            
+        }
+
+        // LEAP MOTION
+        void handleLeapMotion(float pitch, float roll, float yaw)
+        {
+            lock (thisLock)
+            {
+                Console.WriteLine("pitch : " + pitch + " roll : " + roll + " yaw : " + yaw);
+            }
         }
 
         // Dessine un cercle sur la table surface correspondant à une track (avec la couleur du zouzou et le nom de la track)
@@ -294,6 +318,10 @@ namespace MySurfaceApplication
         protected override void OnClosed(EventArgs e)
         {
             base.OnClosed(e);
+
+            // Remove the sample listener when done
+            LeapController.RemoveListener(LeapListener);
+            LeapController.Dispose();
 
             // Remove handlers for window availability events
             RemoveWindowAvailabilityHandlers();

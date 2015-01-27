@@ -6,7 +6,8 @@ Zouzous.allow({
 
         var zouzous = Zouzous.find({jamId: doc.jamId}).fetch();
         if( zouzous.length == 0) {
-            doc.hexId = '0da46c';
+            var c = hslToRgb(Random.fraction(), 1, 0.3);
+            doc.hexId = rgbToHex(c[0], c[1], c[2]).substring(1);
             return true;
         }
 
@@ -33,7 +34,7 @@ Zouzous.allow({
                 index = i-1;
             }
         }
-        var c = hslToRgb((keys[index] + (distance/2 || 0.5)) % 0.75, 1, 0.5);
+        var c = hslToRgb((keys[index] + (distance/2 || 0.5)) % 1, 1, 0.3);
 
         doc.hexId = rgbToHex(c[0], c[1], c[2]).substring(1);
 

@@ -19,11 +19,6 @@ if (Meteor.isServer) {
     Jam._ensureIndex({_id: 1});
 
     Meteor.publish('jam', function (jamId) {
-        var ret = Jam.find({_id: jamId});
-
-        if( !ret.fetch().length ) {
-            throw new Meteor.Error(500, "Jam not found !");
-        }
         return Jam.find({_id: jamId});
     });
 

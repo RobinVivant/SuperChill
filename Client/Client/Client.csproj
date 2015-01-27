@@ -42,6 +42,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>.\irrKlang.NET4.dll</HintPath>
     </Reference>
+    <Reference Include="LeapCSharp.NET4.0">
+      <HintPath>LeapLib\LeapCSharp.NET4.0.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>DDPClient.NET\Lib\Newtonsoft.Json.dll</HintPath>
@@ -88,6 +91,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="LeapListener.cs" />
     <Compile Include="MeteorSubscriber.cs" />
     <Compile Include="TagVisualization1.xaml.cs">
       <DependentUpon>TagVisualization1.xaml</DependentUpon>
