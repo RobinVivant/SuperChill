@@ -3,7 +3,7 @@ using IrrKlang;
 using CSharp._01.HelloWorld;
 
 
-public enum SoundEffect { Volume, Distortion, Echo, WavesReverb, Gargle, Compressor };
+public enum SoundEffect { Volume, Echo, WavesReverb, Gargle, Flanger, Chorus };
 
 public class SoundManager
 {
@@ -58,7 +58,7 @@ public class SoundManager
 
 
 
-    public void setEffectOnLoop(string loopId, SoundEffect effect, int value)
+    public void setEffectOnLoop(string loopId, SoundEffect effect, float value)
     {
         ((Loop)loops[loopId]).setEffect(effect, value);
     }

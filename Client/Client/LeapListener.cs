@@ -5,17 +5,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MySurfaceApplication
+namespace CSharp._01.HelloWorld
 {
-
-
     class LeapListener : Listener
     {
 
-        /*public delegate void onHandOrientationChange(float pitch, float roll, float yaw);
+        public delegate void onHandChange(float pitch, float yaw, float yPos);
 
         private Object thisLock = new Object();
-        public onHandOrientationChange OnHandOrientationChange;
+        public onHandChange OnHandSpatialPropertiesChange;
 
         private void SafeWriteLine(String line)
         {
@@ -55,42 +53,9 @@ namespace MySurfaceApplication
                 return;
 
             Leap.Vector direction = frame.Hands.First().Direction;
+            Leap.Vector position = frame.Hands.First().PalmPosition;
 
-            this.OnHandOrientationChange(direction.Pitch, direction.Roll, direction.Yaw);
+            this.OnHandSpatialPropertiesChange(direction.Pitch, direction.Yaw, position.y);
         }
-    }
-
-    class Program
-    {
-
-        static Object thisLock = new Object();
-
-        static void handle(float pitch, float roll, float yaw)
-        {
-            lock (thisLock)
-            {
-                Console.WriteLine("pitch : " + pitch + " roll : " + roll + " yaw : " + yaw);
-            }
-        }
-
-        static void lol(string[] args)
-        {
-            // Create a sample listener and controller
-            LeapListener listener = new LeapListener();
-            Controller controller = new Controller();
-
-            listener.OnHandOrientationChange += new LeapListener.onHandOrientationChange(handle);
-
-            // Have the sample listener receive events from the controller
-            controller.AddListener(listener);
-
-            // Keep this process running until Enter is pressed
-            Console.WriteLine("Press Enter to quit...");
-            Console.ReadLine();
-
-            // Remove the sample listener when done
-            controller.RemoveListener(listener);
-            controller.Dispose();
-        }*/
     }
 }
