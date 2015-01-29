@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace CSharp._01.HelloWorld
+namespace MySurfaceApplication
 {
     class Loop
     {

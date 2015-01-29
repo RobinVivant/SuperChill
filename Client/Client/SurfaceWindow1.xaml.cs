@@ -479,17 +479,27 @@ namespace MySurfaceApplication
             TagVisualization1 filter = (TagVisualization1)e.TagVisualization;
             if (filter.Valeur - filter.Orientation < 0)
             {
-                if (filter.Orientation >= filter.OriginalOrientation)
-                    filter.Opacity = Math.Abs((filter.Orientation - filter.OriginalOrientation)) / 360;
-                else
-                    filter.Opacity = Math.Abs(filter.Orientation + (360 - filter.OriginalOrientation)) / 360;
+                if (filter.Orientation >= filter.OriginalOrientation){
+                    float val = (float) Math.Abs((filter.Orientation - filter.OriginalOrientation)) / 360;
+                    filter.Opacity = val;
+                    manager.setEffectOnLoop(filter.associatedJamTracks.Id, SoundEffect.WavesReverb, val);
+                }else{
+                    float val = (float) Math.Abs(filter.Orientation + (360 - filter.OriginalOrientation)) / 360;
+                    filter.Opacity = val;
+                    manager.setEffectOnLoop(filter.associatedJamTracks.Id, SoundEffect.WavesReverb, val);
+                }
             }
             else
             {
-                if (filter.Orientation < filter.OriginalOrientation)
-                    filter.Opacity = Math.Abs(filter.OriginalOrientation - filter.Orientation) / 360;
-                else
-                    filter.Opacity = Math.Abs(Math.Abs(filter.OriginalOrientation - filter.Orientation) + (360 - filter.Orientation)) / 360;
+                if (filter.Orientation < filter.OriginalOrientation){
+                    float val = (float) Math.Abs(filter.OriginalOrientation - filter.Orientation) / 360;
+                    filter.Opacity = val;
+                    manager.setEffectOnLoop(filter.associatedJamTracks.Id, SoundEffect.WavesReverb, val);
+                }else{
+                    float val = (float) Math.Abs(Math.Abs(filter.OriginalOrientation - filter.Orientation) + (360 - filter.Orientation)) / 360;
+                    filter.Opacity = val;
+                    manager.setEffectOnLoop(filter.associatedJamTracks.Id, SoundEffect.WavesReverb, val);
+                }
             }
             
 
