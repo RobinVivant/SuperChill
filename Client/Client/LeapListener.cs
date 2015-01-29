@@ -12,7 +12,7 @@ namespace MySurfaceApplication
     class LeapListener : Listener
     {
 
-        public delegate void onHandOrientationChange(float pitch, float roll, float yaw);
+        /*public delegate void onHandOrientationChange(float pitch, float roll, float yaw);
 
         private Object thisLock = new Object();
         public onHandOrientationChange OnHandOrientationChange;
@@ -91,6 +91,6 @@ namespace MySurfaceApplication
             // Remove the sample listener when done
             controller.RemoveListener(listener);
             controller.Dispose();
-        }
+        }*/
     }
 }

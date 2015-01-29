@@ -26,8 +26,8 @@ namespace MySurfaceApplication
 {
     public partial class SurfaceWindow1 : SurfaceWindow
     {
-
-        SampleData samplesMap;
+        ConnexionData samplesMap;
+        SampleData samplesList;
         jamTracksData jamTracksList;
         JamData jamList;
         ZouzouData zouzouList;
@@ -58,15 +58,17 @@ namespace MySurfaceApplication
             AddWindowAvailabilityHandlers();
 
             this.manager = new SoundManager();
+            samplesMap = new ConnexionData();
+            samplesMap.PropertyChanged += new PropertyChangedEventHandler(samplesChangedHandler);
 
             // Create a sample listener and controller
-            LeapListener = new LeapListener();
+            /*LeapListener = new LeapListener();
             LeapController = new Leap.Controller();
 
             LeapListener.OnHandOrientationChange += new LeapListener.onHandOrientationChange(handleLeapMotion);
 
             // Have the sample listener receive events from the controller
-            LeapController.AddListener(LeapListener);
+            LeapController.AddListener(LeapListener);*/
 
             jamList = new JamData();
             jamList.PropertyChanged += new PropertyChangedEventHandler(jamChangedHandler);
@@ -74,10 +76,10 @@ namespace MySurfaceApplication
             zouzouList.PropertyChanged += new PropertyChangedEventHandler(zouzouChangedHandler);
             jamTracksList = new jamTracksData();
             jamTracksList.PropertyChanged += new PropertyChangedEventHandler(jamTracksChangedHandler);
-            samplesMap = new SampleData();
-            samplesMap.PropertyChanged += new PropertyChangedEventHandler(samplesChangedHandler);
+            samplesList = new SampleData();
+            samplesList.PropertyChanged += new PropertyChangedEventHandler(samplesChangedHandler);
 
-            subscriber = new MeteorSubscriber(ref samplesMap, ref jamTracksList, ref jamList, ref zouzouList);
+            subscriber = new MeteorSubscriber(ref samplesList, ref jamTracksList, ref jamList, ref zouzouList, ref samplesMap);
             var client = new DDPClient(subscriber);
 
             // TODO; hack
@@ -272,7 +274,7 @@ namespace MySurfaceApplication
         {
             if (e.PropertyName == "Added")
             {
-
+                
             }
         }
 
@@ -280,7 +282,8 @@ namespace MySurfaceApplication
         {
             JamTracks jamTracks = sender as JamTracks;
             if (e.PropertyName == "Added")
-            {                
+            {
+                info.log(jamTracks.Path+"   "+samplesMap.findSample(jamTracks.Path));
                 drawCircle(jamTracks.Id, jamTracks.Path, jamTracks.ZouzouColor);
                 manager.addLoop(jamTracks.Id, "../.." + jamTracks.Path, false);
             }
@@ -320,8 +323,8 @@ namespace MySurfaceApplication
             base.OnClosed(e);
 
             // Remove the sample listener when done
-            LeapController.RemoveListener(LeapListener);
-            LeapController.Dispose();
+            //LeapController.RemoveListener(LeapListener);
+            //LeapController.Dispose();
 
             // Remove handlers for window availability events
             RemoveWindowAvailabilityHandlers();

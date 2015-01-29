@@ -8,48 +8,23 @@ using System.Text;
 namespace MySurfaceApplication
 {
 
-        public partial class ConnexionData : Dictionary<string, List<Sample> >, INotifyCollectionChanged, INotifyPropertyChanged
+        public partial class ConnexionData : Dictionary<string, Sample >, INotifyCollectionChanged, INotifyPropertyChanged
         {
             public ConnexionData() : base() { }
             public ConnexionData(int capacity) : base(capacity) { }
             public ConnexionData(IEqualityComparer<string> comparer) : base(comparer) { }
-            public ConnexionData(IDictionary<string, List<Sample> > dictionary) : base(dictionary) { }
+            public ConnexionData(IDictionary<string, Sample > dictionary) : base(dictionary) { }
             public ConnexionData(int capacity, IEqualityComparer<string> comparer) : base(capacity, comparer) { }
-            public ConnexionData(IDictionary<string, List<Sample> > dictionary, IEqualityComparer<string> comparer) : base(dictionary, comparer) { }
+            public ConnexionData(IDictionary<string, Sample > dictionary, IEqualityComparer<string> comparer) : base(dictionary, comparer) { }
 
             public event NotifyCollectionChangedEventHandler CollectionChanged;
             public event PropertyChangedEventHandler PropertyChanged;
 
-            public new List<Sample> this[string key]
-            {
-                get
-                {
-                    return base[key];
-                }
-                set
-                {
-                    List<Sample> oldValue;
-                    bool exist = base.TryGetValue(key, out oldValue);
-                    var oldItem = new KeyValuePair<string, List<Sample> >(key, oldValue);
-                    base[key] = value;
-                    var newItem = new KeyValuePair<string, List<Sample> >(key, value);
-                    if (exist)
-                    {
-                        this.OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Replace, newItem, oldItem, base.Keys.ToList().IndexOf(key)));
-                    }
-                    else
-                    {
-                        this.OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, newItem, base.Keys.ToList().IndexOf(key)));
-                        this.OnPropertyChanged(new PropertyChangedEventArgs("Created"));
-                    }
-                }
-            }
-
-            public new void Add(string key, List<Sample> value)
+            public new void Add(string key, Sample value)
             {
                 if (!base.ContainsKey(key))
                 {
-                    var item = new KeyValuePair<string, List<Sample>>(key, value);
+                    var item = new KeyValuePair<string, Sample>(key, value);
                     base.Add(key, value);
                     this.OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, item, base.Keys.ToList().IndexOf(key)));
                     this.OnPropertyChanged(new PropertyChangedEventArgs("Added"));
@@ -58,10 +33,10 @@ namespace MySurfaceApplication
 
             public new bool Remove(string key)
             {
-                List<Sample> value;
+                Sample value;
                 if (base.TryGetValue(key, out value))
                 {
-                    var item = new KeyValuePair<string, List<Sample>>(key, base[key]);
+                    var item = new KeyValuePair<string, Sample>(key, base[key]);
                     bool result = base.Remove(key);
                     this.OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, item, base.Keys.ToList().IndexOf(key)));
                     this.OnPropertyChanged(new PropertyChangedEventArgs("Removed"));
@@ -70,22 +45,16 @@ namespace MySurfaceApplication
                 return false;
             }
 
-            public KeyValuePair<string, Sample> findSample(string path)
+            public Sample findSample(string path)
             {
-                foreach (var keyValue in this)
-                {
-                    foreach (var sample in keyValue.Key)
-                    {
-                        Console.WriteLine(sample+"  "+path);
-                        /*if (sample.Path == path)
-                        {
-                            Console.WriteLine("ooooooooooooo");
-                            return new KeyValuePair<string, Sample>(keyValue.Key, sample);
-                        }*/
-                    }
-                }
-                Console.WriteLine("nnnnnnnnnnnnnnnnnnnnn");
-                return new KeyValuePair<string, Sample>("null", null);
+                Sample sample;
+                base.TryGetValue(path, out sample);
+                return sample;
+            }
+
+            public new int count()
+            {
+                return this.Count();
             }
 
             public new void Clear()

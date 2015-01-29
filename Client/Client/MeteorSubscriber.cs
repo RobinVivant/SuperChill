@@ -52,6 +52,7 @@ namespace MySurfaceApplication
     public class MeteorSubscriber : IDataSubscriber
     {
         //
+        Dictionary<string, Sample> samplesMap;
         SampleData samplesList;
         jamTracksData jamTracksList;
         JamData jamList;
@@ -65,8 +66,9 @@ namespace MySurfaceApplication
 
         private readonly Dictionary<string, List<IBinding<object>>> _bindings = new Dictionary<string, List<IBinding<object>>>();
 
-        public MeteorSubscriber(ref SampleData samplesList, ref jamTracksData jamTracksList, ref JamData jamList, ref ZouzouData zouzouList)
+        public MeteorSubscriber(ref SampleData samplesList, ref jamTracksData jamTracksList, ref JamData jamList, ref ZouzouData zouzouList, ref ConnexionData samplesMap)
         {
+            this.samplesMap = samplesMap;
             this.samplesList = samplesList;
             this.jamTracksList = jamTracksList;
             this.jamList = jamList;
@@ -102,7 +104,9 @@ namespace MySurfaceApplication
                                 for (int i = 0; i < childsK.Count(); i++)
                                 {
                                     var childsI = childs[k].childs.ElementAt(i);
-                                    samplesList.Add(new Sample(childsI.Values.ElementAt(0).ToString(), childsI.Values.ElementAt(1).ToString(), instrumentName));
+                                    var currentSample = new Sample(childsI.Values.ElementAt(0).ToString(), childsI.Values.ElementAt(1).ToString(), instrumentName);
+                                    samplesList.Add(currentSample);
+                                    samplesMap.Add(childsI.Values.ElementAt(1).ToString(), currentSample);
                                     for (int j = 0; j < childsI.Count; j++)
                                     {
                                         var key = childs[k].childs.ElementAt(i).ElementAt(j).Key.ToString();
