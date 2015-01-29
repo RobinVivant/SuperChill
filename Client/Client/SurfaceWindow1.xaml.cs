@@ -195,7 +195,7 @@ namespace MySurfaceApplication
             else
             {
                 item.Opacity = 0.5;
-            }
+            }                        
         }
 
         private void handle_MouseUp(object sender, MouseButtonEventArgs e)
@@ -231,8 +231,6 @@ namespace MySurfaceApplication
                 tagDef.LostTagTimeout = 2000.0;
                 // Orientation offset (default).
                 tagDef.OrientationOffsetFromTag = 0.0;
-                // Physical offset (horizontal inches, vertical inches).
-                tagDef.PhysicalCenterOffsetFromTag = new Vector(2.0, 2.0);
                 // Tag removal behavior (default).
                 tagDef.TagRemovedBehavior = TagRemovedBehavior.Fade;
                 // Orient UI to tag? (default).
@@ -242,9 +240,33 @@ namespace MySurfaceApplication
             }
         }
 
+        private ScatterViewItem OnItem(Point center)
+        {
+            for (int i = 0; i < myScatterView.Items.Count; i++)
+            {
+                ScatterViewItem item = (ScatterViewItem)myScatterView.Items.GetItemAt(i);
+                Point p = item.ActualCenter;
+                var distance = Math.Sqrt(Math.Pow(p.X - center.X, 2) + Math.Pow(p.Y - center.Y, 2));
+                if (distance <= 50)
+                {
+                    return item;
+                }                
+            }
+            return null;
+        }
         private void OnVisualizationAdded(object sender, TagVisualizerEventArgs e)
         {
             TagVisualization1 filter = (TagVisualization1)e.TagVisualization;
+            filter.OriginalOrientation = filter.Orientation;
+            ScatterViewItem item = OnItem(filter.Center);
+            if (item != null) { 
+                JamTracks jamTracks = jamTracksList.findById(item.Name.Substring(1, item.Name.Length - 1));
+                filter.associatedJamTracks = jamTracks;
+                filter.FilterType.Content = samplesMap.findSample(jamTracks.Path).Name;
+                filter.myEllipse.Fill = SurfaceColors.Accent1Brush;
+                filter.myEllipse.Opacity = 0.1;
+            }
+            /*
             switch (filter.VisualizedTag.Value)
             {
                 case 1:
@@ -267,7 +289,7 @@ namespace MySurfaceApplication
                     filter.FilterType.Content = "UNKNOWN FILTER";
                     filter.myEllipse.Fill = SurfaceColors.ControlAccentBrush;
                     break;
-            }
+            }*/
         }
 
         protected void samplesChangedHandler(Object sender, PropertyChangedEventArgs e)
@@ -283,7 +305,6 @@ namespace MySurfaceApplication
             JamTracks jamTracks = sender as JamTracks;
             if (e.PropertyName == "Added")
             {
-                info.log(jamTracks.Path+"   "+samplesMap.findSample(jamTracks.Path));
                 drawCircle(jamTracks.Id, jamTracks.Path, jamTracks.ZouzouColor);
                 manager.addLoop(jamTracks.Id, "../.." + jamTracks.Path, false);
             }
@@ -451,6 +472,30 @@ namespace MySurfaceApplication
             myScatterView.Items.Clear();
             subscriber.Bind(_messages, "jam", "jam", jamId);
             subscriber.Bind(_messages, "jam-tracks", "jam-tracks", jamId);
+        }
+
+        private void MyTagVisualizer_VisualizationMoved(object sender, TagVisualizerEventArgs e)
+        {
+            TagVisualization1 filter = (TagVisualization1)e.TagVisualization;
+            if (filter.Valeur - filter.Orientation < 0)
+            {
+                if (filter.Orientation >= filter.OriginalOrientation)
+                    filter.Opacity = Math.Abs((filter.Orientation - filter.OriginalOrientation)) / 360;
+                else
+                    filter.Opacity = Math.Abs(filter.Orientation + (360 - filter.OriginalOrientation)) / 360;
+            }
+            else
+            {
+                if (filter.Orientation < filter.OriginalOrientation)
+                    filter.Opacity = Math.Abs(filter.OriginalOrientation - filter.Orientation) / 360;
+                else
+                    filter.Opacity = Math.Abs(Math.Abs(filter.OriginalOrientation - filter.Orientation) + (360 - filter.Orientation)) / 360;
+            }
+            
+
+            info.log("offset origin: " + filter.OffsetOrigin);
+            info.log("center x:" + filter.Center.X + " y:" + filter.Center.Y);
+            info.log("orientation :" + filter.Orientation);
         }
     }
 }

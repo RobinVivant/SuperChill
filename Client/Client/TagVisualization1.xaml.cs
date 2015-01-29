@@ -22,15 +22,57 @@ namespace MySurfaceApplication
     /// </summary>
     public partial class TagVisualization1 : TagVisualization
     {
+        private double originalOrientation;
+        private double valeur;
+        private JamTracks jamT;
+
         public TagVisualization1()
         {
             InitializeComponent();
+        }
+
+        public double OriginalOrientation
+        {
+            get
+            {
+                return originalOrientation;
+            }
+
+            set
+            {
+                originalOrientation = value;
+            }
+        }
+
+        public double Valeur
+        {
+            get
+            {
+                return valeur;
+            }
+
+            set
+            {
+                valeur = value;
+            }
         }
 
         private void TagVisualization_Loaded(object sender, RoutedEventArgs e)
         {
             //TODO: customize TagVisualization1's UI based on this.VisualizedTag here
             //UserNotifications.RequestNotification("Tag", "Tag reconnu", TimeSpan.FromSeconds(2));
+        }
+
+        public JamTracks associatedJamTracks
+        {
+            get
+            {
+                return jamT;
+            }
+            set
+            {
+                jamT = value;
+            }
         }
     }
 }

@@ -12,6 +12,7 @@ namespace MySurfaceApplication
         string jamId;
         string zouzouColor;
         string path;
+        double effect1;
 
         public JamTracks(string id,string jamId, string zouzouColor, string path)
         {
@@ -19,6 +20,7 @@ namespace MySurfaceApplication
             this.jamId = jamId;
             this.zouzouColor = zouzouColor;
             this.path = path;
+            effect1 = 0;
         }
 
         public string Id { 
@@ -34,5 +36,6 @@ namespace MySurfaceApplication
         public string JamId { get { return this.jamId; } set { ;} }
         public string ZouzouColor { get { return this.zouzouColor; } set { ;} }
         public string Path { get { return this.path; } set { ;} }
+        public double Effect1 { get { return this.effect1; } set { effect1=value;} }
     }
 }

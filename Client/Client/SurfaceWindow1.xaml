@@ -12,6 +12,7 @@
             Background="Black" 
             Height="Auto" Width="Auto"
             VisualizationAdded="OnVisualizationAdded"
+            VisualizationMoved="MyTagVisualizer_VisualizationMoved"
             >
         <s:ScatterView Name="myScatterView">
         </s:ScatterView>
