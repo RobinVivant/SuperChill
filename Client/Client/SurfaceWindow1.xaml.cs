@@ -266,30 +266,32 @@ namespace MySurfaceApplication
                 filter.myEllipse.Fill = SurfaceColors.Accent1Brush;
                 filter.myEllipse.Opacity = 0.1;
             }
-            /*
-            switch (filter.VisualizedTag.Value)
+            else
             {
-                case 1:
-                    filter.FilterType.Content = "Filtre 1";
-                    filter.myEllipse.Fill = SurfaceColors.Accent1Brush;
-                    break;
-                case 2:
-                    filter.FilterType.Content = "Filtre 2";
-                    filter.myEllipse.Fill = SurfaceColors.Accent2Brush;
-                    break;
-                case 3:
-                    filter.FilterType.Content = "Filtre 3";
-                    filter.myEllipse.Fill = SurfaceColors.Accent3Brush;
-                    break;
-                case 4:
-                    filter.FilterType.Content = "Filtre 4";
-                    filter.myEllipse.Fill = SurfaceColors.Accent4Brush;
-                    break;
-                default:
-                    filter.FilterType.Content = "UNKNOWN FILTER";
-                    filter.myEllipse.Fill = SurfaceColors.ControlAccentBrush;
-                    break;
-            }*/
+                switch (filter.VisualizedTag.Value)
+                {
+                    case 1:
+                        filter.FilterType.Content = "Filtre 1";
+                        filter.myEllipse.Fill = SurfaceColors.Accent1Brush;
+                        break;
+                    case 2:
+                        filter.FilterType.Content = "Filtre 2";
+                        filter.myEllipse.Fill = SurfaceColors.Accent2Brush;
+                        break;
+                    case 3:
+                        filter.FilterType.Content = "Filtre 3";
+                        filter.myEllipse.Fill = SurfaceColors.Accent3Brush;
+                        break;
+                    case 4:
+                        filter.FilterType.Content = "Filtre 4";
+                        filter.myEllipse.Fill = SurfaceColors.Accent4Brush;
+                        break;
+                    default:
+                        filter.FilterType.Content = "UNKNOWN FILTER";
+                        filter.myEllipse.Fill = SurfaceColors.ControlAccentBrush;
+                        break;
+                }
+            }
         }
 
         protected void samplesChangedHandler(Object sender, PropertyChangedEventArgs e)
@@ -477,35 +479,44 @@ namespace MySurfaceApplication
         private void MyTagVisualizer_VisualizationMoved(object sender, TagVisualizerEventArgs e)
         {
             TagVisualization1 filter = (TagVisualization1)e.TagVisualization;
-            if (filter.Valeur - filter.Orientation < 0)
+            if (filter.associatedJamTracks != null)
             {
-                if (filter.Orientation >= filter.OriginalOrientation){
-                    float val = (float) Math.Abs((filter.Orientation - filter.OriginalOrientation)) / 360;
-                    filter.Opacity = val;
-                    manager.setEffectOnLoop(filter.associatedJamTracks.Id, SoundEffect.WavesReverb, val);
-                }else{
-                    float val = (float) Math.Abs(filter.Orientation + (360 - filter.OriginalOrientation)) / 360;
-                    filter.Opacity = val;
-                    manager.setEffectOnLoop(filter.associatedJamTracks.Id, SoundEffect.WavesReverb, val);
+                if (filter.Valeur - filter.Orientation < 0)
+                {
+                    if (filter.Orientation >= filter.OriginalOrientation)
+                    {
+                        float val = (float)Math.Abs((filter.Orientation - filter.OriginalOrientation)) / 360;
+                        filter.Opacity = val;
+                        manager.setEffectOnLoop(filter.associatedJamTracks.Id, SoundEffect.WavesReverb, val);
+                    }
+                    else
+                    {
+                        float val = (float)Math.Abs(filter.Orientation + (360 - filter.OriginalOrientation)) / 360;
+                        filter.Opacity = val;
+                        manager.setEffectOnLoop(filter.associatedJamTracks.Id, SoundEffect.WavesReverb, val);
+                    }
                 }
-            }
-            else
-            {
-                if (filter.Orientation < filter.OriginalOrientation){
-                    float val = (float) Math.Abs(filter.OriginalOrientation - filter.Orientation) / 360;
-                    filter.Opacity = val;
-                    manager.setEffectOnLoop(filter.associatedJamTracks.Id, SoundEffect.WavesReverb, val);
-                }else{
-                    float val = (float) Math.Abs(Math.Abs(filter.OriginalOrientation - filter.Orientation) + (360 - filter.Orientation)) / 360;
-                    filter.Opacity = val;
-                    manager.setEffectOnLoop(filter.associatedJamTracks.Id, SoundEffect.WavesReverb, val);
+                else
+                {
+                    if (filter.Orientation < filter.OriginalOrientation)
+                    {
+                        float val = (float)Math.Abs(filter.OriginalOrientation - filter.Orientation) / 360;
+                        filter.Opacity = val;
+                        manager.setEffectOnLoop(filter.associatedJamTracks.Id, SoundEffect.WavesReverb, val);
+                    }
+                    else
+                    {
+                        float val = (float)Math.Abs(Math.Abs(filter.OriginalOrientation - filter.Orientation) + (360 - filter.Orientation)) / 360;
+                        filter.Opacity = val;
+                        manager.setEffectOnLoop(filter.associatedJamTracks.Id, SoundEffect.WavesReverb, val);
+                    }
                 }
-            }
-            
 
-            info.log("offset origin: " + filter.OffsetOrigin);
-            info.log("center x:" + filter.Center.X + " y:" + filter.Center.Y);
-            info.log("orientation :" + filter.Orientation);
+
+                info.log("offset origin: " + filter.OffsetOrigin);
+                info.log("center x:" + filter.Center.X + " y:" + filter.Center.Y);
+                info.log("orientation :" + filter.Orientation);
+            }
         }
     }
 }
