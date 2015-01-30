@@ -24,11 +24,26 @@ namespace MySurfaceApplication
     {
         private double originalOrientation;
         private double valeur;
+        private double generalEffectValue;
         private JamTracks jamT;
+        private SoundEffect effect;
 
         public TagVisualization1()
         {
             InitializeComponent();
+        }
+
+        public double GeneralEffectValue
+        {
+            get
+            {
+                return generalEffectValue;
+            }
+
+            set
+            {
+                generalEffectValue = value;
+            }
         }
 
         public double OriginalOrientation
@@ -54,6 +69,18 @@ namespace MySurfaceApplication
             set
             {
                 valeur = value;
+            }
+        }
+
+        public SoundEffect Effect
+        {
+            get
+            {
+                return effect;
+            }
+            set
+            {
+                effect = value;
             }
         }
 

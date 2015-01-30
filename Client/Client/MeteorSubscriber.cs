@@ -40,6 +40,11 @@ namespace MySurfaceApplication
         public IEnumerable<IDictionary<string, object>> childs { get; set; }
     }
 
+    public class Tracks : Message
+    {
+        public string[] TracksId { get; set; }
+    }
+
     public class ChangedMessage : Message
     {
         public string Collection { get; set; }
@@ -147,6 +152,16 @@ namespace MySurfaceApplication
                             string zouzouName = added.Fields["nickname"].ToString();
 
                             zouzouList.Add(new Zouzou(id, jamId, zouzouColor, zouzouName));
+                        }
+                        else if (added.Collection == "track-groups")
+                        {
+                            string id = added.Id;
+                            string color = added.Fields["color"].ToString();
+                            string name = added.Fields["name"].ToString();
+                            string jamId = added.Fields["jamId"].ToString();
+                            string tracks = added.Fields["tracks"].ToString();
+                            //var trackTab = JsonConvert.DeserializeObject<Tracks[]>(added.Fields["tracks"].ToString());
+                            //info.log("tracks " + trackTab.Count());
                         }
                     }
                     if (myJamId.Length > 0)

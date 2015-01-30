@@ -35,8 +35,8 @@ namespace MySurfaceApplication
         ObservableCollection<Jam> jams = new ObservableCollection<Jam>();
         MeteorSubscriber subscriber;
 
-        LeapListener LeapListener;
-        Leap.Controller LeapController;
+        //LeapListener LeapListener;
+        //Leap.Controller LeapController;
 
         Object thisLock = new Object();
 
@@ -92,7 +92,8 @@ namespace MySurfaceApplication
             //subscriber.Bind(_messages, "jam", "jam", "Zx4duhaPxeL9WRf7u");
             subscriber.Bind(_messages, "jam", "jamList");
             //subscriber.Bind(_messages, "jam", "jam-tracks", "Zx4duhaPxeL9WRf7u");
-            subscriber.Bind(_messages, "zouzous", "zouzouList");            
+            subscriber.Bind(_messages, "zouzous", "zouzouList");
+                
         }
 
         // LEAP MOTION
@@ -212,87 +213,8 @@ namespace MySurfaceApplication
             {
                 item.Opacity = 0.5;
             }
-        }
-                
-        private void InitializeDefinitions()
-        {
-            for (byte k = 1; k <= 5; k++)
-            {
-                TagVisualizationDefinition tagDef =
-                    new TagVisualizationDefinition();
-                // The tag value that this definition will respond to.
-                tagDef.Value = k;
-                // The .xaml file for the UI
-                tagDef.Source =
-                    new Uri("TagVisualization1.xaml", UriKind.Relative);
-                // The maximum number for this tag value.
-                tagDef.MaxCount = 2;
-                // The visualization stays for 2 seconds.
-                tagDef.LostTagTimeout = 2000.0;
-                // Orientation offset (default).
-                tagDef.OrientationOffsetFromTag = 0.0;
-                // Tag removal behavior (default).
-                tagDef.TagRemovedBehavior = TagRemovedBehavior.Fade;
-                // Orient UI to tag? (default).
-                tagDef.UsesTagOrientation = true;
-                // Add the definition to the collection.
-                MyTagVisualizer.Definitions.Add(tagDef);
-            }
-        }
-
-        private ScatterViewItem OnItem(Point center)
-        {
-            for (int i = 0; i < myScatterView.Items.Count; i++)
-            {
-                ScatterViewItem item = (ScatterViewItem)myScatterView.Items.GetItemAt(i);
-                Point p = item.ActualCenter;
-                var distance = Math.Sqrt(Math.Pow(p.X - center.X, 2) + Math.Pow(p.Y - center.Y, 2));
-                if (distance <= 50)
-                {
-                    return item;
-                }                
-            }
-            return null;
-        }
-        private void OnVisualizationAdded(object sender, TagVisualizerEventArgs e)
-        {
-            TagVisualization1 filter = (TagVisualization1)e.TagVisualization;
-            filter.OriginalOrientation = filter.Orientation;
-            ScatterViewItem item = OnItem(filter.Center);
-            if (item != null) { 
-                JamTracks jamTracks = jamTracksList.findById(item.Name.Substring(1, item.Name.Length - 1));
-                filter.associatedJamTracks = jamTracks;
-                filter.FilterType.Content = samplesMap.findSample(jamTracks.Path).Name;
-                filter.myEllipse.Fill = SurfaceColors.Accent1Brush;
-                filter.myEllipse.Opacity = 0.1;
-            }
-            else
-            {
-                switch (filter.VisualizedTag.Value)
-                {
-                    case 1:
-                        filter.FilterType.Content = "Filtre 1";
-                        filter.myEllipse.Fill = SurfaceColors.Accent1Brush;
-                        break;
-                    case 2:
-                        filter.FilterType.Content = "Filtre 2";
-                        filter.myEllipse.Fill = SurfaceColors.Accent2Brush;
-                        break;
-                    case 3:
-                        filter.FilterType.Content = "Filtre 3";
-                        filter.myEllipse.Fill = SurfaceColors.Accent3Brush;
-                        break;
-                    case 4:
-                        filter.FilterType.Content = "Filtre 4";
-                        filter.myEllipse.Fill = SurfaceColors.Accent4Brush;
-                        break;
-                    default:
-                        filter.FilterType.Content = "UNKNOWN FILTER";
-                        filter.myEllipse.Fill = SurfaceColors.ControlAccentBrush;
-                        break;
-                }
-            }
-        }
+        }              
+        
 
         protected void samplesChangedHandler(Object sender, PropertyChangedEventArgs e)
         {
@@ -407,6 +329,8 @@ namespace MySurfaceApplication
             //TODO: disable audio, animations here
         }
 
+        // Choix initial du jam
+
         ObservableCollection<Jam> JamsListBox
         {
             get { return jams; }
@@ -474,49 +398,135 @@ namespace MySurfaceApplication
             myScatterView.Items.Clear();
             subscriber.Bind(_messages, "jam", "jam", jamId);
             subscriber.Bind(_messages, "jam-tracks", "jam-tracks", jamId);
+            subscriber.Bind(_messages, "track-groups", "track-groups", jamId);  
+        }
+
+        //TAG
+
+        private void InitializeDefinitions()
+        {
+            for (byte k = 1; k <= 7; k++)
+            {
+                TagVisualizationDefinition tagDef = new TagVisualizationDefinition();
+                // The tag value that this definition will respond to.
+                tagDef.Value = k;
+                // The .xaml file for the UI
+                tagDef.Source = new Uri("TagVisualization1.xaml", UriKind.Relative);
+                // The maximum number for this tag value.
+                tagDef.MaxCount = 2;
+                // The visualization stays for 1 seconds.
+                tagDef.LostTagTimeout = 1000.0;
+                // Orientation offset (default).
+                tagDef.OrientationOffsetFromTag = 0.0;
+                // Tag removal behavior (default).
+                tagDef.TagRemovedBehavior = TagRemovedBehavior.Fade;
+                // Orient UI to tag? (default).
+                tagDef.UsesTagOrientation = true;
+                // Add the definition to the collection.
+                MyTagVisualizer.Definitions.Add(tagDef);
+            }
+        }
+
+        private ScatterViewItem OnItem(Point center)
+        {
+            for (int i = 0; i < myScatterView.Items.Count; i++)
+            {
+                ScatterViewItem item = (ScatterViewItem)myScatterView.Items.GetItemAt(i);
+                Point p = item.ActualCenter;
+                var distance = Math.Sqrt(Math.Pow(p.X - center.X, 2) + Math.Pow(p.Y - center.Y, 2));
+                if (distance <= 50)
+                {
+                    return item;
+                }
+            }
+            return null;
+        }
+
+        private void OnVisualizationAdded(object sender, TagVisualizerEventArgs e)
+        {
+            TagVisualization1 filter = (TagVisualization1)e.TagVisualization;
+            filter.OriginalOrientation = filter.Orientation;
+            ScatterViewItem item = OnItem(filter.Center);
+            if (item != null)
+            {
+                JamTracks jamTracks = jamTracksList.findById(item.Name.Substring(1, item.Name.Length - 1));
+                filter.associatedJamTracks = jamTracks;
+            }
+            switch (filter.VisualizedTag.Value)
+            {
+                case 1:
+                    filter.FilterType.Content = "Volume";
+                    filter.myEllipse.Fill = SurfaceColors.Accent1Brush;
+                    filter.Effect = SoundEffect.Volume;
+                    break;
+                case 2:
+                    filter.FilterType.Content = "Chorus";
+                    filter.myEllipse.Fill = SurfaceColors.Accent2Brush;
+                    filter.Effect = SoundEffect.Chorus;
+                    break;
+                case 3:
+                    filter.FilterType.Content = "Echo";
+                    filter.myEllipse.Fill = SurfaceColors.Accent3Brush;
+                    filter.Effect = SoundEffect.Echo;
+                    break;
+                case 4:
+                    filter.FilterType.Content = "Flanger";
+                    filter.myEllipse.Fill = SurfaceColors.Accent4Brush;
+                    filter.Effect = SoundEffect.Flanger;
+                    break;
+                case 5:
+                    filter.FilterType.Content = "Gargle";
+                    filter.myEllipse.Fill = SurfaceColors.BulletBrush;
+                    filter.Effect = SoundEffect.Gargle;
+                    break;
+                case 6:
+                    filter.FilterType.Content = "Waves Reverb";
+                    filter.myEllipse.Fill = SurfaceColors.BulletDisabledBrush;
+                    filter.Effect = SoundEffect.WavesReverb;
+                    break;
+                default:
+                    filter.FilterType.Content = "UNKNOWN FILTER";
+                    filter.myEllipse.Fill = SurfaceColors.ControlAccentBrush;
+                    filter.Effect = SoundEffect.Volume;
+                    break;
+            }
         }
 
         private void MyTagVisualizer_VisualizationMoved(object sender, TagVisualizerEventArgs e)
         {
             TagVisualization1 filter = (TagVisualization1)e.TagVisualization;
+            float val = 0;
             if (filter.associatedJamTracks != null)
             {
+                // Quand on tourne le tag à droite
                 if (filter.Valeur - filter.Orientation < 0)
-                {
+                {                    
                     if (filter.Orientation >= filter.OriginalOrientation)
                     {
-                        float val = (float)Math.Abs((filter.Orientation - filter.OriginalOrientation)) / 360;
-                        filter.Opacity = val;
-                        manager.setEffectOnLoop(filter.associatedJamTracks.Id, SoundEffect.WavesReverb, val);
+                        val = (float)Math.Abs((filter.Orientation - filter.OriginalOrientation)) / 360;                        
                     }
-                    else
+                    else // on depasse 360 et on repasse à 0
                     {
-                        float val = (float)Math.Abs(filter.Orientation + (360 - filter.OriginalOrientation)) / 360;
-                        filter.Opacity = val;
-                        manager.setEffectOnLoop(filter.associatedJamTracks.Id, SoundEffect.WavesReverb, val);
+                        val = (float)Math.Abs(filter.Orientation + (360 - filter.OriginalOrientation)) / 360;
                     }
                 }
+                // Quand on tourne le tag à gauche
                 else
                 {
-                    if (filter.Orientation < filter.OriginalOrientation)
+                    if (filter.Orientation <= filter.OriginalOrientation)
                     {
-                        float val = (float)Math.Abs(filter.OriginalOrientation - filter.Orientation) / 360;
-                        filter.Opacity = val;
-                        manager.setEffectOnLoop(filter.associatedJamTracks.Id, SoundEffect.WavesReverb, val);
+                        val = (float)Math.Abs(filter.OriginalOrientation - filter.Orientation) / 360;                        
                     }
-                    else
+                    else // on passe en dessous de 0 et on repasse à 360
                     {
-                        float val = (float)Math.Abs(Math.Abs(filter.OriginalOrientation - filter.Orientation) + (360 - filter.Orientation)) / 360;
-                        filter.Opacity = val;
-                        manager.setEffectOnLoop(filter.associatedJamTracks.Id, SoundEffect.WavesReverb, val);
+                        val = (float)Math.Abs(Math.Abs(filter.OriginalOrientation + 360 - filter.Orientation)) / 360;
                     }
                 }
-
-
-                info.log("offset origin: " + filter.OffsetOrigin);
-                info.log("center x:" + filter.Center.X + " y:" + filter.Center.Y);
-                info.log("orientation :" + filter.Orientation);
+                filter.Opacity = val/360;
+                manager.setEffectOnLoop(filter.associatedJamTracks.Id, filter.Effect, val);
+                //filter.GeneralEffectValue = filter.associatedJamTracks.Effect1;
             }
+            filter.Opacity = 1;
         }
     }
 }
