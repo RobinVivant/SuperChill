@@ -179,22 +179,36 @@ namespace MySurfaceApplication
                     border.BorderBrush = color;
                     border.Background = color;
                     border.CornerRadius = new CornerRadius(100);
-                    border.Height = 100;
-                    border.Width = 100;
+                    border.Height = 120;
+                    border.Width = 120;
 
                     // Content
+                    StackPanel stack = new StackPanel();
+                    stack.Width = 100;
+                    stack.Height = 100;
+                    stack.HorizontalAlignment = HorizontalAlignment.Center;
+                    stack.VerticalAlignment = VerticalAlignment.Top;
+
                     TextBlock content = new TextBlock();
                     content.Text = trackName;
                     content.Foreground = new SolidColorBrush(Colors.White);
                     content.FontWeight = FontWeights.Bold;
                     content.FontSize = 14;
-                    content.Height = 35;
+                    content.Height = 40;
                     content.Width = 98;
                     content.HorizontalAlignment = HorizontalAlignment.Stretch;
-                    content.VerticalAlignment = VerticalAlignment.Center;
                     content.TextAlignment = TextAlignment.Center;
                     content.TextWrapping = TextWrapping.Wrap;
-                    border.Child = content;
+
+                    Image icon = new Image();
+                    icon.Source = new BitmapImage(new Uri(@"../../Resources/" + trackType + ".png", UriKind.Relative));
+                    icon.Width = 40;
+                    icon.Height = 40;
+                    icon.Margin = new Thickness(0, 15, 0, 5);
+
+                    stack.Children.Add(icon);
+                    stack.Children.Add(content);
+                    border.Child = stack;
 
                     // Item creation
                     ScatterViewItem item = new ScatterViewItem();
@@ -203,8 +217,8 @@ namespace MySurfaceApplication
                     item.Content = border;
                     item.Background = new SolidColorBrush(Colors.Transparent);
                     item.Opacity = 0;
-                    item.Height = 100;
-                    item.Width = 100;
+                    item.Height = 120;
+                    item.Width = 120;
                     item.CanScale = false;
                     item.ClipToBounds = false;
                     //item.Orientation = 0;
