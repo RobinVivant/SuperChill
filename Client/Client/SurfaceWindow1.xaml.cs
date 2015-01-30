@@ -20,6 +20,7 @@ using Net.DDP.Client;
 using System.Windows.Threading;
 using System.ComponentModel;
 using System.Collections.ObjectModel;
+using System.Windows.Media.Animation;
 
 
 namespace MySurfaceApplication
@@ -143,7 +144,7 @@ namespace MySurfaceApplication
         {
             string trackName;
             string trackType;
-            
+
             trackName = samplesMap.findSample(trackPath).Name;
             trackType = samplesMap.findSample(trackPath).Type;
 
@@ -172,15 +173,15 @@ namespace MySurfaceApplication
                         }
                     }
 
+                    // Ellipse
                     Border border = new Border();
                     border.BorderBrush = color;
                     border.Background = color;
-                    //border.BorderBrush = Brushes.White;
-                    //border.BorderThickness = new Thickness(5);
                     border.CornerRadius = new CornerRadius(100);
                     border.Height = 100;
                     border.Width = 100;
 
+                    // Content
                     TextBlock content = new TextBlock();
                     content.Text = trackName;
                     content.Foreground = new SolidColorBrush(Colors.White);
@@ -192,33 +193,46 @@ namespace MySurfaceApplication
                     content.VerticalAlignment = VerticalAlignment.Center;
                     content.TextAlignment = TextAlignment.Center;
                     content.TextWrapping = TextWrapping.Wrap;
-
                     border.Child = content;
+
+                    // Item creation
                     ScatterViewItem item = new ScatterViewItem();
                     item.Name = beginningLetter + trackId;
                     myScatterView.RegisterName(item.Name, item);
-                    item.PreviewTouchDown += new EventHandler<TouchEventArgs>(handle_TouchDown);
-                    item.PreviewTouchMove += new EventHandler<TouchEventArgs>(handle_TouchMove);
-                    item.PreviewTouchUp += new EventHandler<TouchEventArgs>(handle_TouchLeave);
-                    TouchExtensions.AddTapGestureHandler(item, new EventHandler<TouchEventArgs>(handle_TapGesture));
-                    item.PreviewMouseUp += new MouseButtonEventHandler(handle_MouseUp);
-        
                     item.Content = border;
                     item.Background = new SolidColorBrush(Colors.Transparent);
-                    item.Opacity = 0.5;
+                    item.Opacity = 0;
                     item.Height = 100;
                     item.Width = 100;
                     item.CanScale = false;
                     item.ClipToBounds = false;
                     //item.Orientation = 0;
-                  
                     if (newPosition != (new Point(0, 0)))
                     {
-                        //Console.WriteLine("POSITION INITIALE SCI : " + newPosition.X + " , " + newPosition.Y);
                         item.Center = newPosition;
                     }
-                    
+
+                    // Events
+                    item.PreviewTouchDown += new EventHandler<TouchEventArgs>(handle_TouchDown);
+                    item.PreviewTouchMove += new EventHandler<TouchEventArgs>(handle_TouchMove);
+                    item.PreviewTouchUp += new EventHandler<TouchEventArgs>(handle_TouchLeave);
+                    TouchExtensions.AddTapGestureHandler(item, new EventHandler<TouchEventArgs>(handle_TapGesture));
+                    item.PreviewMouseUp += new MouseButtonEventHandler(handle_MouseUp);
+
                     myScatterView.Items.Add(item);
+
+                    // Animation : FadeIn
+                    DoubleAnimation opacityAnimation = null;
+                    opacityAnimation = new DoubleAnimation(0, 0.5, TimeSpan.FromSeconds(0.5), FillBehavior.Stop);
+                    opacityAnimation.AccelerationRatio = 0.5;
+                    opacityAnimation.DecelerationRatio = 0.5;
+                    opacityAnimation.FillBehavior = FillBehavior.Stop;
+                    opacityAnimation.Completed += delegate(object send, EventArgs ev)
+                    {
+                        item.Opacity = 0.5;
+                    };
+                    item.BeginAnimation(ScatterViewItem.OpacityProperty, opacityAnimation);
+
                 })
             );
         }
@@ -234,15 +248,17 @@ namespace MySurfaceApplication
                     {
                         ScatterViewItem wantedChild = objectScatterViewItem as ScatterViewItem;
 
-                        object objectScatterView = myScatterView.FindName(beginningLetter + zouzouColor);
-                        if (objectScatterView is ScatterView)
+                        // Animation : FadeOut
+                        DoubleAnimation opacityAnimation = null;
+                        opacityAnimation = new DoubleAnimation(wantedChild.Opacity, 0, TimeSpan.FromSeconds(0.5), FillBehavior.Stop);
+                        opacityAnimation.AccelerationRatio = 0.5;
+                        opacityAnimation.DecelerationRatio = 0.5;
+                        opacityAnimation.FillBehavior = FillBehavior.Stop;
+                        opacityAnimation.Completed += delegate(object send, EventArgs ev)
                         {
-                            ScatterView scatterView = new ScatterView();
-                            scatterView = objectScatterView as ScatterView;
-                            scatterView.Items.Remove(wantedChild);
-                            return;
-                        }
-                        myScatterView.Items.Remove(wantedChild);
+                            myScatterView.Items.Remove(wantedChild);
+                        };
+                        wantedChild.BeginAnimation(ScatterViewItem.OpacityProperty, opacityAnimation);
                     }
                 })
             );
@@ -598,6 +614,12 @@ namespace MySurfaceApplication
                     item.Opacity = 0.85;
                     item.MinHeight = 200;
                     item.MinWidth = 200;
+
+                    item.ApplyTemplate();
+                    Microsoft.Surface.Presentation.Generic.SurfaceShadowChrome ssc;
+                    ssc = item.Template.FindName("shadow", item) as Microsoft.Surface.Presentation.Generic.SurfaceShadowChrome;
+                    ssc.Visibility = Visibility.Hidden;
+
                     myScatterView.Items.Add(item);
                 })
             );
