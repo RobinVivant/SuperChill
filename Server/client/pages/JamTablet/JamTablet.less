@@ -46,6 +46,7 @@
     overflow: auto;
     margin-bottom:10px;
     border-radius: 4px;
+    overflow-x:hidden;
   }
 
   .trackItem{
@@ -101,7 +102,6 @@
     font-size: 1.2em;
     line-height: 45px;
     margin-right: 10px;
-    float:right;
     overflow:hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -120,7 +120,7 @@
     text-overflow: ellipsis;
     white-space: nowrap;
     width: 82%;
-    text-align:right;
+    text-align:left;
     color: white;
     font-weight: bold;
   }
@@ -129,7 +129,7 @@
     margin-left: 0;
     border: 0;
     border-radius: 4px;
-     i{
+     .fa-trash-o{
        width: auto;
        line-height: 45px;
        margin-left: 10px;
@@ -140,6 +140,13 @@
          opacity: 1;
        }
      }
+    .fa-magic{
+      width: auto;
+      line-height: 45px;
+      margin-left:1.2em;
+      font-size:1.2em;
+      opacity: 1;
+    }
   }
 
   .trackGroupSelected{
@@ -163,5 +170,59 @@
     line-height: 45px;
     font-size: 1.5em;
   }
+
+  .effect-slider{
+
+    height: 45px;
+    margin-top:10px;
+    padding-left:10px;
+    padding-right:10px;
+
+    .slider-bar{
+      height: 45px;
+      background-color: black;
+      border-radius: 45px 0 0 45px;
+      padding-left:22px;
+
+      .effect-name{
+        background-color:white;
+        text-align:center;
+        line-height: 45px;
+        color: black;
+        float:right;
+        margin-right:-22.5px;
+        width:45px;
+        height:45px;
+        border-radius:50%;
+        cursor:pointer;
+      }
+    }
+
+  }
+
+  .magic-switch-container{
+
+    justify-content:space-around;
+    display:flex;
+    display:-webkit-flex;
+    margin-top:20px;
+    font-size:1.8em;
+    margin-bottom:75px;
+
+
+    .magic-label{
+      display:flex;
+      display:-webkit-flex;
+    }
+    .magic-button{
+      display:flex;
+      display:-webkit-flex;
+      width:60px;
+      height:45px;
+      font-size:0.8em;
+    }
+
+  }
+
 
 }

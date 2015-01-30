@@ -1,8 +1,4 @@
 
-if (Meteor.isServer) {
-    console.log();
-}
-
 Samples = new Meteor.Collection('samples');
 
 

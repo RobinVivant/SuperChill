@@ -16,7 +16,7 @@
             {{#each tracksGroups}}
                 <div class="trackItem trackGroup {{isGroupSelected}}" style="background-color: #{{color}};">
                     <i class="fa fa-trash-o fa-2x"></i>
-                    <div class="groupName">{{name}}</div>
+                    <div class="groupName">{{name}} <i class="fa fa-magic" style="{{#if isLeapMotionActivated _id}}{{else}}visibility:hidden;{{/if}}"></i></div>
                 </div>
             {{/each}}
         </div>
@@ -25,6 +25,17 @@
                      background-color:#{{getSelectedGroupColor}};
                  {{#if shouldDisplayEffects}}{{else}}visibility:hidden;{{/if}}
                      ">
+            <div class="magic-switch-container">
+                    <div class="magic-label">MAGIC</div>
+                    <button class="magic-button">{{getMagicValue}}</button>
+            </div>
+            {{#each currentEffects}}
+                <div class="effect-slider">
+                    <div class="slider-bar" style="width:{{effectToPercent this.value}}%;">
+                        <div class="effect-name">{{this.name}}</div>
+                    </div>
+                </div>
+            {{/each}}
         </div>
     </div>
 </template>

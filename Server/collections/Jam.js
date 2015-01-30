@@ -4,6 +4,7 @@ Jam = new Meteor.Collection('jam');
 
 Jam.allow({
     insert: function (userId, doc) {
+        doc.leapTargets = [];
         return true;
     },
     update: function (userId, doc, fields, modifier) {
@@ -39,6 +40,23 @@ JamTracks.allow({
         return true;
     },
     remove: function (userId, doc) {
+        TrackGroups.update({
+                jamId: doc.jamId,
+                tracks: doc._id
+            },{
+                $pull :{
+                    tracks: doc._id
+                }
+            },
+            { multi: true }
+        );
+
+        TrackGroups.remove({
+                jamId: doc.jamId,
+                tracks: {$size:0}
+            }
+        );
+
         return true;
     }
 });
