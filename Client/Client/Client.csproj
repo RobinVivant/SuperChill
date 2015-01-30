@@ -186,9 +186,6 @@
     <AppDesigner Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resources\img3.jpg" />
-    <Resource Include="Resources\img2.jpg" />
-    <Resource Include="Resources\img1.jpg" />
     <Content Include="DDPClient.NET\.gitattributes" />
     <Content Include="DDPClient.NET\.gitignore" />
     <Content Include="DDPClient.NET\Lib\Newtonsoft.Json.dll" />
@@ -200,12 +197,15 @@
     <Content Include="DDPClient.NET\Net.DDP.Client.sln" />
     <Content Include="DDPClient.NET\Net.DDP.Client\Net.DDP.Client.csproj" />
     <Content Include="DDPClient.NET\Net.DDP.SignalR\Net.DDP.SignalR.csproj" />
-    <Content Include="Resources\icon.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Content Include="MySurfaceApplication.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Resource Include="Resources\Bass.png" />
+    <Resource Include="Resources\Drum Single.png" />
+    <Resource Include="Resources\Drum.png" />
+    <Resource Include="Resources\SFX.png" />
+    <Resource Include="Resources\Synth.png" />
+    <Resource Include="Resources\Vox.png" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="DDPClient.NET\.git\objects\info\" />
