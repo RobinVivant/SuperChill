@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CSharp._01.HelloWorld
+namespace MySurfaceApplication
 {
     class LeapListener : Listener
     {

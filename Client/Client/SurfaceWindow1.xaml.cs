@@ -41,8 +41,13 @@ namespace MySurfaceApplication
         Object thisLock = new Object();
 
         // Name d'un ScatterViewItem = beginningLetter + trackId 
-        //car Name doit obligatoirement commencer par une lettre
+        // car Name doit obligatoirement commencer par une lettre
         string beginningLetter = "k";
+
+        // Scatterviewitems position
+        Random rand = new Random();
+        TouchDevice ellipseControlTouchDevice;
+        Point lastPoint;
 
         Logger info = new Logger("Surface.log");
         private static List<Message> _messages = new List<Message>();
@@ -104,6 +109,35 @@ namespace MySurfaceApplication
             }
         }
 
+        private Point RandCenter(int centerX, int centerY)
+        {
+            int randx, randy;
+
+            if (centerX > 200)
+            {
+                randx = rand.Next(centerX - 200, centerX + 200);
+            }
+            else
+            {
+                randx = rand.Next(centerX, centerX + 200);
+            }
+            if (centerY > 200)
+            {
+                randy = rand.Next(centerY - 200, centerY + 200);
+            }
+            else
+            {
+                randy = rand.Next(centerY, centerY + 200);
+            }
+            return new Point(randx, randy);
+        }
+
+        private int RandOrientation(int low, int up)
+        {
+            int randor = rand.Next(low, up);
+            return randor;
+        }
+
         // Dessine un cercle sur la table surface correspondant à une track (avec la couleur du zouzou et le nom de la track)
         public void drawCircle(string trackId, string trackPath, string zouzouColor)
         {
@@ -111,24 +145,41 @@ namespace MySurfaceApplication
             char[] delimiterChars = { '/', '.' };
             string[] words = trackPath.Split(delimiterChars);
             trackName = words[words.Length - 2];
-
-            //Console.WriteLine(trackName);
-            //Console.WriteLine(zouzouColor);
+            trackName = trackName.Replace("_", " ");
 
             myScatterView.Dispatcher.Invoke(DispatcherPriority.Normal,
                 new Action(delegate()
-
                 {
-                    Border border = new Border();
                     var converter = new System.Windows.Media.BrushConverter();
                     var color = (Brush)converter.ConvertFromString("#" + zouzouColor);
+                    Point newPosition = new Point();
+
+                    // Verifier si un scatterViewItem de la meme couleur a deja ete pose
+                    foreach (object obj in myScatterView.Items)
+                    {
+                        ScatterViewItem svi = myScatterView.ItemContainerGenerator.ContainerFromItem(obj) as ScatterViewItem;
+                        object objectSvi = svi.Content;
+                        if (objectSvi is Border)
+                        {
+                            Border sviContent = new Border();
+                            sviContent = objectSvi as Border;
+                            // Si oui, positionner le nouveau scatterViewItem aux alentours du svi de meme couleur
+                            if (sviContent.Background.ToString() == color.ToString())
+                            {
+                                newPosition = RandCenter((int)svi.ActualCenter.X, (int)svi.ActualCenter.Y);
+                                break;
+                            }
+                        }
+                    }
+
+                    Border border = new Border();
                     border.BorderBrush = color;
                     border.Background = color;
                     //border.BorderBrush = Brushes.White;
                     //border.BorderThickness = new Thickness(5);
-                    border.CornerRadius = new CornerRadius(130);
-                    border.Height = 130;
-                    border.Width = 130;
+                    border.CornerRadius = new CornerRadius(100);
+                    border.Height = 100;
+                    border.Width = 100;
 
                     TextBlock content = new TextBlock();
                     content.Text = trackName;
@@ -146,22 +197,34 @@ namespace MySurfaceApplication
                     ScatterViewItem item = new ScatterViewItem();
                     item.Name = beginningLetter + trackId;
                     myScatterView.RegisterName(item.Name, item);
-                    //item.PreviewTouchDown += new EventHandler<TouchEventArgs>(handle_TouchDown);
-                    //item.PreviewTouchUp += new EventHandler<TouchEventArgs>(handle_TouchUp);
-                    TouchExtensions.AddPreviewHoldGestureHandler(item, new EventHandler<TouchEventArgs>(handle_HoldGesture));
-                    TouchExtensions.AddHoldGestureHandler(item, new EventHandler<TouchEventArgs>(handle_HoldGesture));
+                    item.PreviewTouchDown += new EventHandler<TouchEventArgs>(handle_TouchDown);
+                    item.PreviewTouchMove += new EventHandler<TouchEventArgs>(handle_TouchMove);
+                    item.PreviewTouchUp += new EventHandler<TouchEventArgs>(handle_TouchLeave);
                     TouchExtensions.AddTapGestureHandler(item, new EventHandler<TouchEventArgs>(handle_TapGesture));
                     item.PreviewMouseUp += new MouseButtonEventHandler(handle_MouseUp);
+        
                     item.Content = border;
                     item.Background = new SolidColorBrush(Colors.Transparent);
                     item.Opacity = 0.5;
+                    item.Height = 100;
+                    item.Width = 100;
+                    item.CanScale = false;
+                    item.ClipToBounds = false;
+                    //item.Orientation = 0;
+                  
+                    if (newPosition != (new Point(0, 0)))
+                    {
+                        //Console.WriteLine("POSITION INITIALE SCI : " + newPosition.X + " , " + newPosition.Y);
+                        item.Center = newPosition;
+                    }
+                    
                     myScatterView.Items.Add(item);
                 })
             );
         }
 
         // Supprime le cercle sur la table surface, correspondant à une track 
-        public void removeCircle(string trackId)
+        public void removeCircle(string trackId, string zouzouColor)
         {
             myScatterView.Dispatcher.Invoke(DispatcherPriority.Normal,
                 new Action(delegate()
@@ -170,15 +233,102 @@ namespace MySurfaceApplication
                     if (objectScatterViewItem is ScatterViewItem)
                     {
                         ScatterViewItem wantedChild = objectScatterViewItem as ScatterViewItem;
+
+                        object objectScatterView = myScatterView.FindName(beginningLetter + zouzouColor);
+                        if (objectScatterView is ScatterView)
+                        {
+                            ScatterView scatterView = new ScatterView();
+                            scatterView = objectScatterView as ScatterView;
+                            scatterView.Items.Remove(wantedChild);
+                            return;
+                        }
                         myScatterView.Items.Remove(wantedChild);
                     }
                 })
             );
         }
 
-        private void handle_HoldGesture(object sender, TouchEventArgs e)
+        private void handle_TouchDown(object sender, TouchEventArgs e)
         {
-            // Do nothing
+            ScatterViewItem item = sender as ScatterViewItem;
+
+            // Capture to the ellipse.  
+            e.TouchDevice.Capture(item);
+
+            // Remember this contact if a contact has not been remembered already.  
+            // This contact is then used to move the ellipse around.
+            if (ellipseControlTouchDevice == null)
+            {
+                ellipseControlTouchDevice = e.TouchDevice;
+
+                // Remember where this contact took place.  
+                lastPoint = item.ActualCenter;
+            }
+
+            // Mark this event as handled.  
+            e.Handled = true;
+        }
+
+        private void handle_TouchMove(object sender, TouchEventArgs e)
+        {
+            ScatterViewItem currentItem = sender as ScatterViewItem;
+
+            if (e.TouchDevice == ellipseControlTouchDevice)
+            {
+                // Get the current position of the contact.  
+                Point currentTouchPoint = currentItem.ActualCenter;
+
+                // Get the change between the controlling contact point and
+                // the changed contact point.  
+                double deltaX = currentTouchPoint.X - lastPoint.X;
+                double deltaY = currentTouchPoint.Y - lastPoint.Y;
+            
+                object objCurrentItem = currentItem.Content;
+                string currentColor = "";
+                if (objCurrentItem is Border)
+                {
+                    Border sviContent = new Border();
+                    sviContent = objCurrentItem as Border;
+                    currentColor = sviContent.Background.ToString();
+                }
+
+                Point itemPosition = new Point();
+
+                // Parcourir les sci de meme couleur
+                foreach (object obj in myScatterView.Items)
+                {
+                    ScatterViewItem svi = myScatterView.ItemContainerGenerator.ContainerFromItem(obj) as ScatterViewItem;
+                    object objectSvi = svi.Content;
+                    if (objectSvi is Border)
+                    {
+                        Border sviContent = new Border();
+                        sviContent = objectSvi as Border;
+                        if ((sviContent.Background.ToString() == currentColor) && (svi != currentItem))
+                        {
+                            itemPosition = svi.ActualCenter;
+                            svi.Center = new Point(itemPosition.X + deltaX, itemPosition.Y + deltaY);
+                        }
+                    }
+                }
+
+                // Forget the old contact point, and remember the new contact point.  
+                lastPoint = currentTouchPoint;
+
+                // Mark this event as handled.  
+                e.Handled = true;
+            }
+        }
+
+        private void handle_TouchLeave(object sender, TouchEventArgs e)
+        {
+            // If this contact is the one that was remembered  
+            if (e.TouchDevice == ellipseControlTouchDevice)
+            {
+                // Forget about this contact.
+                ellipseControlTouchDevice = null;
+            }
+
+            // Mark this event as handled.  
             e.Handled = true;
         }
 
@@ -312,7 +462,7 @@ namespace MySurfaceApplication
             }
             else if (e.PropertyName == "Removed")
             {
-                removeCircle(jamTracks.Id);
+                removeCircle(jamTracks.Id, jamTracks.ZouzouColor);
                 manager.removeLoop(jamTracks.Id);
             }
         }
