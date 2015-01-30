@@ -11,7 +11,7 @@ namespace MySurfaceApplication
         ISoundEngine engine;
         ISound sound;
         private string filePath;
-
+        System.Collections.Hashtable fxValues;
         ISoundEffectControl fx;
 
 
@@ -27,6 +27,8 @@ namespace MySurfaceApplication
             }
             sound = l;
             fx = sound.SoundEffectControl;
+            fxValues = new System.Collections.Hashtable();
+            resetSoundEffects();
         }
 
         internal void prepareForDestruction()
@@ -39,6 +41,19 @@ namespace MySurfaceApplication
         }
 
         internal void setEffect(SoundEffect effect, float value)
+        {
+            if (value > 1) value = 1;
+            if (value < 0) value = 0;
+            fxValues[effect] = value;
+            setEffectValues(effect, value);
+        }
+
+        internal float getEffect(SoundEffect effect)
+        {
+            return (float)fxValues[effect];
+        }
+
+        private void setEffectValues(SoundEffect effect, float value)
         {
             switch (effect)
             {
@@ -118,5 +133,17 @@ namespace MySurfaceApplication
             //sound.PlayPosition = 0;
             sound.Paused = !playing;
         }
+
+
+        private void resetSoundEffects()
+        {
+            fxValues[SoundEffect.Chorus] = 0f;
+            fxValues[SoundEffect.Echo] = 0f;
+            fxValues[SoundEffect.Flanger] = 0f;
+            fxValues[SoundEffect.Gargle] = 0f;
+            fxValues[SoundEffect.WavesReverb] = 0f;
+            fxValues[SoundEffect.Volume] = 1f;
+        }
+
     }
 }

@@ -5,15 +5,17 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CSharp._01.HelloWorld
+namespace MySurfaceApplication
 {
     class LeapListener : Listener
     {
 
-        public delegate void onHandChange(float pitch, float yaw, float yPos);
+        public delegate void onHandVariation(float dPitch, float dX, float dY);
 
         private Object thisLock = new Object();
-        public onHandChange OnHandSpatialPropertiesChange;
+        private bool resetPosition = true;
+        private float prevPitch, prevX, prevY;
+        public onHandVariation OnHandVariation;
 
         private void SafeWriteLine(String line)
         {
@@ -49,13 +51,28 @@ namespace CSharp._01.HelloWorld
         {
             Leap.Frame frame = controller.Frame();
 
-            if (frame.Hands.Count == 0)
+            if (frame.Hands.Count != 1)
+            {
+                resetPosition = true;
                 return;
+            }
 
-            Leap.Vector direction = frame.Hands.First().Direction;
-            Leap.Vector position = frame.Hands.First().PalmPosition;
+            Leap.Hand h = frame.Hands.First();
 
-            this.OnHandSpatialPropertiesChange(direction.Pitch, direction.Yaw, position.y);
+            Leap.Vector direction = h.Direction;
+            Leap.Vector position = h.PalmPosition;
+
+            if (resetPosition)
+            {
+                resetPosition = false;
+            }
+            else
+            {
+                this.OnHandVariation(direction.Pitch - prevPitch, position.x - prevX, position.y - prevY);
+            }
+            prevPitch = direction.Pitch;
+            prevX = position.x;
+            prevY = position.y;
         }
     }
 }

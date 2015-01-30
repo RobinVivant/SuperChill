@@ -20,6 +20,7 @@ using Net.DDP.Client;
 using System.Windows.Threading;
 using System.ComponentModel;
 using System.Collections.ObjectModel;
+using System.Windows.Media.Animation;
 
 
 namespace MySurfaceApplication
@@ -41,8 +42,13 @@ namespace MySurfaceApplication
         Object thisLock = new Object();
 
         // Name d'un ScatterViewItem = beginningLetter + trackId 
-        //car Name doit obligatoirement commencer par une lettre
+        // car Name doit obligatoirement commencer par une lettre
         string beginningLetter = "k";
+
+        // Scatterviewitems position
+        Random rand = new Random();
+        TouchDevice ellipseControlTouchDevice;
+        Point lastPoint;
 
         Logger info = new Logger("Surface.log");
         private static List<Message> _messages = new List<Message>();
@@ -105,64 +111,135 @@ namespace MySurfaceApplication
             }
         }
 
+        private Point RandCenter(int centerX, int centerY)
+        {
+            int randx, randy;
+
+            if (centerX > 200)
+            {
+                randx = rand.Next(centerX - 200, centerX + 200);
+            }
+            else
+            {
+                randx = rand.Next(centerX, centerX + 200);
+            }
+            if (centerY > 200)
+            {
+                randy = rand.Next(centerY - 200, centerY + 200);
+            }
+            else
+            {
+                randy = rand.Next(centerY, centerY + 200);
+            }
+            return new Point(randx, randy);
+        }
+
+        private int RandOrientation(int low, int up)
+        {
+            int randor = rand.Next(low, up);
+            return randor;
+        }
+
         // Dessine un cercle sur la table surface correspondant à une track (avec la couleur du zouzou et le nom de la track)
         public void drawCircle(string trackId, string trackPath, string zouzouColor)
         {
             string trackName;
-            char[] delimiterChars = { '/', '.' };
-            string[] words = trackPath.Split(delimiterChars);
-            trackName = words[words.Length - 2];
+            string trackType;
 
-            //Console.WriteLine(trackName);
-            //Console.WriteLine(zouzouColor);
+            trackName = samplesMap.findSample(trackPath).Name;
+            trackType = samplesMap.findSample(trackPath).Type;
 
             myScatterView.Dispatcher.Invoke(DispatcherPriority.Normal,
                 new Action(delegate()
-
                 {
-                    Border border = new Border();
                     var converter = new System.Windows.Media.BrushConverter();
                     var color = (Brush)converter.ConvertFromString("#" + zouzouColor);
+                    Point newPosition = new Point();
+
+                    // Verifier si un scatterViewItem de la meme couleur a deja ete pose
+                    foreach (object obj in myScatterView.Items)
+                    {
+                        ScatterViewItem svi = myScatterView.ItemContainerGenerator.ContainerFromItem(obj) as ScatterViewItem;
+                        object objectSvi = svi.Content;
+                        if (objectSvi is Border)
+                        {
+                            Border sviContent = new Border();
+                            sviContent = objectSvi as Border;
+                            // Si oui, positionner le nouveau scatterViewItem aux alentours du svi de meme couleur
+                            if (sviContent.Background.ToString() == color.ToString())
+                            {
+                                newPosition = RandCenter((int)svi.ActualCenter.X, (int)svi.ActualCenter.Y);
+                                break;
+                            }
+                        }
+                    }
+
+                    // Ellipse
+                    Border border = new Border();
                     border.BorderBrush = color;
                     border.Background = color;
-                    //border.BorderBrush = Brushes.White;
-                    //border.BorderThickness = new Thickness(5);
-                    border.CornerRadius = new CornerRadius(130);
-                    border.Height = 130;
-                    border.Width = 130;
+                    border.CornerRadius = new CornerRadius(100);
+                    border.Height = 100;
+                    border.Width = 100;
 
+                    // Content
                     TextBlock content = new TextBlock();
                     content.Text = trackName;
                     content.Foreground = new SolidColorBrush(Colors.White);
                     content.FontWeight = FontWeights.Bold;
                     content.FontSize = 14;
-                    content.Height = 40;
-                    content.Width = 100;
-                    content.HorizontalAlignment = HorizontalAlignment.Center;
+                    content.Height = 35;
+                    content.Width = 98;
+                    content.HorizontalAlignment = HorizontalAlignment.Stretch;
                     content.VerticalAlignment = VerticalAlignment.Center;
                     content.TextAlignment = TextAlignment.Center;
                     content.TextWrapping = TextWrapping.Wrap;
-
                     border.Child = content;
+
+                    // Item creation
                     ScatterViewItem item = new ScatterViewItem();
                     item.Name = beginningLetter + trackId;
                     myScatterView.RegisterName(item.Name, item);
-                    //item.PreviewTouchDown += new EventHandler<TouchEventArgs>(handle_TouchDown);
-                    //item.PreviewTouchUp += new EventHandler<TouchEventArgs>(handle_TouchUp);
-                    TouchExtensions.AddPreviewHoldGestureHandler(item, new EventHandler<TouchEventArgs>(handle_HoldGesture));
-                    TouchExtensions.AddHoldGestureHandler(item, new EventHandler<TouchEventArgs>(handle_HoldGesture));
-                    TouchExtensions.AddTapGestureHandler(item, new EventHandler<TouchEventArgs>(handle_TapGesture));
-                    item.PreviewMouseUp += new MouseButtonEventHandler(handle_MouseUp);
                     item.Content = border;
                     item.Background = new SolidColorBrush(Colors.Transparent);
-                    item.Opacity = 0.5;
+                    item.Opacity = 0;
+                    item.Height = 100;
+                    item.Width = 100;
+                    item.CanScale = false;
+                    item.ClipToBounds = false;
+                    //item.Orientation = 0;
+                    if (newPosition != (new Point(0, 0)))
+                    {
+                        item.Center = newPosition;
+                    }
+
+                    // Events
+                    item.PreviewTouchDown += new EventHandler<TouchEventArgs>(handle_TouchDown);
+                    item.PreviewTouchMove += new EventHandler<TouchEventArgs>(handle_TouchMove);
+                    item.PreviewTouchUp += new EventHandler<TouchEventArgs>(handle_TouchLeave);
+                    TouchExtensions.AddTapGestureHandler(item, new EventHandler<TouchEventArgs>(handle_TapGesture));
+                    item.PreviewMouseUp += new MouseButtonEventHandler(handle_MouseUp);
+
                     myScatterView.Items.Add(item);
+
+                    // Animation : FadeIn
+                    DoubleAnimation opacityAnimation = null;
+                    opacityAnimation = new DoubleAnimation(0, 0.5, TimeSpan.FromSeconds(0.5), FillBehavior.Stop);
+                    opacityAnimation.AccelerationRatio = 0.5;
+                    opacityAnimation.DecelerationRatio = 0.5;
+                    opacityAnimation.FillBehavior = FillBehavior.Stop;
+                    opacityAnimation.Completed += delegate(object send, EventArgs ev)
+                    {
+                        item.Opacity = 0.5;
+                    };
+                    item.BeginAnimation(ScatterViewItem.OpacityProperty, opacityAnimation);
+
                 })
             );
         }
 
         // Supprime le cercle sur la table surface, correspondant à une track 
-        public void removeCircle(string trackId)
+        public void removeCircle(string trackId, string zouzouColor)
         {
             myScatterView.Dispatcher.Invoke(DispatcherPriority.Normal,
                 new Action(delegate()
@@ -171,15 +248,104 @@ namespace MySurfaceApplication
                     if (objectScatterViewItem is ScatterViewItem)
                     {
                         ScatterViewItem wantedChild = objectScatterViewItem as ScatterViewItem;
-                        myScatterView.Items.Remove(wantedChild);
+
+                        // Animation : FadeOut
+                        DoubleAnimation opacityAnimation = null;
+                        opacityAnimation = new DoubleAnimation(wantedChild.Opacity, 0, TimeSpan.FromSeconds(0.5), FillBehavior.Stop);
+                        opacityAnimation.AccelerationRatio = 0.5;
+                        opacityAnimation.DecelerationRatio = 0.5;
+                        opacityAnimation.FillBehavior = FillBehavior.Stop;
+                        opacityAnimation.Completed += delegate(object send, EventArgs ev)
+                        {
+                            myScatterView.Items.Remove(wantedChild);
+                        };
+                        wantedChild.BeginAnimation(ScatterViewItem.OpacityProperty, opacityAnimation);
                     }
                 })
             );
         }
 
-        private void handle_HoldGesture(object sender, TouchEventArgs e)
+        private void handle_TouchDown(object sender, TouchEventArgs e)
         {
-            // Do nothing
+            ScatterViewItem item = sender as ScatterViewItem;
+
+            // Capture to the ellipse.  
+            e.TouchDevice.Capture(item);
+
+            // Remember this contact if a contact has not been remembered already.  
+            // This contact is then used to move the ellipse around.
+            if (ellipseControlTouchDevice == null)
+            {
+                ellipseControlTouchDevice = e.TouchDevice;
+
+                // Remember where this contact took place.  
+                lastPoint = item.ActualCenter;
+            }
+
+            // Mark this event as handled.  
+            e.Handled = true;
+        }
+
+        private void handle_TouchMove(object sender, TouchEventArgs e)
+        {
+            ScatterViewItem currentItem = sender as ScatterViewItem;
+
+            if (e.TouchDevice == ellipseControlTouchDevice)
+            {
+                // Get the current position of the contact.  
+                Point currentTouchPoint = currentItem.ActualCenter;
+
+                // Get the change between the controlling contact point and
+                // the changed contact point.  
+                double deltaX = currentTouchPoint.X - lastPoint.X;
+                double deltaY = currentTouchPoint.Y - lastPoint.Y;
+            
+                object objCurrentItem = currentItem.Content;
+                string currentColor = "";
+                if (objCurrentItem is Border)
+                {
+                    Border sviContent = new Border();
+                    sviContent = objCurrentItem as Border;
+                    currentColor = sviContent.Background.ToString();
+                }
+
+                Point itemPosition = new Point();
+
+                // Parcourir les sci de meme couleur
+                foreach (object obj in myScatterView.Items)
+                {
+                    ScatterViewItem svi = myScatterView.ItemContainerGenerator.ContainerFromItem(obj) as ScatterViewItem;
+                    object objectSvi = svi.Content;
+                    if (objectSvi is Border)
+                    {
+                        Border sviContent = new Border();
+                        sviContent = objectSvi as Border;
+                        if ((sviContent.Background.ToString() == currentColor) && (svi != currentItem))
+                        {
+                            itemPosition = svi.ActualCenter;
+                            svi.Center = new Point(itemPosition.X + deltaX, itemPosition.Y + deltaY);
+                        }
+                    }
+                }
+
+                // Forget the old contact point, and remember the new contact point.  
+                lastPoint = currentTouchPoint;
+
+                // Mark this event as handled.  
+                e.Handled = true;
+            }
+        }
+
+        private void handle_TouchLeave(object sender, TouchEventArgs e)
+        {
+            // If this contact is the one that was remembered  
+            if (e.TouchDevice == ellipseControlTouchDevice)
+            {
+                // Forget about this contact.
+                ellipseControlTouchDevice = null;
+            }
+
+            // Mark this event as handled.  
             e.Handled = true;
         }
 
@@ -234,7 +400,7 @@ namespace MySurfaceApplication
             }
             else if (e.PropertyName == "Removed")
             {
-                removeCircle(jamTracks.Id);
+                removeCircle(jamTracks.Id, jamTracks.ZouzouColor);
                 manager.removeLoop(jamTracks.Id);
             }
         }
@@ -338,7 +504,6 @@ namespace MySurfaceApplication
 
         public void drawJam(Jam jam)
         {
-
             myScatterView.Dispatcher.Invoke(DispatcherPriority.Normal,
                 new Action(delegate()
                 {
@@ -346,8 +511,6 @@ namespace MySurfaceApplication
                     var converter = new System.Windows.Media.BrushConverter();
                     border.BorderBrush = Brushes.AliceBlue;
                     border.Background = Brushes.LightSkyBlue;
-                    //border.BorderBrush = Brushes.White;
-                    //border.BorderThickness = new Thickness(5);
                     border.CornerRadius = new CornerRadius(130);
                     border.Height = 200;
                     border.Width = 200;
@@ -368,8 +531,6 @@ namespace MySurfaceApplication
                     ScatterViewItem item = new ScatterViewItem();
                     item.Name = beginningLetter + jam.Id;
                     myScatterView.RegisterName(item.Name, item);
-                    //item.PreviewTouchDown += new EventHandler<TouchEventArgs>(handle_TouchDown);
-                    //item.PreviewTouchUp += new EventHandler<TouchEventArgs>(handle_TouchUp);
                     TouchExtensions.AddTapGestureHandler(item, new EventHandler<TouchEventArgs>(handle_JamTapGesture));
                     item.PreviewMouseUp += new MouseButtonEventHandler(handle_JamMouseUp);
                     item.Content = border;
@@ -377,6 +538,12 @@ namespace MySurfaceApplication
                     item.Opacity = 0.85;
                     item.MinHeight = 200;
                     item.MinWidth = 200;
+
+                    item.ApplyTemplate();
+                    Microsoft.Surface.Presentation.Generic.SurfaceShadowChrome ssc;
+                    ssc = item.Template.FindName("shadow", item) as Microsoft.Surface.Presentation.Generic.SurfaceShadowChrome;
+                    ssc.Visibility = Visibility.Hidden;
+
                     myScatterView.Items.Add(item);
                 })
             );
@@ -405,11 +572,12 @@ namespace MySurfaceApplication
 
         private void InitializeDefinitions()
         {
-            for (byte k = 1; k <= 7; k++)
+            byte[] tags = { 0xB5,0x01,0x20,0xC4,0xA6,0xC5};
+            for (int k = 1; k <= 5; k++)
             {
                 TagVisualizationDefinition tagDef = new TagVisualizationDefinition();
                 // The tag value that this definition will respond to.
-                tagDef.Value = k;
+                tagDef.Value = tags[k-1];
                 // The .xaml file for the UI
                 tagDef.Source = new Uri("TagVisualization1.xaml", UriKind.Relative);
                 // The maximum number for this tag value.
@@ -459,27 +627,27 @@ namespace MySurfaceApplication
                     filter.myEllipse.Fill = SurfaceColors.Accent1Brush;
                     filter.Effect = SoundEffect.Volume;
                     break;
-                case 2:
+                case 0x20:
                     filter.FilterType.Content = "Chorus";
                     filter.myEllipse.Fill = SurfaceColors.Accent2Brush;
                     filter.Effect = SoundEffect.Chorus;
                     break;
-                case 3:
+                case 0xA6:
                     filter.FilterType.Content = "Echo";
                     filter.myEllipse.Fill = SurfaceColors.Accent3Brush;
                     filter.Effect = SoundEffect.Echo;
                     break;
-                case 4:
+                case 0xC4:
                     filter.FilterType.Content = "Flanger";
                     filter.myEllipse.Fill = SurfaceColors.Accent4Brush;
                     filter.Effect = SoundEffect.Flanger;
                     break;
-                case 5:
+                case 0xB5:
                     filter.FilterType.Content = "Gargle";
                     filter.myEllipse.Fill = SurfaceColors.BulletBrush;
                     filter.Effect = SoundEffect.Gargle;
                     break;
-                case 6:
+                case 0xC5:
                     filter.FilterType.Content = "Waves Reverb";
                     filter.myEllipse.Fill = SurfaceColors.BulletDisabledBrush;
                     filter.Effect = SoundEffect.WavesReverb;
@@ -495,19 +663,21 @@ namespace MySurfaceApplication
         private void MyTagVisualizer_VisualizationMoved(object sender, TagVisualizerEventArgs e)
         {
             TagVisualization1 filter = (TagVisualization1)e.TagVisualization;
-            float val = 0;
+            double val = 0;
+            
             if (filter.associatedJamTracks != null)
             {
+                /*
                 // Quand on tourne le tag à droite
                 if (filter.Valeur - filter.Orientation < 0)
                 {                    
                     if (filter.Orientation >= filter.OriginalOrientation)
                     {
-                        val = (float)Math.Abs((filter.Orientation - filter.OriginalOrientation)) / 360;                        
+                        val = (float)Math.Abs((filter.Orientation - filter.OriginalOrientation));                        
                     }
                     else // on depasse 360 et on repasse à 0
                     {
-                        val = (float)Math.Abs(filter.Orientation + (360 - filter.OriginalOrientation)) / 360;
+                        val = (float)Math.Abs(360 - (filter.OriginalOrientation - filter.Orientation));
                     }
                 }
                 // Quand on tourne le tag à gauche
@@ -515,18 +685,33 @@ namespace MySurfaceApplication
                 {
                     if (filter.Orientation <= filter.OriginalOrientation)
                     {
-                        val = (float)Math.Abs(filter.OriginalOrientation - filter.Orientation) / 360;                        
+                        val = (float) (filter.Orientation - filter.OriginalOrientation);                        
                     }
                     else // on passe en dessous de 0 et on repasse à 360
                     {
-                        val = (float)Math.Abs(Math.Abs(filter.OriginalOrientation + 360 - filter.Orientation)) / 360;
+                        val = (float) (filter.Orientation - 360 - filter.OriginalOrientation);
                     }
+                }*/
+                val = filter.Orientation - filter.Valeur;
+                if (val > 300)
+                {
+                    val -= 360;
                 }
-                filter.Opacity = val/360;
-                manager.setEffectOnLoop(filter.associatedJamTracks.Id, filter.Effect, val);
+                else if (val < -300)
+                {
+                    val += 360;
+                }
+
+                var total = manager.applyDeltaToEffectOnLoop(filter.associatedJamTracks.Id, filter.Effect, (float) val / 360);
+                filter.Opacity = total;
+                Console.WriteLine("total " + total);
                 //filter.GeneralEffectValue = filter.associatedJamTracks.Effect1;
+                filter.Valeur = filter.Orientation;
             }
-            filter.Opacity = 1;
+            else
+            {
+                filter.Opacity = 1;
+            }
         }
     }
 }
