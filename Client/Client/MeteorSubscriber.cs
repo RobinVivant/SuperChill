@@ -149,7 +149,15 @@ namespace MySurfaceApplication
                             string id = added.Id;
                             string jamId = added.Fields["jamId"].ToString();
                             string zouzouColor = added.Fields["hexId"].ToString();
-                            string zouzouName = added.Fields["nickname"].ToString();
+                            string zouzouName;
+                            try
+                            {
+                                zouzouName = added.Fields["nickname"].ToString();
+                            }
+                            catch (KeyNotFoundException e)
+                            {
+                                zouzouName = "Boloss";
+                            };
 
                             zouzouList.Add(new Zouzou(id, jamId, zouzouColor, zouzouName));
                         }
