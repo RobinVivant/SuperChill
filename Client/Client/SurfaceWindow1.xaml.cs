@@ -661,7 +661,7 @@ namespace MySurfaceApplication
                     filter.myEllipse.Fill = SurfaceColors.BulletBrush;
                     filter.Effect = SoundEffect.Gargle;
                     break;
-                case 0xC5:
+                case 4:
                     filter.FilterType.Content = "Waves Reverb";
                     filter.myEllipse.Fill = SurfaceColors.BulletDisabledBrush;
                     filter.Effect = SoundEffect.WavesReverb;
