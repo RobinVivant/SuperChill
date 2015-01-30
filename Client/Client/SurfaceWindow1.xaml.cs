@@ -142,10 +142,10 @@ namespace MySurfaceApplication
         public void drawCircle(string trackId, string trackPath, string zouzouColor)
         {
             string trackName;
-            char[] delimiterChars = { '/', '.' };
-            string[] words = trackPath.Split(delimiterChars);
-            trackName = words[words.Length - 2];
-            trackName = trackName.Replace("_", " ");
+            string trackType;
+            
+            trackName = samplesMap.findSample(trackPath).Name;
+            trackType = samplesMap.findSample(trackPath).Type;
 
             myScatterView.Dispatcher.Invoke(DispatcherPriority.Normal,
                 new Action(delegate()
@@ -186,9 +186,9 @@ namespace MySurfaceApplication
                     content.Foreground = new SolidColorBrush(Colors.White);
                     content.FontWeight = FontWeights.Bold;
                     content.FontSize = 14;
-                    content.Height = 40;
-                    content.Width = 100;
-                    content.HorizontalAlignment = HorizontalAlignment.Center;
+                    content.Height = 35;
+                    content.Width = 98;
+                    content.HorizontalAlignment = HorizontalAlignment.Stretch;
                     content.VerticalAlignment = VerticalAlignment.Center;
                     content.TextAlignment = TextAlignment.Center;
                     content.TextWrapping = TextWrapping.Wrap;
@@ -564,7 +564,6 @@ namespace MySurfaceApplication
 
         public void drawJam(Jam jam)
         {
-
             myScatterView.Dispatcher.Invoke(DispatcherPriority.Normal,
                 new Action(delegate()
                 {
@@ -572,8 +571,6 @@ namespace MySurfaceApplication
                     var converter = new System.Windows.Media.BrushConverter();
                     border.BorderBrush = Brushes.AliceBlue;
                     border.Background = Brushes.LightSkyBlue;
-                    //border.BorderBrush = Brushes.White;
-                    //border.BorderThickness = new Thickness(5);
                     border.CornerRadius = new CornerRadius(130);
                     border.Height = 200;
                     border.Width = 200;
@@ -594,8 +591,6 @@ namespace MySurfaceApplication
                     ScatterViewItem item = new ScatterViewItem();
                     item.Name = beginningLetter + jam.Id;
                     myScatterView.RegisterName(item.Name, item);
-                    //item.PreviewTouchDown += new EventHandler<TouchEventArgs>(handle_TouchDown);
-                    //item.PreviewTouchUp += new EventHandler<TouchEventArgs>(handle_TouchUp);
                     TouchExtensions.AddTapGestureHandler(item, new EventHandler<TouchEventArgs>(handle_JamTapGesture));
                     item.PreviewMouseUp += new MouseButtonEventHandler(handle_JamMouseUp);
                     item.Content = border;
