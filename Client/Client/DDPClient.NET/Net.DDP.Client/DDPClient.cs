@@ -38,10 +38,19 @@ namespace Net.DDP.Client
             _connector.Send(message);
         }
 
+        public void Update(string methodName, params string[] args)
+        {
+            string message = string.Format("\"msg\": \"method\",\"method\": \"{0}\",\"params\": [{1}],\"id\": \"{2}\"", methodName, this.CreateSpecialJSonArray(args), this.NextId().ToString());
+            message = "{" + message + "}";
+            info.log(message);
+            _connector.Send(message);
+        }
+
         public void Call(string methodName, params string[] args)
         {
             string message = string.Format("\"msg\": \"method\",\"method\": \"{0}\",\"params\": [{1}],\"id\": \"{2}\"", methodName, this.CreateJSonArray(args), this.NextId().ToString());
             message = "{" + message + "}";
+            info.log(message);
             _connector.Send(message);
         }
 
@@ -66,6 +75,23 @@ namespace Net.DDP.Client
             {
                 argumentBuilder.Append(delimiter);
                 argumentBuilder.Append(string.Format("\"{0}\"", args[i]));
+                delimiter = ",";
+            }
+
+            return argumentBuilder.ToString();
+        }
+
+        private string CreateSpecialJSonArray(params string[] args)
+        {
+            if (args == null)
+                return string.Empty;
+
+            StringBuilder argumentBuilder = new StringBuilder();
+            string delimiter = string.Empty;
+            for (int i = 0; i < args.Length; i++)
+            {
+                argumentBuilder.Append(delimiter);
+                argumentBuilder.Append(string.Format("{0}", args[i]));
                 delimiter = ",";
             }
 

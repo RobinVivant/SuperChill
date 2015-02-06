@@ -97,6 +97,8 @@
       <DependentUpon>TagVisualization1.xaml</DependentUpon>
     </Compile>
     <Compile Include="SampleData.cs" />
+    <Compile Include="TrackGroups.cs" />
+    <Compile Include="TrackGroupsData.cs" />
     <Compile Include="Zouzou.cs" />
     <Compile Include="ZouzouData.cs" />
     <Page Include="SurfaceWindow1.xaml">
