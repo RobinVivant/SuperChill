@@ -40,9 +40,17 @@ namespace MySurfaceApplication
         public IEnumerable<IDictionary<string, object>> childs { get; set; }
     }
 
-    public class Tracks : Message
+    public class Effect : Message
     {
-        public string[] TracksId { get; set; }
+        public string Name { get; set; }
+        public float Value { get; set; }
+    }
+
+    public class LeapGesturesMapping : Message
+    {
+        public List<string> X { get; set; }
+        public List<string> Y { get; set; }
+        public List<string> Pitch { get; set; }
     }
 
     public class ChangedMessage : Message
@@ -62,6 +70,7 @@ namespace MySurfaceApplication
         jamTracksData jamTracksList;
         JamData jamList;
         ZouzouData zouzouList;
+        TrackGroupsData trackGroupsList;
 
         Logger info = new Logger("MeteorSubscriber.log");
 
@@ -71,13 +80,15 @@ namespace MySurfaceApplication
 
         private readonly Dictionary<string, List<IBinding<object>>> _bindings = new Dictionary<string, List<IBinding<object>>>();
 
-        public MeteorSubscriber(ref SampleData samplesList, ref jamTracksData jamTracksList, ref JamData jamList, ref ZouzouData zouzouList, ref ConnexionData samplesMap)
+        public MeteorSubscriber(ref SampleData samplesList, ref jamTracksData jamTracksList, ref JamData jamList, ref ZouzouData zouzouList, 
+            ref ConnexionData samplesMap, ref TrackGroupsData trackGroupsList)
         {
             this.samplesMap = samplesMap;
             this.samplesList = samplesList;
             this.jamTracksList = jamTracksList;
             this.jamList = jamList;
             this.zouzouList = zouzouList;
+            this.trackGroupsList = trackGroupsList;
         }
 
         public void DataReceived(string data)
@@ -168,8 +179,12 @@ namespace MySurfaceApplication
                             string name = added.Fields["name"].ToString();
                             string jamId = added.Fields["jamId"].ToString();
                             string tracks = added.Fields["tracks"].ToString();
-                            //var trackTab = JsonConvert.DeserializeObject<Tracks[]>(added.Fields["tracks"].ToString());
-                            //info.log("tracks " + trackTab.Count());
+                            var trackTab = JsonConvert.DeserializeObject<List<string>>(added.Fields["tracks"].ToString());
+                            var effects = JsonConvert.DeserializeObject<List<Effect>>(added.Fields["effects"].ToString());
+                            var leapGesturesMapping = JsonConvert.DeserializeObject<LeapGesturesMapping>(added.Fields["leapGesturesMapping"].ToString());
+                            TrackGroups trackGroups = new TrackGroups(id, jamId, color, name, trackTab, effects, leapGesturesMapping);
+                            trackGroupsList.Add(trackGroups);
+                            info.log(trackGroups.Name);
                         }
                     }
                     if (myJamId.Length > 0)
@@ -188,6 +203,42 @@ namespace MySurfaceApplication
                         {
                             string id = removed.Id;
                             jamTracksList.Remove(id);
+                        }
+                        if (removed.Collection == "track-groups")
+                        {
+                            trackGroupsList.Remove(removed.Id);
+                        }
+                    }
+                    break;
+                case "changed":
+                    var changed = JsonConvert.DeserializeObject<AddedMessage>(data);
+                    var changedBindings = _bindings[changed.Collection];
+
+                    foreach (var binding in changedBindings)
+                    {
+                        if (changed.Collection == "track-groups")
+                        {
+                            TrackGroups trackGroups = trackGroupsList.findById(changed.Id);
+                            if (trackGroups != null){
+                                try
+                                {
+                                    var trackTab = JsonConvert.DeserializeObject<List<string>>(changed.Fields["tracks"].ToString());
+                                    trackGroups.TracksId = trackTab;
+                                    trackGroupsList.TracksUpdate(ref trackGroups);
+                                }catch (KeyNotFoundException e) { }
+                                try
+                                {
+                                    var effects = JsonConvert.DeserializeObject<List<Effect>>(changed.Fields["effects"].ToString());
+                                    trackGroups.Effects = effects;
+                                    trackGroupsList.EffectUpdate(ref trackGroups);
+                                }catch (KeyNotFoundException e){ }
+                                try
+                                {
+                                    var leapGesturesMapping = JsonConvert.DeserializeObject<LeapGesturesMapping>(changed.Fields["leapGesturesMapping"].ToString());
+                                    trackGroups.LeapGesturesMapping = leapGesturesMapping;
+                                }catch (KeyNotFoundException e) { }
+                            }
+                            
                         }
                     }
                     break;

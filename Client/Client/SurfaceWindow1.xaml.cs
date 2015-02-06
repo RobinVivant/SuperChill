@@ -32,6 +32,7 @@ namespace MySurfaceApplication
         jamTracksData jamTracksList;
         JamData jamList;
         ZouzouData zouzouList;
+        TrackGroupsData trackGroupsList;
         private SoundManager manager;
         ObservableCollection<Jam> jams = new ObservableCollection<Jam>();
         MeteorSubscriber subscriber;
@@ -84,8 +85,10 @@ namespace MySurfaceApplication
             jamTracksList.PropertyChanged += new PropertyChangedEventHandler(jamTracksChangedHandler);
             samplesList = new SampleData();
             samplesList.PropertyChanged += new PropertyChangedEventHandler(samplesChangedHandler);
+            trackGroupsList = new TrackGroupsData();
+            trackGroupsList.PropertyChanged += new PropertyChangedEventHandler(trackGroupsChangedHandler);
 
-            subscriber = new MeteorSubscriber(ref samplesList, ref jamTracksList, ref jamList, ref zouzouList, ref samplesMap);
+            subscriber = new MeteorSubscriber(ref samplesList, ref jamTracksList, ref jamList, ref zouzouList, ref samplesMap, ref trackGroupsList);
             var client = new DDPClient(subscriber);
 
             // TODO; hack
@@ -368,7 +371,7 @@ namespace MySurfaceApplication
             ScatterViewItem item = sender as ScatterViewItem;
             string trackId = item.Name.Substring(1, item.Name.Length - 1);
             manager.toggleLoop(trackId);
-
+            
             if (item.Opacity == 0.5)
             {
                 item.Opacity = 1;
@@ -384,7 +387,7 @@ namespace MySurfaceApplication
             ScatterViewItem item = sender as ScatterViewItem;
             string trackId = item.Name.Substring(1, item.Name.Length - 1);
             manager.toggleLoop(trackId);
-
+            
             if (item.Opacity == 0.5)
             {
                 item.Opacity = 1;
@@ -437,6 +440,44 @@ namespace MySurfaceApplication
             if (e.PropertyName == "Added")
             {
 
+            }
+        }
+
+        protected void trackGroupsChangedHandler(Object sender, PropertyChangedEventArgs e)
+        {
+            TrackGroups trackGroups = sender as TrackGroups;
+            if (e.PropertyName == "Added")
+            {
+                info.log("hey name" + trackGroups.Name);
+            }
+            else if (e.PropertyName == "EffectUpdated")
+            {
+                info.log("lolo " + trackGroups.TracksId.Count);
+                foreach(string loopId in trackGroups.TracksId){
+                    foreach (Effect effect in trackGroups.Effects)
+                    {
+                        info.log("track "+loopId+" effect "+effect.Value);
+                        manager.setEffectOnLoop(loopId, manager.soundEffectMapper(effect.Name), effect.Value < 0.09 ? 0 : effect.Value);
+                    }
+                }
+                //subscriber.Client.Update("/track-groups/update", "{\"_id\":\""+trackGroups.Id+"\"}","{\"$set\":{\"name\":\""+trackGroups.Name+"\"}}","{}");
+            }
+            else if (e.PropertyName == "TracksUpdated")
+            {
+
+            }
+            else if (e.PropertyName == "Removed")
+            {
+                foreach (string loopId in trackGroups.TracksId)
+                {
+                    foreach (Effect effect in trackGroups.Effects)
+                    {
+                        if(effect.Name == "volume")
+                            manager.setEffectOnLoop(loopId, manager.soundEffectMapper(effect.Name), 1);
+                        else
+                            manager.setEffectOnLoop(loopId, manager.soundEffectMapper(effect.Name), 0);
+                    }
+                }
             }
         }
         /// <summary>

@@ -106,5 +106,26 @@ namespace MySurfaceApplication
             }
             Console.Out.WriteLine(r + "]");
         }
+
+        public SoundEffect soundEffectMapper(string effectName)
+        {
+            switch (effectName)
+            {
+                case "volume":
+                    return SoundEffect.Volume;
+                case "chorus":
+                    return SoundEffect.Chorus;
+                case "echo":
+                    return SoundEffect.Echo;
+                case "flanger":
+                    return SoundEffect.Flanger;
+                case "gargle":
+                    return SoundEffect.Gargle;
+                case "reverb":
+                    return SoundEffect.WavesReverb;
+                default:
+                    return SoundEffect.Volume;
+            }
+        }
     }
 }
