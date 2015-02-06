@@ -236,6 +236,7 @@ namespace MySurfaceApplication
                                 {
                                     var leapGesturesMapping = JsonConvert.DeserializeObject<LeapGesturesMapping>(changed.Fields["leapGesturesMapping"].ToString());
                                     trackGroups.LeapGesturesMapping = leapGesturesMapping;
+                                    trackGroupsList.LeapUpdate(ref trackGroups);
                                 }catch (KeyNotFoundException e) { }
                             }
                             

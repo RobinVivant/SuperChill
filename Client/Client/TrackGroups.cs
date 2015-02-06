@@ -41,7 +41,7 @@ namespace MySurfaceApplication
         public LeapGesturesMapping LeapGesturesMapping
         {
             get { return leapGesturesMapping; }
-            set { ;}
+            set { leapGesturesMapping = value;}
         }
 
         public string Id
