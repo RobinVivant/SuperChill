@@ -171,24 +171,41 @@
     font-size: 1.5em;
   }
 
+  .effect-container{
+    display:flex;
+    display:-webkit-flex;
+    margin-left: 10px;
+  }
+
+  .slider-button{
+    flex-basis:45px;
+    margin-top: 20px;
+    font-size:1.7em;
+    opacity:0.55;
+
+    i{
+      vertical-align:middle;
+    }
+  }
+
   .effect-slider{
+    flex-grow:1;
 
     height: 45px;
-    margin-top:10px;
-    padding-left:10px;
-    padding-right:10px;
+    margin-top:25px;
+    margin-left:23px;
+    margin-right:33px;
 
     .slider-bar{
       height: 45px;
-      background-color: black;
+      background-color: #d2d2d2;
       border-radius: 45px 0 0 45px;
-      padding-left:22px;
 
       .effect-name{
-        background-color:white;
+        background-color:black;
         text-align:center;
         line-height: 45px;
-        color: black;
+        color: white;
         float:right;
         margin-right:-22.5px;
         width:45px;
@@ -208,7 +225,7 @@
     display:-webkit-flex;
     margin-top:20px;
     font-size:1.8em;
-    margin-bottom:75px;
+    margin-bottom:45px;
 
 
     .magic-label{

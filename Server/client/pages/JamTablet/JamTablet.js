@@ -25,7 +25,9 @@ Template.JamTablet.helpers({
     },
     checkedTrack: function(){
         var tracks = Session.get('tracksToGroup');
-        return tracks[this._id] ? "checkedTrack" : "";
+        if( tracks ){
+            return tracks[this._id] ? "checkedTrack" : "";
+        }
     },
     tracksGroups: function(){
         return TrackGroups.find().fetch();//Session.get("tracksGroups");
@@ -80,37 +82,60 @@ var adjustingEffect = false;
 Template.JamTablet.events({
     'click .leftPanel .trackItem': function(e, tmpl){
         var trs = Session.get('tracksToGroup');
-        if(trs[this._id]){
+
+        if (trs[this._id]) {
             trs[this._id] = undefined;
-            if( Object.keys(trs).length === 1 ){
+            if (Object.keys(trs).length === 1) {
                 $('.createGroupButton').velocity('stop').velocity({
-                    properties:{
-                        scale: [0, 1],
-                        opacity: [0, 1]
-                    },options:{
+                    properties: {
+                        scale: 0,
+                        opacity: 0
+                    }, options: {
                         duration: 200,
-                        complete: function(){
+                        complete: function () {
                             $('.createGroupButton').hide();
                         }
                     }
                 });
             }
-        }else{
-            if( Object.keys(trs).length === 0 ){
+            if( Session.get('selectedGroup') ) {
+                Meteor.call('removeGroupTrack', Session.get('selectedGroup'), this._id );
+                /*
+                TrackGroups.update({_id: Session.get('selectedGroup')},{
+                        $pull : {
+                            tracks : this._id
+                        }
+                    },{
+                        multi: true
+                    }
+                );
+                */
+            }
+        } else {
+            if (Object.keys(trs).length === 0 && !Session.get('selectedGroup')) {
                 $('.createGroupButton').show();
-                $('.createGroupButton').css('bottom', ($('.leftPanel').height()-50)/2 +'px');
-                $('.createGroupButton').css('left', $('.leftPanel').width()-35 +'px');
+                $('.createGroupButton').css('bottom', ($('.leftPanel').height() - 50) / 2 + 'px');
+                $('.createGroupButton').css('left', $('.leftPanel').width() - 35 + 'px');
                 $('.createGroupButton').velocity('stop').velocity({
-                    properties:{
+                    properties: {
                         scale: [1, 0],
                         opacity: [1, 0]
-                    },options:{
+                    }, options: {
                         duration: 200
                     }
                 });
             }
             trs[this._id] = true;
         }
+
+        if( Session.get('selectedGroup') ) {
+            TrackGroups.update({_id: Session.get('selectedGroup')},{
+                $push : {
+                    tracks : this._id
+                }
+            });
+        }
+
         Session.set('tracksToGroup', trs);
     },
     'click .createGroupButton': function(e, tmpl){
@@ -176,13 +201,16 @@ Template.JamTablet.events({
     'click .groupName': function(){
         if(this._id == Session.get('selectedGroup')){
             Session.set('selectedGroup', null);
+            Session.set('tracksToGroup', {});
         }else{
             Session.set('selectedGroup', this._id);
+            Session.set('tracksToGroup', _.object(_.map(TrackGroups.findOne({_id:this._id}).tracks, function(x){return [x, true]})) )
         }
     },
     'click .trackGroup > .fa-trash-o': function(e, tpl){
         var that = this;
         Session.set('selectedGroup', null);
+        Session.set('tracksToGroup', {});
         $(e.currentTarget).parent().velocity({
             properties:{
                 scale: [0, 1],

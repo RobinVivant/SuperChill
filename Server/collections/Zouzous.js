@@ -3,7 +3,7 @@
 Zouzous = new Meteor.Collection('zouzous');
 Zouzous.allow({
     insert: function (userId, doc) {
-
+/*
         var zouzous = Zouzous.find({jamId: doc.jamId}).fetch();
         if( zouzous.length == 0) {
             var c = hslToRgb(Random.fraction(), 1, 0.3);
@@ -35,6 +35,11 @@ Zouzous.allow({
             }
         }
         var c = hslToRgb((keys[index] + (distance/2 || 0.5)) % 1, 1, 0.3);
+*/
+        var c;
+
+        c = hslToRgb(Random.fraction(), 1, 0.3);
+        //c = rgbToHex(c[0], c[1], c[2]).substring(1);
 
         doc.hexId = rgbToHex(c[0], c[1], c[2]).substring(1);
 
