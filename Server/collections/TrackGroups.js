@@ -65,7 +65,7 @@ if (Meteor.isServer) {
                         tracks : trackId
                     }
                 }, function(){
-                    console.log(arguments);
+                    //console.log(arguments);
                 }
             );
         }

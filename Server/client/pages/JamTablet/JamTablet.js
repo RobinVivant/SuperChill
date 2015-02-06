@@ -35,7 +35,6 @@ Template.JamTablet.helpers({
         }
     },
     ifTrackCategorySelected: function(){
-        console.log(Session.get('categoryFilter'), this.concat());
         return Session.get('categoryFilter') == this.concat() ? 'trackCategorySelected' : '';
     },
     tracksGroups: function(){
@@ -165,16 +164,6 @@ Template.JamTablet.events({
             }
             if( Session.get('selectedGroup') ) {
                 Meteor.call('removeGroupTrack', Session.get('selectedGroup'), this._id );
-                /*
-                 TrackGroups.update({_id: Session.get('selectedGroup')},{
-                 $pull : {
-                 tracks : this._id
-                 }
-                 },{
-                 multi: true
-                 }
-                 );
-                 */
             }
         } else {
             if (Object.keys(trs).length === 0 && !Session.get('selectedGroup')) {
@@ -192,15 +181,16 @@ Template.JamTablet.events({
                 });
             }
             trs[this._id] = true;
+            if( Session.get('selectedGroup') ) {
+                TrackGroups.update({_id: Session.get('selectedGroup')},{
+                    $push : {
+                        tracks : this._id
+                    }
+                });
+            }
         }
 
-        if( Session.get('selectedGroup') ) {
-            TrackGroups.update({_id: Session.get('selectedGroup')},{
-                $push : {
-                    tracks : this._id
-                }
-            });
-        }
+
 
         Session.set('tracksToGroup', trs);
     },
