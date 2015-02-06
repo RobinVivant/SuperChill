@@ -185,6 +185,7 @@ namespace MySurfaceApplication
                     border.Height = 120;
                     border.Width = 120;
 
+
                     // Content
                     StackPanel stack = new StackPanel();
                     stack.Width = 100;
@@ -213,15 +214,67 @@ namespace MySurfaceApplication
                     stack.Children.Add(content);
                     border.Child = stack;
 
+
+                    Canvas c = new Canvas();
+                    c.Height = 100;
+                    c.Width = 100;
+                    c.Children.Add(border);
+                    c.Background = new SolidColorBrush(Colors.Transparent);
+
+
+                    // Effects
+                    var effects = Enum.GetValues(typeof(SoundEffect)).Cast<SoundEffect>();
+                    Console.Out.WriteLine(trackId);
+                    Loop l = manager.getLoop(trackId);
+                    int i = 0;
+                    foreach (SoundEffect effect in effects)
+                    {
+                        if (l == null) continue;
+                        float value = l.getEffect(effect);
+                        if (value > 0)
+                        {
+                            Image effectVisualizer = new Image();
+                            effectVisualizer.Source = new BitmapImage(new Uri(@"../../Resources/loader/Untitled-" + (int) (10*value) + ".png", UriKind.Relative));
+
+                            effectVisualizer.Width = 20;
+                            effectVisualizer.Height = 20;
+
+                            double x = 50 + 70 * Math.Cos(i * Math.PI/5);
+                            double y = 50 + 70 * Math.Sin(i * Math.PI / 5);
+                            effectVisualizer.SetValue(Canvas.LeftProperty, x);
+                            effectVisualizer.SetValue(Canvas.TopProperty, y);
+
+
+                            Image effectIcon = new Image();
+                            effectIcon.Source = new BitmapImage(makeUriForEffect(effect));
+                            effectIcon.Width = 16;
+                            effectIcon.Height = 16;
+
+                            x = 50 + 72 * Math.Cos(i * Math.PI / 5);
+                            y = 50 + 72 * Math.Sin(i * Math.PI / 5);
+                            effectIcon.SetValue(Canvas.LeftProperty, x);
+                            effectIcon.SetValue(Canvas.TopProperty, y);
+
+                            c.Children.Add(effectIcon);
+                            c.Children.Add(effectVisualizer);
+
+                            i++;
+
+                        }
+                    }
+
+
+
+
                     // Item creation
                     ScatterViewItem item = new ScatterViewItem();
                     item.Name = beginningLetter + trackId;
                     myScatterView.RegisterName(item.Name, item);
-                    item.Content = border;
+                    item.Content = c;
                     item.Background = new SolidColorBrush(Colors.Transparent);
                     item.Opacity = 0;
-                    item.Height = 120;
-                    item.Width = 120;
+                    item.Height = 170;
+                    item.Width = 170;
                     item.CanScale = false;
                     item.ClipToBounds = false;
                     //item.Orientation = 0;
@@ -253,6 +306,26 @@ namespace MySurfaceApplication
 
                 })
             );
+        }
+
+        private Uri makeUriForEffect(SoundEffect effect)
+        {
+            string prefix = "../../Resources/";
+            switch (effect)
+            {
+                case SoundEffect.Chorus:
+                    return new Uri(prefix + "chorus.png", UriKind.Relative);
+                case SoundEffect.Flanger:
+                    return new Uri(prefix + "flanger.png", UriKind.Relative);
+                case SoundEffect.Volume:
+                    return new Uri(prefix + "volume.png", UriKind.Relative);
+                case SoundEffect.WavesReverb:
+                    return new Uri(prefix + "reverb.png", UriKind.Relative);
+                case SoundEffect.Gargle:
+                    return new Uri(prefix + "gargle.png", UriKind.Relative);
+                default:
+                    return new Uri(prefix + "volume.png", UriKind.Relative);
+            }
         }
 
         // Supprime le cercle sur la table surface, correspondant à une track 
@@ -412,8 +485,8 @@ namespace MySurfaceApplication
             JamTracks jamTracks = sender as JamTracks;
             if (e.PropertyName == "Added")
             {
-                drawCircle(jamTracks.Id, jamTracks.Path, jamTracks.ZouzouColor);
                 manager.addLoop(jamTracks.Id, "../.." + jamTracks.Path, false);
+                drawCircle(jamTracks.Id, jamTracks.Path, jamTracks.ZouzouColor);
             }
             else if (e.PropertyName == "Removed")
             {

@@ -107,6 +107,12 @@ namespace MySurfaceApplication
             Console.Out.WriteLine(r + "]");
         }
 
+
+        internal Loop getLoop(string trackId)
+        {
+            return (Loop) loops[trackId];
+	}
+
         public SoundEffect soundEffectMapper(string effectName)
         {
             switch (effectName)
