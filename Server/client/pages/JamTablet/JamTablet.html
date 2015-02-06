@@ -31,7 +31,14 @@
             </div>
             {{#each currentEffects}}
                 <div class="effect-container">
-                    <div class="slider-button"><i class="fa fa-magic"></i></div>
+                    <div class="slider-button">
+                        <div class="magic-system" style="background-color:#{{getSelectedGroupColor}};">
+                            <i class="effect-pitch fa fa-paw"></i>
+                            <i class="effect-x fa fa-arrows-h"></i>
+                            <i class="effect-y fa fa-arrows-v"></i>
+                        </div>
+                        <i class="effect-switch fa fa-magic"></i>
+                    </div>
                     <div class="effect-slider">
                         <div class="slider-bar" style="width:{{effectToPercent this.value}}%;">
                             <div class="effect-name">{{this.name}}</div>

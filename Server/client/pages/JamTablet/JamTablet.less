@@ -129,17 +129,17 @@
     margin-left: 0;
     border: 0;
     border-radius: 4px;
-     .fa-trash-o{
-       width: auto;
-       line-height: 45px;
-       margin-left: 10px;
-       font-size:1.5em;
-       opacity: 0.8;
+    .fa-trash-o{
+      width: auto;
+      line-height: 45px;
+      margin-left: 10px;
+      font-size:1.5em;
+      opacity: 0.8;
 
-       &:hover, &:active{
-         opacity: 1;
-       }
-     }
+      &:hover, &:active{
+        opacity: 1;
+      }
+    }
     .fa-magic{
       width: auto;
       line-height: 45px;
@@ -181,19 +181,40 @@
     flex-basis:45px;
     margin-top: 20px;
     font-size:1.7em;
-    opacity:0.55;
+    position:absolute;
+
+    .magic-system{
+      display:none;
+      position:absolute;
+      float:left;
+      margin-left:-162px;
+      width:150px;
+      height:2em;
+      overflow:hidden;
+      background-color: black;
+      border-radius: 4px 0 0 4px;
+      border: 2px solid #d2d2d2;
+      border-right: 0;
+      .fa{
+        display:inline;
+        line-height: 2em;
+        margin-left:0.5em;
+      }
+    }
 
     i{
       vertical-align:middle;
+      opacity:0.55;
     }
   }
 
   .effect-slider{
     flex-grow:1;
+    -webkit-flex-grow:1;
 
     height: 45px;
     margin-top:25px;
-    margin-left:23px;
+    margin-left:55px;
     margin-right:33px;
 
     .slider-bar{
@@ -221,12 +242,12 @@
   .magic-switch-container{
 
     justify-content:space-around;
+    -webkit-justify-content:space-around;
     display:flex;
     display:-webkit-flex;
     margin-top:20px;
     font-size:1.8em;
     margin-bottom:45px;
-
 
     .magic-label{
       display:flex;
@@ -236,9 +257,11 @@
       display:flex;
       display:-webkit-flex;
       justify-content: center;
+      -webkit-justify-content:center;
       width:60px;
       height:45px;
       font-size:0.8em;
+      border-radius:0;
     }
 
   }

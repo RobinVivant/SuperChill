@@ -224,9 +224,12 @@ Template.JamTablet.events({
         })
     },
     'touchmove .effect-slider': function(e, tmpl){
-        updateEffect(this.name, e, e.originalEvent.changedTouches[0].clientX);
+        if( adjustingEffect ) {
+            updateEffect(this.name, e, e.originalEvent.changedTouches[0].clientX);
+        }
     },
     'touchstart .effect-slider': function(e, tmpl){
+        adjustingEffect = true;
         updateEffect(this.name, e, e.originalEvent.changedTouches[0].clientX);
     },
     'mousemove .effect-slider': function(e, tmpl){
@@ -239,6 +242,9 @@ Template.JamTablet.events({
         updateEffect(this.name, e, e.originalEvent.clientX);
     },
     'mouseup': function(e, tmpl){
+        adjustingEffect = false;
+    },
+    'touchend': function(e, tmpl){
         adjustingEffect = false;
     },
     'click .magic-button': function(e, tmpl){
@@ -260,6 +266,29 @@ Template.JamTablet.events({
                 }
             });
         }
+    },
+    'click .effect-switch': function(e, tmpl){
+
+        var elem = $(e.currentTarget).parent().find('.magic-system');
+
+        if( elem.css('display') === 'none' ){
+            elem.velocity('stop').velocity({
+                properties:{
+                    width: ['150px', 0],
+                    marginLeft: ['-162px','-12px']
+                }, options:{
+                    display: 'inline',
+                    duration: 200
+                }
+            });
+        }else{
+            elem.velocity('stop').velocity('reverse',{
+                complete: function(){
+                    elem.css('display', 'none');
+                }
+            });
+        }
+
 
     }
 });
