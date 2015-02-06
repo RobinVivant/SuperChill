@@ -3,7 +3,19 @@ Session.setDefault('tracksToGroup', {});
 
 function isLeapMotionActivated(id){
     return _.contains(Jam.findOne({_id:Session.get('jamId')}).leapTargets, id)
-};
+}
+
+function magicAnim(elem){
+    $(elem).velocity('stop').velocity({
+        properties:{
+            scale: [0.5, 1]
+        }, options:{
+            easing:'spring',
+            duration: 300,
+            loop:1
+        }
+    });
+}
 
 Template.JamTablet.helpers({
     tracks: function () {
@@ -144,6 +156,7 @@ var adjustingEffect = false;
 
 Template.JamTablet.events({
     'click .leftPanel .trackItem': function(e, tmpl){
+
         var trs = Session.get('tracksToGroup');
 
         if (trs[this._id]) {
@@ -261,7 +274,7 @@ Template.JamTablet.events({
             }
         })
     },
-    'click .groupName': function(){
+    'click .groupName': function(e){
         if(this._id == Session.get('selectedGroup')){
             Session.set('selectedGroup', null);
             Session.set('tracksToGroup', {});
@@ -313,6 +326,8 @@ Template.JamTablet.events({
     },
     'click .magic-button': function(e, tmpl){
 
+        magicAnim(e.currentTarget);
+
         if( isLeapMotionActivated(Session.get('selectedGroup')) ){
             Jam.update({
                 _id:Session.get('jamId')
@@ -332,6 +347,8 @@ Template.JamTablet.events({
         }
     },
     'click .effect-switch': function(e, tmpl){
+
+        magicAnim(e.currentTarget);
 
         var elem = $(e.currentTarget).parent().find('.magic-system');
 
