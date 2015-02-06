@@ -2,11 +2,22 @@
 <template name="JamTablet">
     <div id="JamTablet">
         <div class="leftPanel" style="height: {{verticalSectionHeight}}">
+            <div class="trackCategoryContainer">
+                {{#each trackCategory}}
+                    <div class="{{ifTrackCategorySelected}} trackCategory ">
+                        <img src="{{trackCategoryIcon}}"/>
+                    </div>
+                {{/each}}
+            </div>
             {{#each tracks}}
-                <div class="trackItem {{checkedTrack}}">
-                    <div class="checkBoxTrack"  style="background-color: #{{zouzou}}"></div>
-                    <div class="trackName">{{trackName path}}</div>
-                </div>
+                {{#if displayTrack}}
+                    <div class="trackItem {{checkedTrack}}">
+                        <div class="checkBoxTrack"  style="background-color: #{{zouzou}}">
+                            <img src="{{trackIconPath}}"/>
+                        </div>
+                        <div class="trackName">{{trackName path}}</div>
+                    </div>
+                {{/if}}
             {{/each}}
             <div class="createGroupButton">
                 <i class="fa fa-plus fa-5x"></i>
@@ -27,11 +38,24 @@
                      ">
             <div class="magic-switch-container">
                 <div class="magic-label">MAGIC</div>
-                <button class="magic-button">{{getMagicValue}}</button>
+                <button class="magic-button {{getMagicClass}}">{{getMagicValue}}</button>
             </div>
             {{#each currentEffects}}
                 <div class="effect-container">
-                    <div class="slider-button"><i class="fa fa-magic"></i></div>
+                    <div class="slider-button">
+                        <div class="magic-system" style="background-color:#{{getSelectedGroupColor}};">
+                            <div class="effect-pitch">
+                                <i class="fa fa-paw {{classEffectSelected 'pitch'}}"></i>
+                            </div>
+                            <div class="effect-x">
+                                <i class="fa fa-arrows-h {{classEffectSelected 'x'}}"></i>
+                            </div>
+                            <div class="effect-y">
+                                <i class="fa fa-arrows-v {{classEffectSelected 'y'}}"></i>
+                            </div>
+                        </div>
+                        <i class="effect-switch fa fa-magic {{classEffectSwitchActive}}"></i>
+                    </div>
                     <div class="effect-slider">
                         <div class="slider-bar" style="width:{{effectToPercent this.value}}%;">
                             <div class="effect-name">{{this.name}}</div>

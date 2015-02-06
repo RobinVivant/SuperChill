@@ -58,7 +58,6 @@ if (Meteor.isServer) {
            );
        },
         'removeGroupTrack': function(groupId, trackId){
-            console.log(arguments);
             TrackGroups.update({
                     _id:groupId
                 }, {

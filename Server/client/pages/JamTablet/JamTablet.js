@@ -12,6 +12,11 @@ Template.JamTablet.helpers({
     zouzous: function(){
         return Zouzous.find({jamId: Session.get("jamId")});
     },
+    displayTrack: function(){
+        if( !Session.get('categoryFilter') || Session.get('categoryFilter').trim().length == 0 )
+            return true;
+        return this.path.match(new RegExp('\/'+Session.get('categoryFilter')+'\/', 'i'));
+    },
     trackName: function(path){
         return path.replace(/_/g, ' ')
             .replace(/\..*$/g, ' ')
@@ -28,6 +33,10 @@ Template.JamTablet.helpers({
         if( tracks ){
             return tracks[this._id] ? "checkedTrack" : "";
         }
+    },
+    ifTrackCategorySelected: function(){
+        console.log(Session.get('categoryFilter'), this.concat());
+        return Session.get('categoryFilter') == this.concat() ? 'trackCategorySelected' : '';
     },
     tracksGroups: function(){
         return TrackGroups.find().fetch();//Session.get("tracksGroups");
@@ -58,12 +67,39 @@ Template.JamTablet.helpers({
     },
     getMagicValue: function(){
         return isLeapMotionActivated(Session.get('selectedGroup')) ? 'ON' : 'OFF';
+    },
+    getMagicClass: function(){
+        return isLeapMotionActivated(Session.get('selectedGroup')) ? 'magicActivated' : '';
+    },
+    classEffectSelected: function(effect){
+        var mapping = TrackGroups.findOne({_id: Session.get('selectedGroup')}).leapGesturesMapping[effect];
+        for( var i in mapping ){
+            if(mapping[i] == this.name)
+                return 'activeEffect';
+        }
+    },
+    classEffectSwitchActive: function(){
+        var mappings = TrackGroups.findOne({_id: Session.get('selectedGroup')}).leapGesturesMapping;
+        for( var i in mappings ){
+            if(_.contains(mappings[i], this.name))
+                return 'switchEffectActive';
+        }
+    },
+    trackIconPath: function(){
+        var tab = this.path.split('/');
+        return '/images/'+tab[tab.length-2]+'.png';
+    },
+    trackCategory: function(){
+        return ["Bass", "Drum Single", "Drum", "SFX", "Synth", "Vox"];
+    },
+    trackCategoryIcon: function(){
+        return '/images/'+this+'.png';
     }
 });
 
 var updateEffectTimeout;
 function updateEffect(name, e, clientX){
-    var percent = (clientX-32 - $(e.currentTarget).position().left) / $(e.currentTarget).width();
+    var percent = (clientX-55 - $(e.currentTarget).position().left) / $(e.currentTarget).width();
 
     if( percent > 1 || percent < 0 ){
         return;
@@ -75,6 +111,34 @@ function updateEffect(name, e, clientX){
     updateEffectTimeout = setTimeout(function(){
         Meteor.call('updateGroupEffect', Session.get('selectedGroup'), name, percent );
     }, 200);
+}
+
+function updateEffectState(type, name) {
+    var modObj = {};
+    modObj['leapGesturesMapping.'+type] = name;
+
+
+    var momo = {
+        _id: Session.get('selectedGroup')
+    };
+    momo['leapGesturesMapping.'+type] = {
+        $elemMatch: {
+            $in: [name]
+        }
+    };
+
+    if (TrackGroups.findOne(momo)) {
+        TrackGroups.update({_id: Session.get('selectedGroup')}, {
+            $pull: modObj
+        },{
+            multi: true
+        });
+    } else {
+        TrackGroups.update({_id: Session.get('selectedGroup')}, {
+            $push: modObj
+        });
+    }
+
 }
 
 var adjustingEffect = false;
@@ -91,7 +155,8 @@ Template.JamTablet.events({
                         scale: 0,
                         opacity: 0
                     }, options: {
-                        duration: 200,
+                        easing:'spring',
+                        duration: 500,
                         complete: function () {
                             $('.createGroupButton').hide();
                         }
@@ -101,15 +166,15 @@ Template.JamTablet.events({
             if( Session.get('selectedGroup') ) {
                 Meteor.call('removeGroupTrack', Session.get('selectedGroup'), this._id );
                 /*
-                TrackGroups.update({_id: Session.get('selectedGroup')},{
-                        $pull : {
-                            tracks : this._id
-                        }
-                    },{
-                        multi: true
-                    }
-                );
-                */
+                 TrackGroups.update({_id: Session.get('selectedGroup')},{
+                 $pull : {
+                 tracks : this._id
+                 }
+                 },{
+                 multi: true
+                 }
+                 );
+                 */
             }
         } else {
             if (Object.keys(trs).length === 0 && !Session.get('selectedGroup')) {
@@ -121,7 +186,8 @@ Template.JamTablet.events({
                         scale: [1, 0],
                         opacity: [1, 0]
                     }, options: {
-                        duration: 200
+                        easing:'spring',
+                        duration: 500
                     }
                 });
             }
@@ -137,6 +203,13 @@ Template.JamTablet.events({
         }
 
         Session.set('tracksToGroup', trs);
+    },
+    'click .trackCategory': function(e, tmpl){
+        if( Session.get('categoryFilter') == this.concat()){
+            Session.set('categoryFilter', null);
+        }else{
+            Session.set('categoryFilter', this.concat());
+        }
     },
     'click .createGroupButton': function(e, tmpl){
         //var grps = TrackGroups.find().fetch();
@@ -216,6 +289,7 @@ Template.JamTablet.events({
                 scale: [0, 1],
                 opacity: [0, 1]
             },options:{
+                easing:'spring',
                 duration: 200,
                 complete: function(){
                     TrackGroups.remove({_id: that._id});
@@ -224,9 +298,12 @@ Template.JamTablet.events({
         })
     },
     'touchmove .effect-slider': function(e, tmpl){
-        updateEffect(this.name, e, e.originalEvent.changedTouches[0].clientX);
+        if( adjustingEffect ) {
+            updateEffect(this.name, e, e.originalEvent.changedTouches[0].clientX);
+        }
     },
     'touchstart .effect-slider': function(e, tmpl){
+        adjustingEffect = true;
         updateEffect(this.name, e, e.originalEvent.changedTouches[0].clientX);
     },
     'mousemove .effect-slider': function(e, tmpl){
@@ -239,6 +316,9 @@ Template.JamTablet.events({
         updateEffect(this.name, e, e.originalEvent.clientX);
     },
     'mouseup': function(e, tmpl){
+        adjustingEffect = false;
+    },
+    'touchend': function(e, tmpl){
         adjustingEffect = false;
     },
     'click .magic-button': function(e, tmpl){
@@ -260,7 +340,40 @@ Template.JamTablet.events({
                 }
             });
         }
+    },
+    'click .effect-switch': function(e, tmpl){
 
+        var elem = $(e.currentTarget).parent().find('.magic-system');
+
+        if( elem.css('display') === 'none' ){
+            elem.velocity('stop').velocity({
+                properties:{
+                    width: ['150px', 0],
+                    marginLeft: ['-162px','-12px']
+                }, options:{
+                    easing:'spring',
+                    display: 'inline',
+                    duration: 500
+                }
+            });
+        }else{
+            elem.velocity('stop').velocity('reverse',{
+                easing:'easeInBack',
+                duration: 100,
+                complete: function(){
+                    elem.css('display', 'none');
+                }
+            });
+        }
+    },
+    'click .effect-x': function(e, tmpl){
+        updateEffectState('x', this.name);
+    },
+    'click .effect-y': function(e, tmpl){
+        updateEffectState('y', this.name);
+    },
+    'click .effect-pitch': function(e, tmpl){
+        updateEffectState('pitch', this.name);
     }
 });
 

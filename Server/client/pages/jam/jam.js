@@ -372,6 +372,8 @@ Template.jam.created = function(){
     window.history.replaceState(Session.get('jamName'), Session.get('jamName'), '/'+Session.get('jamId'));
   });
   Tracker.autorun(function () {
+      if(!Session.get('jamId'))
+        return;
     Meteor.subscribe('jam-tracks', Session.get('jamId'));
     Meteor.subscribe('zouzouList', Session.get('jamId'));
     Meteor.subscribe('jam', Session.get('jamId'), {
