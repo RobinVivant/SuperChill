@@ -27,17 +27,23 @@
                      ">
             <div class="magic-switch-container">
                 <div class="magic-label">MAGIC</div>
-                <button class="magic-button">{{getMagicValue}}</button>
+                <button class="magic-button {{getMagicClass}}">{{getMagicValue}}</button>
             </div>
             {{#each currentEffects}}
                 <div class="effect-container">
                     <div class="slider-button">
                         <div class="magic-system" style="background-color:#{{getSelectedGroupColor}};">
-                            <i class="effect-pitch fa fa-paw"></i>
-                            <i class="effect-x fa fa-arrows-h"></i>
-                            <i class="effect-y fa fa-arrows-v"></i>
+                            <div class="effect-pitch">
+                                <i class="fa fa-paw {{classEffectSelected 'pitch'}}"></i>
+                            </div>
+                            <div class="effect-x">
+                                <i class="fa fa-arrows-h {{classEffectSelected 'x'}}"></i>
+                            </div>
+                            <div class="effect-y">
+                                <i class="fa fa-arrows-v {{classEffectSelected 'y'}}"></i>
+                            </div>
                         </div>
-                        <i class="effect-switch fa fa-magic"></i>
+                        <i class="effect-switch fa fa-magic {{classEffectSwitchActive}}"></i>
                     </div>
                     <div class="effect-slider">
                         <div class="slider-bar" style="width:{{effectToPercent this.value}}%;">

@@ -58,6 +58,23 @@ Template.JamTablet.helpers({
     },
     getMagicValue: function(){
         return isLeapMotionActivated(Session.get('selectedGroup')) ? 'ON' : 'OFF';
+    },
+    getMagicClass: function(){
+        return isLeapMotionActivated(Session.get('selectedGroup')) ? 'magicActivated' : '';
+    },
+    classEffectSelected: function(effect){
+        var mapping = TrackGroups.findOne({_id: Session.get('selectedGroup')}).leapGesturesMapping[effect];
+        for( var i in mapping ){
+            if(mapping[i] == this.name)
+                return 'activeEffect';
+        }
+    },
+    classEffectSwitchActive: function(){
+        var mappings = TrackGroups.findOne({_id: Session.get('selectedGroup')}).leapGesturesMapping;
+        for( var i in mappings ){
+            if(_.contains(mappings[i], this.name))
+                return 'switchEffectActive';
+        }
     }
 });
 
@@ -75,6 +92,34 @@ function updateEffect(name, e, clientX){
     updateEffectTimeout = setTimeout(function(){
         Meteor.call('updateGroupEffect', Session.get('selectedGroup'), name, percent );
     }, 200);
+}
+
+function updateEffectState(type, name) {
+    var modObj = {};
+    modObj['leapGesturesMapping.'+type] = name;
+
+
+    var momo = {
+        _id: Session.get('selectedGroup')
+    };
+    momo['leapGesturesMapping.'+type] = {
+        $elemMatch: {
+            $in: [name]
+        }
+    };
+
+    if (TrackGroups.findOne(momo)) {
+        TrackGroups.update({_id: Session.get('selectedGroup')}, {
+            $pull: modObj
+        },{
+            multi: true
+        });
+    } else {
+        TrackGroups.update({_id: Session.get('selectedGroup')}, {
+            $push: modObj
+        });
+    }
+
 }
 
 var adjustingEffect = false;
@@ -101,15 +146,15 @@ Template.JamTablet.events({
             if( Session.get('selectedGroup') ) {
                 Meteor.call('removeGroupTrack', Session.get('selectedGroup'), this._id );
                 /*
-                TrackGroups.update({_id: Session.get('selectedGroup')},{
-                        $pull : {
-                            tracks : this._id
-                        }
-                    },{
-                        multi: true
-                    }
-                );
-                */
+                 TrackGroups.update({_id: Session.get('selectedGroup')},{
+                 $pull : {
+                 tracks : this._id
+                 }
+                 },{
+                 multi: true
+                 }
+                 );
+                 */
             }
         } else {
             if (Object.keys(trs).length === 0 && !Session.get('selectedGroup')) {
@@ -277,19 +322,29 @@ Template.JamTablet.events({
                     width: ['150px', 0],
                     marginLeft: ['-162px','-12px']
                 }, options:{
+                    easing:'spring',
                     display: 'inline',
-                    duration: 200
+                    duration: 500
                 }
             });
         }else{
             elem.velocity('stop').velocity('reverse',{
+                easing:'easeInBack',
+                duration: 100,
                 complete: function(){
                     elem.css('display', 'none');
                 }
             });
         }
-
-
+    },
+    'click .effect-x': function(e, tmpl){
+        updateEffectState('x', this.name);
+    },
+    'click .effect-y': function(e, tmpl){
+        updateEffectState('y', this.name);
+    },
+    'click .effect-pitch': function(e, tmpl){
+        updateEffectState('pitch', this.name);
     }
 });
 

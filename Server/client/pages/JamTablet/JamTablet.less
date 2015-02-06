@@ -178,6 +178,7 @@
   }
 
   .slider-button{
+
     flex-basis:45px;
     margin-top: 20px;
     font-size:1.7em;
@@ -195,16 +196,23 @@
       border-radius: 4px 0 0 4px;
       border: 2px solid #d2d2d2;
       border-right: 0;
-      .fa{
+      &>div{
         display:inline;
         line-height: 2em;
         margin-left:0.5em;
+        text-align:center;
+        width:30px;
       }
     }
 
     i{
       vertical-align:middle;
       opacity:0.55;
+      width:30px;
+    }
+
+    .activeEffect, .switchEffectActive{
+      opacity:1;
     }
   }
 
@@ -223,7 +231,7 @@
       border-radius: 45px 0 0 45px;
 
       .effect-name{
-        background-color:black;
+        background-color:#4b4b4b;
         text-align:center;
         line-height: 45px;
         color: white;
@@ -258,10 +266,21 @@
       display:-webkit-flex;
       justify-content: center;
       -webkit-justify-content:center;
+      padding:0;
       width:60px;
       height:45px;
       font-size:0.8em;
       border-radius:0;
+      border:none;
+      apparence: none;
+      color:white;
+      -webkit-apparence: none;
+      background-color: #4b4b4b;
+    }
+
+    .magicActivated{
+      color:black;
+      background-color: #d2d2d2;
     }
 
   }
