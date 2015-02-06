@@ -2,13 +2,22 @@
 <template name="JamTablet">
     <div id="JamTablet">
         <div class="leftPanel" style="height: {{verticalSectionHeight}}">
-            {{#each tracks}}
-                <div class="trackItem {{checkedTrack}}">
-                    <div class="checkBoxTrack"  style="background-color: #{{zouzou}}">
-                        <img src="{{trackIconPath}}"/>
+            <div class="trackCategoryContainer">
+                {{#each trackCategory}}
+                    <div class="{{ifTrackCategorySelected}} trackCategory ">
+                        <img src="{{trackCategoryIcon}}"/>
                     </div>
-                    <div class="trackName">{{trackName path}}</div>
-                </div>
+                {{/each}}
+            </div>
+            {{#each tracks}}
+                {{#if displayTrack}}
+                    <div class="trackItem {{checkedTrack}}">
+                        <div class="checkBoxTrack"  style="background-color: #{{zouzou}}">
+                            <img src="{{trackIconPath}}"/>
+                        </div>
+                        <div class="trackName">{{trackName path}}</div>
+                    </div>
+                {{/if}}
             {{/each}}
             <div class="createGroupButton">
                 <i class="fa fa-plus fa-5x"></i>

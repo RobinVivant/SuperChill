@@ -49,6 +49,39 @@
     overflow-x:hidden;
   }
 
+  .trackCategoryContainer{
+
+    text-align: center;
+    margin-bottom: 10px;
+
+    .trackCategorySelected{
+
+      background-color:#4b4b4b !important;
+      img{
+        filter: none !important;
+        -webkit-filter: none !important;
+      }
+    }
+
+    .trackCategory{
+      display:inline-block;
+      width:45px;
+      height:45px;
+      border-radius:50%;
+      border: 2px solid #4b4b4b;
+      background-color:white;
+      margin-left:0;
+
+      img{
+        margin-left: 2px;
+        margin-top: 8px;
+        width:60%;
+        filter: invert(0.71);
+        -webkit-filter: invert(0.71);
+      }
+    }
+  }
+
   .trackItem{
     margin-bottom: 10px;
     height: 45px;
@@ -59,6 +92,8 @@
     cursor:pointer;
     border-radius: 4px;
   }
+
+
 
   .checkBoxTrack{
     top: -2px;
@@ -73,8 +108,8 @@
 
     img{
       width: 60%;
-      margin-top: 8px;
-      margin-left: 8px;
+      margin-top: 9px;
+      margin-left: 9px;
     }
   }
   .checkedTrack{

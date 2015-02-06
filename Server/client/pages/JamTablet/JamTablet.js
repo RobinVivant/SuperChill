@@ -12,6 +12,11 @@ Template.JamTablet.helpers({
     zouzous: function(){
         return Zouzous.find({jamId: Session.get("jamId")});
     },
+    displayTrack: function(){
+        if( !Session.get('categoryFilter') || Session.get('categoryFilter').trim().length == 0 )
+            return true;
+        return this.path.match(new RegExp('\/'+Session.get('categoryFilter')+'\/', 'i'));
+    },
     trackName: function(path){
         return path.replace(/_/g, ' ')
             .replace(/\..*$/g, ' ')
@@ -28,6 +33,10 @@ Template.JamTablet.helpers({
         if( tracks ){
             return tracks[this._id] ? "checkedTrack" : "";
         }
+    },
+    ifTrackCategorySelected: function(){
+        console.log(Session.get('categoryFilter'), this.concat());
+        return Session.get('categoryFilter') == this.concat() ? 'trackCategorySelected' : '';
     },
     tracksGroups: function(){
         return TrackGroups.find().fetch();//Session.get("tracksGroups");
@@ -79,6 +88,12 @@ Template.JamTablet.helpers({
     trackIconPath: function(){
         var tab = this.path.split('/');
         return '/images/'+tab[tab.length-2]+'.png';
+    },
+    trackCategory: function(){
+        return ["Bass", "Drum Single", "Drum", "SFX", "Synth", "Vox"];
+    },
+    trackCategoryIcon: function(){
+        return '/images/'+this+'.png';
     }
 });
 
@@ -188,6 +203,13 @@ Template.JamTablet.events({
         }
 
         Session.set('tracksToGroup', trs);
+    },
+    'click .trackCategory': function(e, tmpl){
+        if( Session.get('categoryFilter') == this.concat()){
+            Session.set('categoryFilter', null);
+        }else{
+            Session.set('categoryFilter', this.concat());
+        }
     },
     'click .createGroupButton': function(e, tmpl){
         //var grps = TrackGroups.find().fetch();
