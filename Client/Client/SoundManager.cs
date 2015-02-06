@@ -106,5 +106,10 @@ namespace MySurfaceApplication
             }
             Console.Out.WriteLine(r + "]");
         }
+
+        internal Loop getLoop(string trackId)
+        {
+            return (Loop) loops[trackId];
+        }
     }
 }
