@@ -37,8 +37,8 @@ namespace MySurfaceApplication
         ObservableCollection<Jam> jams = new ObservableCollection<Jam>();
         MeteorSubscriber subscriber;
 
-        //LeapListener LeapListener;
-        //Leap.Controller LeapController;
+        LeapListener LeapListener;
+        Leap.Controller LeapController;
 
         Object thisLock = new Object();
 
@@ -69,13 +69,14 @@ namespace MySurfaceApplication
             samplesMap.PropertyChanged += new PropertyChangedEventHandler(samplesChangedHandler);
 
             // Create a sample listener and controller
-            /*LeapListener = new LeapListener();
+            LeapListener = new LeapListener();
             LeapController = new Leap.Controller();
 
-            LeapListener.OnHandOrientationChange += new LeapListener.onHandOrientationChange(handleLeapMotion);
+
+            LeapListener.OnHandVariation += new LeapListener.onHandVariation(handleHandVariation);
 
             // Have the sample listener receive events from the controller
-            LeapController.AddListener(LeapListener);*/
+            LeapController.AddListener(LeapListener);
 
             jamList = new JamData();
             jamList.PropertyChanged += new PropertyChangedEventHandler(jamChangedHandler);
@@ -839,6 +840,36 @@ namespace MySurfaceApplication
             else
             {
                 filter.Opacity = 1;
+            }
+        }
+
+        // LEAP MOTION
+        void handleHandVariation(float dPitch, float dX, float dY)
+        {
+            lock (thisLock)
+            {
+                dPitch = 2 * dPitch / (float)Math.PI;
+                dX = dX / 200;
+                dY = dY / 200;
+
+                foreach (TrackGroups g in trackGroupsList)
+                {
+                    foreach (string trackId in g.TracksId)
+                    {
+                        foreach (string fx in g.LeapGesturesMapping.X)
+                        {
+                            float v = manager.applyDeltaToEffectOnLoop(trackId, manager.soundEffectMapper(fx), dX);
+                        }
+                        foreach (string fx in g.LeapGesturesMapping.Y)
+                        {
+                            float v = manager.applyDeltaToEffectOnLoop(trackId, manager.soundEffectMapper(fx), dY);
+                        }
+                        foreach (string fx in g.LeapGesturesMapping.Pitch)
+                        {
+                            float v = manager.applyDeltaToEffectOnLoop(trackId, manager.soundEffectMapper(fx), dPitch);
+                        }
+                    }
+                }
             }
         }
     }
