@@ -37,8 +37,8 @@ namespace MySurfaceApplication
         ObservableCollection<Jam> jams = new ObservableCollection<Jam>();
         MeteorSubscriber subscriber;
 
-        LeapListener LeapListener;
-        Leap.Controller LeapController;
+        //LeapListener LeapListener;
+        //Leap.Controller LeapController;
 
         Object thisLock = new Object();
 
@@ -69,14 +69,14 @@ namespace MySurfaceApplication
             samplesMap.PropertyChanged += new PropertyChangedEventHandler(samplesChangedHandler);
 
             // Create a sample listener and controller
-            LeapListener = new LeapListener();
+            /*LeapListener = new LeapListener();
             LeapController = new Leap.Controller();
 
 
             LeapListener.OnHandVariation += new LeapListener.onHandVariation(handleHandVariation);
 
             // Have the sample listener receive events from the controller
-            LeapController.AddListener(LeapListener);
+            LeapController.AddListener(LeapListener);*/
 
             jamList = new JamData();
             jamList.PropertyChanged += new PropertyChangedEventHandler(jamChangedHandler);
@@ -531,6 +531,7 @@ namespace MySurfaceApplication
                     foreach (Effect effect in trackGroups.Effects)
                     {
                         info.log("track "+loopId+" effect "+effect.Value);
+                        info.log(JsonConvert.SerializeObject(trackGroups.Effects));
                         manager.setEffectOnLoop(loopId, manager.soundEffectMapper(effect.Name), effect.Value < 0.09 ? 0 : effect.Value);
                     }
                 }
@@ -685,6 +686,7 @@ namespace MySurfaceApplication
             myScatterView.Items.Clear();
             subscriber.Bind(_messages, "jam", "jam", jamId);
             subscriber.Bind(_messages, "jam-tracks", "jam-tracks", jamId);
+            subscriber.Bind(_messages, "track-groups", "track-groups", jamId);
         }
 
         private void handle_JamMouseUp(object sender, MouseButtonEventArgs e)
@@ -859,7 +861,7 @@ namespace MySurfaceApplication
                         foreach (string fx in g.LeapGesturesMapping.X)
                         {
                             float v = manager.applyDeltaToEffectOnLoop(trackId, manager.soundEffectMapper(fx), dX);
-                            //subscriber.Client.Update("/track-groups/update", "{\"_id\":\"" + g.Id + "\"}", "{\"$set\":{\"name\":\"" + g.Name + "\"}}", "{}");
+                            //subscriber.Client.Update("/track-groups/update", "{\"_id\":\"" + g.Id + "\"}", "{\"$set\":{\"effects\":"+g.Effects+"}}", "{}");
                         }
                         foreach (string fx in g.LeapGesturesMapping.Y)
                         {
