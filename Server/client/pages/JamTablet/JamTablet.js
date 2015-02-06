@@ -75,12 +75,16 @@ Template.JamTablet.helpers({
             if(_.contains(mappings[i], this.name))
                 return 'switchEffectActive';
         }
+    },
+    trackIconPath: function(){
+        var tab = this.path.split('/');
+        return '/images/'+tab[tab.length-2]+'.png';
     }
 });
 
 var updateEffectTimeout;
 function updateEffect(name, e, clientX){
-    var percent = (clientX-32 - $(e.currentTarget).position().left) / $(e.currentTarget).width();
+    var percent = (clientX-55 - $(e.currentTarget).position().left) / $(e.currentTarget).width();
 
     if( percent > 1 || percent < 0 ){
         return;
@@ -136,7 +140,8 @@ Template.JamTablet.events({
                         scale: 0,
                         opacity: 0
                     }, options: {
-                        duration: 200,
+                        easing:'spring',
+                        duration: 500,
                         complete: function () {
                             $('.createGroupButton').hide();
                         }
@@ -166,7 +171,8 @@ Template.JamTablet.events({
                         scale: [1, 0],
                         opacity: [1, 0]
                     }, options: {
-                        duration: 200
+                        easing:'spring',
+                        duration: 500
                     }
                 });
             }
@@ -261,6 +267,7 @@ Template.JamTablet.events({
                 scale: [0, 1],
                 opacity: [0, 1]
             },options:{
+                easing:'spring',
                 duration: 200,
                 complete: function(){
                     TrackGroups.remove({_id: that._id});

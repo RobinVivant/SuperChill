@@ -4,7 +4,9 @@
         <div class="leftPanel" style="height: {{verticalSectionHeight}}">
             {{#each tracks}}
                 <div class="trackItem {{checkedTrack}}">
-                    <div class="checkBoxTrack"  style="background-color: #{{zouzou}}"></div>
+                    <div class="checkBoxTrack"  style="background-color: #{{zouzou}}">
+                        <img src="{{trackIconPath}}"/>
+                    </div>
                     <div class="trackName">{{trackName path}}</div>
                 </div>
             {{/each}}
