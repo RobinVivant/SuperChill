@@ -10,6 +10,7 @@ namespace MySurfaceApplication
     {
         private string id;
         private string name;
+        private string leapTarget;
 
         public Jam(string id, string name)
         {
@@ -21,6 +22,12 @@ namespace MySurfaceApplication
         {
             get{ return id;}
             set{ ;}
+        }
+
+        public string LeapTarget
+        {
+            get { return leapTarget; }
+            set { this.leapTarget=value;}
         }
 
         public string Name
