@@ -51,6 +51,17 @@ namespace MySurfaceApplication
             }
         }
 
+        public new void LeapUpdate(ref TrackGroups newTrackGroups)
+        {
+            TrackGroups trackGroups = this.findById(newTrackGroups.Id);
+            if (trackGroups != null || base.Contains(trackGroups))
+            {
+                base.Remove(trackGroups);
+                base.Add(newTrackGroups);
+                this.OnPropertyChanged(newTrackGroups, new PropertyChangedEventArgs("LeapUpdated"));
+            }
+        }
+
         public new void TracksUpdate(ref TrackGroups newTrackGroups)
         {
             TrackGroups trackGroups = this.findById(newTrackGroups.Id);

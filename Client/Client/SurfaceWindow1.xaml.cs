@@ -859,6 +859,7 @@ namespace MySurfaceApplication
                         foreach (string fx in g.LeapGesturesMapping.X)
                         {
                             float v = manager.applyDeltaToEffectOnLoop(trackId, manager.soundEffectMapper(fx), dX);
+                            //subscriber.Client.Update("/track-groups/update", "{\"_id\":\"" + g.Id + "\"}", "{\"$set\":{\"name\":\"" + g.Name + "\"}}", "{}");
                         }
                         foreach (string fx in g.LeapGesturesMapping.Y)
                         {
