@@ -532,7 +532,7 @@ namespace MySurfaceApplication
                     {
                         info.log("track "+loopId+" effect "+effect.Value);
                         info.log(JsonConvert.SerializeObject(trackGroups.Effects));
-                        manager.setEffectOnLoop(loopId, manager.soundEffectMapper(effect.Name), effect.Value < 0.09 ? 0 : effect.Value);
+                        manager.setEffectOnLoop(loopId, manager.soundEffectMapper(effect.Name), effectTresholdValue(effect.Value));
                     }
                 }
                 //subscriber.Client.Update("/track-groups/update", "{\"_id\":\""+trackGroups.Id+"\"}","{\"$set\":{\"name\":\""+trackGroups.Name+"\"}}","{}");
@@ -623,6 +623,11 @@ namespace MySurfaceApplication
         private void OnWindowUnavailable(object sender, EventArgs e)
         {
             //TODO: disable audio, animations here
+        }
+
+        private float effectTresholdValue(float value)
+        {
+            return value < 0.08 ? 0 : value;
         }
 
         // Choix initial du jam
@@ -833,7 +838,7 @@ namespace MySurfaceApplication
                     val += 360;
                 }
 
-                var total = manager.applyDeltaToEffectOnLoop(filter.associatedJamTracks.Id, filter.Effect, (float) val / 360);
+                var total = manager.applyDeltaToEffectOnLoop(filter.associatedJamTracks.Id, filter.Effect, effectTresholdValue((float) val / 360));
                 filter.Opacity = total;
                 Console.WriteLine("total " + total);
                 //filter.GeneralEffectValue = filter.associatedJamTracks.Effect1;
