@@ -14,6 +14,7 @@ namespace MySurfaceApplication
         private string name;
         private string jamId;
         private LeapGesturesMapping leapGesturesMapping;
+        private bool modified;
 
         public TrackGroups(string id, string jamId, string color, string name, List<string> tracks, List<Effect> effects, LeapGesturesMapping leapGesturesMapping)
         {
@@ -24,24 +25,27 @@ namespace MySurfaceApplication
             this.tracks = tracks;
             this.effects = effects;
             this.leapGesturesMapping = leapGesturesMapping;
+            modified = false;
         }
 
         public List<Effect> Effects
         {
             get { return effects; }
-            set { effects = value;}
+            set {
+                effects = value;
+            }
         }
 
         public List<string> TracksId
         {
             get { return tracks; }
-            set { tracks = value;}
+            set { tracks = value; }
         }
 
         public LeapGesturesMapping LeapGesturesMapping
         {
             get { return leapGesturesMapping; }
-            set { leapGesturesMapping = value;}
+            set { leapGesturesMapping = value; }
         }
 
         public string Id
@@ -56,6 +60,12 @@ namespace MySurfaceApplication
             set { ;}
         }
 
+        public bool Modified
+        {
+            get { return modified; }
+            set { modified = value;}
+        }
+
         public string Color
         {
             get { return color; }
@@ -66,6 +76,19 @@ namespace MySurfaceApplication
         {
             get { return name; }
             set { ;}
+        }
+
+        public string serializeEffectsToJSon()
+        {
+            string effectsJson = "{\"effects\":["; // +effects + "]}";
+            foreach (Effect effect in effects)
+            {
+                effectsJson += effect.serializeToJSon();
+                effectsJson += ",";
+            }
+            string result = effectsJson.Substring(0,effectsJson.Length - 1);
+            result += "]}";
+            return result;
         }
     }
 }

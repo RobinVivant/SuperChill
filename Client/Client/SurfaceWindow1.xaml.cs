@@ -21,12 +21,23 @@ using System.Windows.Threading;
 using System.ComponentModel;
 using System.Collections.ObjectModel;
 using System.Windows.Media.Animation;
+using System.Threading;
 
 
 namespace MySurfaceApplication
 {
     public partial class SurfaceWindow1 : SurfaceWindow
     {
+        private static readonly Dictionary<string, SoundEffect> effectMap = new Dictionary<string, SoundEffect>
+        {
+            { "volume", SoundEffect.Volume },
+            { "chorus", SoundEffect.Chorus },
+            { "echo", SoundEffect.Echo },
+            { "flanger", SoundEffect.Flanger },
+            { "garle", SoundEffect.Gargle },
+            { "reverb", SoundEffect.WavesReverb }
+        };
+
         ConnexionData samplesMap;
         SampleData samplesList;
         jamTracksData jamTracksList;
@@ -36,6 +47,10 @@ namespace MySurfaceApplication
         private SoundManager manager;
         ObservableCollection<Jam> jams = new ObservableCollection<Jam>();
         MeteorSubscriber subscriber;
+
+        TimerCallback callback;
+        Timer t;
+
 
         //LeapListener LeapListener;
         //Leap.Controller LeapController;
@@ -77,7 +92,7 @@ namespace MySurfaceApplication
 
             // Have the sample listener receive events from the controller
             LeapController.AddListener(LeapListener);*/
-
+                        
             jamList = new JamData();
             jamList.PropertyChanged += new PropertyChangedEventHandler(jamChangedHandler);
             zouzouList = new ZouzouData();
@@ -88,6 +103,10 @@ namespace MySurfaceApplication
             samplesList.PropertyChanged += new PropertyChangedEventHandler(samplesChangedHandler);
             trackGroupsList = new TrackGroupsData();
             trackGroupsList.PropertyChanged += new PropertyChangedEventHandler(trackGroupsChangedHandler);
+
+            // Timer
+            callback = new TimerCallback(Tick);
+            t = new Timer(delegate { callback(trackGroupsList); }, null, 0, 2000);
 
             subscriber = new MeteorSubscriber(ref samplesList, ref jamTracksList, ref jamList, ref zouzouList, ref samplesMap, ref trackGroupsList);
             var client = new DDPClient(subscriber);
@@ -104,6 +123,19 @@ namespace MySurfaceApplication
             //subscriber.Bind(_messages, "jam", "jam-tracks", "Zx4duhaPxeL9WRf7u");
             subscriber.Bind(_messages, "zouzous", "zouzouList");
                 
+        }
+
+        public void Tick(Object o)
+        {
+            var tgl = (TrackGroupsData) o;
+            foreach (TrackGroups tg in tgl)
+            {
+                if (tg.Modified)
+                {
+                    trackGroupsUpdate(tg);
+                    tg.Modified = false;
+                }                
+            }
         }
 
         // LEAP MOTION
@@ -461,7 +493,7 @@ namespace MySurfaceApplication
             ScatterViewItem item = sender as ScatterViewItem;
             string trackId = item.Name.Substring(1, item.Name.Length - 1);
             manager.toggleLoop(trackId);
-            
+
             if (item.Opacity == 0.5)
             {
                 item.Opacity = 1;
@@ -470,7 +502,12 @@ namespace MySurfaceApplication
             {
                 item.Opacity = 0.5;
             }
-        }              
+        }
+
+        private void trackGroupsUpdate(TrackGroups g)
+        {
+            subscriber.Client.Update("/track-groups/update", "{\"_id\":\"" + g.Id + "\"}", "{\"$set\":" + g.serializeEffectsToJSon() + "}", "{}");
+        }
         
 
         protected void samplesChangedHandler(Object sender, PropertyChangedEventArgs e)
@@ -526,13 +563,11 @@ namespace MySurfaceApplication
             }
             else if (e.PropertyName == "EffectUpdated")
             {
-                info.log("lolo " + trackGroups.TracksId.Count);
                 foreach(string loopId in trackGroups.TracksId){
                     foreach (Effect effect in trackGroups.Effects)
                     {
-                        info.log("track "+loopId+" effect "+effect.Value);
-                        info.log(JsonConvert.SerializeObject(trackGroups.Effects));
-                        manager.setEffectOnLoop(loopId, manager.soundEffectMapper(effect.Name), effectTresholdValue(effect.Value));
+                        SoundEffect soundEffect = effectMap[effect.Name];
+                        manager.setEffectOnLoop(loopId, soundEffect, effectTresholdValue(effect.Value));
                     }
                 }
                 //subscriber.Client.Update("/track-groups/update", "{\"_id\":\""+trackGroups.Id+"\"}","{\"$set\":{\"name\":\""+trackGroups.Name+"\"}}","{}");
@@ -840,7 +875,6 @@ namespace MySurfaceApplication
 
                 var total = manager.applyDeltaToEffectOnLoop(filter.associatedJamTracks.Id, filter.Effect, effectTresholdValue((float) val / 360));
                 filter.Opacity = total;
-                Console.WriteLine("total " + total);
                 //filter.GeneralEffectValue = filter.associatedJamTracks.Effect1;
                 filter.Valeur = filter.Orientation;
             }
@@ -866,18 +900,42 @@ namespace MySurfaceApplication
                         foreach (string fx in g.LeapGesturesMapping.X)
                         {
                             float v = manager.applyDeltaToEffectOnLoop(trackId, manager.soundEffectMapper(fx), dX);
-                            //subscriber.Client.Update("/track-groups/update", "{\"_id\":\"" + g.Id + "\"}", "{\"$set\":{\"effects\":"+g.Effects+"}}", "{}");
+                            g.Effects[effectMapper(fx)].Value = v;
                         }
                         foreach (string fx in g.LeapGesturesMapping.Y)
                         {
                             float v = manager.applyDeltaToEffectOnLoop(trackId, manager.soundEffectMapper(fx), dY);
+                            g.Effects[effectMapper(fx)].Value = v;
                         }
                         foreach (string fx in g.LeapGesturesMapping.Pitch)
                         {
                             float v = manager.applyDeltaToEffectOnLoop(trackId, manager.soundEffectMapper(fx), dPitch);
+                            g.Effects[effectMapper(fx)].Value = v;
                         }
                     }
+                    g.Modified = true;
                 }
+            }
+        }
+
+        private int effectMapper(string fx)
+        {
+            switch (fx)
+            {
+                case "volume":
+                    return 0;
+                case "chorus":
+                    return 5;
+                case "echo":
+                    return 2;
+                case "flanger":
+                    return 4;
+                case "garle":
+                    return 1;
+                case "reverb":
+                    return 3;
+                default:
+                    return 0;
             }
         }
     }

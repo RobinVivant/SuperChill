@@ -44,6 +44,14 @@ namespace MySurfaceApplication
     {
         public string Name { get; set; }
         public float Value { get; set; }
+
+        public string serializeToJSon()
+        {
+            string effectJSon = "";
+            string varValue = this.Value.ToString().Replace(",", ".");
+            effectJSon += "{\"name\":\"" + this.Name + "\",\"value\":" + varValue + "}";
+            return effectJSon;
+        }
     }
 
     public class LeapGesturesMapping : Message
