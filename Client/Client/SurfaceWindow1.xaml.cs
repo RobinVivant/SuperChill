@@ -197,15 +197,21 @@ namespace MySurfaceApplication
                     {
                         ScatterViewItem svi = myScatterView.ItemContainerGenerator.ContainerFromItem(obj) as ScatterViewItem;
                         object objectSvi = svi.Content;
-                        if (objectSvi is Border)
+                        if (objectSvi is Canvas)
                         {
-                            Border sviContent = new Border();
-                            sviContent = objectSvi as Border;
-                            // Si oui, positionner le nouveau scatterViewItem aux alentours du svi de meme couleur
-                            if (sviContent.Background.ToString() == color.ToString())
+                            Canvas sviContent = objectSvi as Canvas;
+                            foreach (object canvasChild in sviContent.Children)
                             {
-                                newPosition = RandCenter((int)svi.ActualCenter.X, (int)svi.ActualCenter.Y);
-                                break;
+                                if (canvasChild is Border)
+                                {
+                                    Border circle = canvasChild as Border;
+                                    // Si oui, positionner le nouveau scatterViewItem aux alentours du svi de meme couleur
+                                    if (circle.Background.ToString() == color.ToString())
+                                    {
+                                        newPosition = RandCenter((int)svi.ActualCenter.X, (int)svi.ActualCenter.Y);
+                                        break;
+                                    }
+                                }
                             }
                         }
                     }
@@ -218,8 +224,7 @@ namespace MySurfaceApplication
                     border.Height = 120;
                     border.Width = 120;
 
-
-                    // Content
+                    // Content : icon + track name
                     StackPanel stack = new StackPanel();
                     stack.Width = 100;
                     stack.Height = 100;
@@ -247,13 +252,11 @@ namespace MySurfaceApplication
                     stack.Children.Add(content);
                     border.Child = stack;
 
-
                     Canvas c = new Canvas();
                     c.Height = 100;
                     c.Width = 100;
                     c.Children.Add(border);
                     c.Background = new SolidColorBrush(Colors.Transparent);
-
 
                     // Effects
                     var effects = Enum.GetValues(typeof(SoundEffect)).Cast<SoundEffect>();
@@ -267,16 +270,15 @@ namespace MySurfaceApplication
                         if (value > 0)
                         {
                             Image effectVisualizer = new Image();
-                            effectVisualizer.Source = new BitmapImage(new Uri(@"../../Resources/loader/Untitled-" + (int) (10*value) + ".png", UriKind.Relative));
+                            effectVisualizer.Source = new BitmapImage(new Uri(@"../../Resources/loader/Untitled-" + (int)(10 * value) + ".png", UriKind.Relative));
 
                             effectVisualizer.Width = 20;
                             effectVisualizer.Height = 20;
 
-                            double x = 50 + 70 * Math.Cos(i * Math.PI/5);
+                            double x = 50 + 70 * Math.Cos(i * Math.PI / 5);
                             double y = 50 + 70 * Math.Sin(i * Math.PI / 5);
                             effectVisualizer.SetValue(Canvas.LeftProperty, x);
                             effectVisualizer.SetValue(Canvas.TopProperty, y);
-
 
                             Image effectIcon = new Image();
                             effectIcon.Source = new BitmapImage(makeUriForEffect(effect));
@@ -292,12 +294,8 @@ namespace MySurfaceApplication
                             c.Children.Add(effectVisualizer);
 
                             i++;
-
                         }
                     }
-
-
-
 
                     // Item creation
                     ScatterViewItem item = new ScatterViewItem();
@@ -422,7 +420,7 @@ namespace MySurfaceApplication
                 // the changed contact point.  
                 double deltaX = currentTouchPoint.X - lastPoint.X;
                 double deltaY = currentTouchPoint.Y - lastPoint.Y;
-            
+
                 object objCurrentItem = currentItem.Content;
                 string currentColor = "";
                 if (objCurrentItem is Border)
@@ -439,14 +437,21 @@ namespace MySurfaceApplication
                 {
                     ScatterViewItem svi = myScatterView.ItemContainerGenerator.ContainerFromItem(obj) as ScatterViewItem;
                     object objectSvi = svi.Content;
-                    if (objectSvi is Border)
+                    if (objectSvi is Canvas)
                     {
-                        Border sviContent = new Border();
-                        sviContent = objectSvi as Border;
-                        if ((sviContent.Background.ToString() == currentColor) && (svi != currentItem))
+                        Canvas sviContent = objectSvi as Canvas;
+                        foreach (object canvasChild in sviContent.Children)
                         {
-                            itemPosition = svi.ActualCenter;
-                            svi.Center = new Point(itemPosition.X + deltaX, itemPosition.Y + deltaY);
+                            if (canvasChild is Border)
+                            {
+                                Border circle = canvasChild as Border;
+                                // Si oui, positionner le nouveau scatterViewItem aux alentours du svi de meme couleur
+                                if ((circle.Background.ToString() == currentColor) && (svi != currentItem))
+                                {
+                                    itemPosition = svi.ActualCenter;
+                                    svi.Center = new Point(itemPosition.X + deltaX, itemPosition.Y + deltaY);
+                                }
+                            }
                         }
                     }
                 }
