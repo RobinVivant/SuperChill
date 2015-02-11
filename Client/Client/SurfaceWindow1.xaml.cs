@@ -583,9 +583,9 @@ namespace MySurfaceApplication
                     foreach (Effect effect in trackGroups.Effects)
                     {
                         if(effect.Name == "volume")
-                            manager.setEffectOnLoop(loopId, manager.soundEffectMapper(effect.Name), 1);
+                            manager.setEffectOnLoop(loopId, effectMap[effect.Name], 1);
                         else
-                            manager.setEffectOnLoop(loopId, manager.soundEffectMapper(effect.Name), 0);
+                            manager.setEffectOnLoop(loopId, effectMap[effect.Name], 0);
                     }
                 }
             }
@@ -899,17 +899,17 @@ namespace MySurfaceApplication
                     {
                         foreach (string fx in g.LeapGesturesMapping.X)
                         {
-                            float v = manager.applyDeltaToEffectOnLoop(trackId, manager.soundEffectMapper(fx), dX);
+                            float v = manager.applyDeltaToEffectOnLoop(trackId, effectMap[fx], dX);
                             g.Effects[effectMapper(fx)].Value = v;
                         }
                         foreach (string fx in g.LeapGesturesMapping.Y)
                         {
-                            float v = manager.applyDeltaToEffectOnLoop(trackId, manager.soundEffectMapper(fx), dY);
+                            float v = manager.applyDeltaToEffectOnLoop(trackId, effectMap[fx], dY);
                             g.Effects[effectMapper(fx)].Value = v;
                         }
                         foreach (string fx in g.LeapGesturesMapping.Pitch)
                         {
-                            float v = manager.applyDeltaToEffectOnLoop(trackId, manager.soundEffectMapper(fx), dPitch);
+                            float v = manager.applyDeltaToEffectOnLoop(trackId, effectMap[fx], dPitch);
                             g.Effects[effectMapper(fx)].Value = v;
                         }
                     }
