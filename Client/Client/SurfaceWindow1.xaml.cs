@@ -923,7 +923,6 @@ namespace MySurfaceApplication
                 var distance = Math.Sqrt(Math.Pow(p.X - center.X, 2) + Math.Pow(p.Y - center.Y, 2));
                 if (distance <= 50)
                 {
-                    Console.WriteLine("itemName " + jamTracksList.findById(item.Name.Substring(1, item.Name.Length - 1)).Path);
                     return item;
                 }
             }
@@ -1023,8 +1022,7 @@ namespace MySurfaceApplication
                     val += 360;
                 }
 
-                var total = manager.applyDeltaToEffectOnLoop(filter.associatedJamTracks.Id, filter.Effect, effectTresholdValue((float) val / 360));
-                Console.WriteLine("delta " + total);
+                var total = manager.applyDeltaToEffectOnLoop(filter.associatedJamTracks.Id, filter.Effect, (float) val / 360);
                 //filter.GeneralEffectValue = filter.associatedJamTracks.Effect1;
                 filter.Valeur = filter.Orientation;
             }
