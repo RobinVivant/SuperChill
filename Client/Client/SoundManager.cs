@@ -19,10 +19,12 @@ namespace MySurfaceApplication
         // Lists of loop identifiers to delete and deactivate at next step
         System.Collections.ArrayList deletedLoops;
 
+        SurfaceWindow1 myWindow;
+
         int activeCount;
         System.Timers.Timer timer;
 
-        public SoundManager()
+        public SoundManager(SurfaceWindow1 w)
         {
             engine = new ISoundEngine();
             loops = new System.Collections.Hashtable();
@@ -33,6 +35,8 @@ namespace MySurfaceApplication
 
             timer = new System.Timers.Timer(4 * 1000 * BPM / 60);
             timer.Elapsed += endOfLoop;
+
+            myWindow = w;
         }
 
         public void addLoop(string id, string filePath, bool active)
@@ -62,13 +66,16 @@ namespace MySurfaceApplication
         public void setEffectOnLoop(string loopId, SoundEffect effect, float value)
         {
             ((Loop)loops[loopId]).setEffect(effect, value);
+            myWindow.refreshEffectView(loopId, effect, value);
         }
 
         public float applyDeltaToEffectOnLoop(string loopId, SoundEffect effect, float delta)
         {
             Loop l = (Loop)loops[loopId];
             l.setEffect(effect, l.getEffect(effect) + delta);
-            return l.getEffect(effect);
+            float value = l.getEffect(effect);
+            myWindow.refreshEffectView(loopId, effect, value);
+            return value;
         }
 
 

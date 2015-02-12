@@ -38,6 +38,7 @@ namespace MySurfaceApplication
             { "reverb", SoundEffect.WavesReverb }
         };
 
+
         ConnexionData samplesMap;
         SampleData samplesList;
         jamTracksData jamTracksList;
@@ -79,7 +80,8 @@ namespace MySurfaceApplication
             // Add handlers for window availability events
             AddWindowAvailabilityHandlers();
 
-            this.manager = new SoundManager();
+            this.manager = new SoundManager(this);
+            
             samplesMap = new ConnexionData();
             samplesMap.PropertyChanged += new PropertyChangedEventHandler(samplesChangedHandler);
 
@@ -123,6 +125,14 @@ namespace MySurfaceApplication
             //subscriber.Bind(_messages, "jam", "jam-tracks", "Zx4duhaPxeL9WRf7u");
             subscriber.Bind(_messages, "zouzous", "zouzouList");
                 
+        }
+
+        public void refreshEffectView(String trackId, SoundEffect e, float val)
+        {
+            myScatterView.Dispatcher.Invoke(DispatcherPriority.Normal, new Action(delegate()
+            {
+                ((Image)myScatterView.FindName("fx_" + trackId + "_" + e.ToString())).Source = new BitmapImage(new Uri(@"../../Resources/loader/Untitled-" + (int)(10 * val) + ".png", UriKind.Relative));
+            }));
         }
 
         public void Tick(Object o)
@@ -267,14 +277,14 @@ namespace MySurfaceApplication
                     {
                         if (l == null) continue;
                         float value = l.getEffect(effect);
-                        if (value > 0)
+                        if (true || value > 0)
                         {
                             Image effectVisualizer = new Image();
                             effectVisualizer.Source = new BitmapImage(new Uri(@"../../Resources/loader/Untitled-" + (int)(10 * value) + ".png", UriKind.Relative));
 
                             effectVisualizer.Width = 20;
                             effectVisualizer.Height = 20;
-
+                            myScatterView.RegisterName("fx_" + trackId + "_" + effect.ToString(), effectVisualizer);
                             double x = 50 + 70 * Math.Cos(i * Math.PI / 5);
                             double y = 50 + 70 * Math.Sin(i * Math.PI / 5);
                             effectVisualizer.SetValue(Canvas.LeftProperty, x);
