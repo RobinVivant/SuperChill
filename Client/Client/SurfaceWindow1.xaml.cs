@@ -902,8 +902,8 @@ namespace MySurfaceApplication
 
         private void InitializeDefinitions()
         {
-            byte[] tags = { 0xB5,0x01,0x20,0xC4,0xA6,0xC5};
-            for (int k = 1; k <= 5; k++)
+            byte[] tags = { 0x6A, 0x7A, 0x8A, 0x9A, 0xAA, 0xAB, 0x6B, 0x7B, 0x8B, 0x9B, 0xBB, 0xBA };
+            for (int k = 1; k <= 12; k++)
             {
                 TagVisualizationDefinition tagDef = new TagVisualizationDefinition();
                 // The tag value that this definition will respond to.
@@ -951,44 +951,49 @@ namespace MySurfaceApplication
                 JamTracks jamTracks = jamTracksList.findById(item.Name.Substring(1, item.Name.Length - 1));
                 filter.associatedJamTracks = jamTracks;
             }
-            switch (filter.VisualizedTag.Value)
+            long tagValue = filter.VisualizedTag.Value;
+            if (tagValue == 0x6A || tagValue == 0x6B)
             {
-                case 1:
-                    filter.FilterType.Content = "Volume";
-                    filter.myEllipse.Fill = SurfaceColors.Accent1Brush;
-                    filter.Effect = SoundEffect.Volume;
-                    break;
-                case 0x20:
-                    filter.FilterType.Content = "Chorus";
-                    filter.myEllipse.Fill = SurfaceColors.Accent2Brush;
-                    filter.Effect = SoundEffect.Chorus;
-                    break;
-                case 0xA6:
-                    filter.FilterType.Content = "Echo";
-                    filter.myEllipse.Fill = SurfaceColors.Accent3Brush;
-                    filter.Effect = SoundEffect.Echo;
-                    break;
-                case 0xC4:
-                    filter.FilterType.Content = "Flanger";
-                    filter.myEllipse.Fill = SurfaceColors.Accent4Brush;
-                    filter.Effect = SoundEffect.Flanger;
-                    break;
-                case 0xB5:
-                    filter.FilterType.Content = "Gargle";
-                    filter.myEllipse.Fill = SurfaceColors.BulletBrush;
-                    filter.Effect = SoundEffect.Gargle;
-                    break;
-                case 4:
-                    filter.FilterType.Content = "Waves Reverb";
-                    filter.myEllipse.Fill = SurfaceColors.BulletDisabledBrush;
-                    filter.Effect = SoundEffect.WavesReverb;
-                    break;
-                default:
-                    filter.FilterType.Content = "UNKNOWN FILTER";
-                    filter.myEllipse.Fill = SurfaceColors.ControlAccentBrush;
-                    filter.Effect = SoundEffect.Volume;
-                    break;
+                filter.FilterType.Content = "Volume";
+                filter.myEllipse.Fill = SurfaceColors.Accent1Brush;
+                filter.Effect = SoundEffect.Volume;
             }
+            else if (tagValue == 0x7A || tagValue == 0x7B)
+            {
+                filter.FilterType.Content = "Gargle";
+                filter.myEllipse.Fill = SurfaceColors.BulletBrush;
+                filter.Effect = SoundEffect.Gargle;
+            }
+            else if (tagValue == 0x8A || tagValue == 0x8B)
+            {
+                filter.FilterType.Content = "Echo";
+                filter.myEllipse.Fill = SurfaceColors.Accent3Brush;
+                filter.Effect = SoundEffect.Echo;
+            }
+            else if (tagValue == 0x9A || tagValue == 0x9B)
+            {
+                filter.FilterType.Content = "Waves Reverb";
+                filter.myEllipse.Fill = SurfaceColors.BulletDisabledBrush;
+                filter.Effect = SoundEffect.WavesReverb;
+            }
+            else if (tagValue == 0xAA || tagValue == 0xBB)
+            {
+                filter.FilterType.Content = "Flanger";
+                filter.myEllipse.Fill = SurfaceColors.Accent4Brush;
+                filter.Effect = SoundEffect.Flanger;
+            }
+            else if (tagValue == 0xAB || tagValue == 0xBA)
+            {
+                filter.FilterType.Content = "Chorus";
+                filter.myEllipse.Fill = SurfaceColors.Accent2Brush;
+                filter.Effect = SoundEffect.Chorus;
+            }
+            else
+            {
+                filter.FilterType.Content = "Volume";
+                filter.myEllipse.Fill = SurfaceColors.Accent1Brush;
+                filter.Effect = SoundEffect.Volume;
+            }            
         }
 
         private void MyTagVisualizer_VisualizationMoved(object sender, TagVisualizerEventArgs e)
