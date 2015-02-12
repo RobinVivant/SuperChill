@@ -388,8 +388,8 @@ namespace MySurfaceApplication
                             effectVisualizer.Width = 20;
                             effectVisualizer.Height = 20;
                             myScatterView.RegisterName("fx_" + trackId + "_" + effect.ToString(), effectVisualizer);
-                            double x = 50 + 70 * Math.Cos(i * Math.PI / 5);
-                            double y = 50 + 70 * Math.Sin(i * Math.PI / 5);
+                            double x = 51 + 70 * Math.Cos(i * Math.PI / 5);
+                            double y = 48 + 70 * Math.Sin(i * Math.PI / 5);
                             effectVisualizer.SetValue(Canvas.LeftProperty, x);
                             effectVisualizer.SetValue(Canvas.TopProperty, y);
 
