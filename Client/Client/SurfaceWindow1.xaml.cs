@@ -448,7 +448,7 @@ namespace MySurfaceApplication
 
         private Uri makeUriForEffect(SoundEffect effect)
         {
-            string prefix = "../../Resources/";
+            string prefix = @"../../Resources/effects/";
             switch (effect)
             {
                 case SoundEffect.Chorus:
@@ -461,6 +461,8 @@ namespace MySurfaceApplication
                     return new Uri(prefix + "reverb.png", UriKind.Relative);
                 case SoundEffect.Gargle:
                     return new Uri(prefix + "gargle.png", UriKind.Relative);
+                case SoundEffect.Echo:
+                    return new Uri(prefix + "echo.png", UriKind.Relative);
                 default:
                     return new Uri(prefix + "volume.png", UriKind.Relative);
             }
@@ -921,6 +923,7 @@ namespace MySurfaceApplication
                 var distance = Math.Sqrt(Math.Pow(p.X - center.X, 2) + Math.Pow(p.Y - center.Y, 2));
                 if (distance <= 50)
                 {
+                    Console.WriteLine("itemName " + jamTracksList.findById(item.Name.Substring(1, item.Name.Length - 1)).Path);
                     return item;
                 }
             }
@@ -931,6 +934,7 @@ namespace MySurfaceApplication
         {
             TagVisualization1 filter = (TagVisualization1)e.TagVisualization;
             filter.OriginalOrientation = filter.Orientation;
+            filter.Opacity = 0;
             ScatterViewItem item = OnItem(filter.Center);
             if (item != null)
             {
@@ -1020,7 +1024,7 @@ namespace MySurfaceApplication
                 }
 
                 var total = manager.applyDeltaToEffectOnLoop(filter.associatedJamTracks.Id, filter.Effect, effectTresholdValue((float) val / 360));
-                filter.Opacity = total;
+                Console.WriteLine("delta " + total);
                 //filter.GeneralEffectValue = filter.associatedJamTracks.Effect1;
                 filter.Valeur = filter.Orientation;
             }

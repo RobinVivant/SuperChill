@@ -202,6 +202,12 @@
     <Content Include="MySurfaceApplication.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Resource Include="Resources\effects\chorus.png" />
+    <Resource Include="Resources\effects\echo.png" />
+    <Resource Include="Resources\effects\flanger.png" />
+    <Resource Include="Resources\effects\gargle.png" />
+    <Resource Include="Resources\effects\reverb.png" />
+    <Resource Include="Resources\effects\volume.png" />
     <Resource Include="Resources\chorus.png" />
     <Resource Include="Resources\flanger.png" />
     <Resource Include="Resources\gargle.png" />
