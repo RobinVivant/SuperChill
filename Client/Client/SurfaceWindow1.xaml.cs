@@ -34,7 +34,7 @@ namespace MySurfaceApplication
             { "chorus", SoundEffect.Chorus },
             { "echo", SoundEffect.Echo },
             { "flanger", SoundEffect.Flanger },
-            { "garle", SoundEffect.Gargle },
+            { "gargle", SoundEffect.Gargle },
             { "reverb", SoundEffect.WavesReverb }
         };
 
@@ -1089,7 +1089,7 @@ namespace MySurfaceApplication
                     return 2;
                 case "flanger":
                     return 4;
-                case "garle":
+                case "gargle":
                     return 1;
                 case "reverb":
                     return 3;
