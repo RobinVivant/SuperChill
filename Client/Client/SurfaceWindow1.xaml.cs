@@ -185,6 +185,94 @@ namespace MySurfaceApplication
             return randor;
         }
 
+        // Draw timer in the middle of the scatterview
+        public void drawTimer()
+        {
+            List<Ellipse> ellipseList = new List<Ellipse>();
+            Canvas c = new Canvas();
+            int ellipseDiameter = 12;
+            int canvasDiameter = 100;
+            int i;
+            int j = 0;
+            //var converter = new System.Windows.Media.BrushConverter();
+            //var grayColor = (SolidColorBrush)converter.ConvertFromString("#293133");
+
+            c.Height = canvasDiameter;
+            c.Width = canvasDiameter;
+            c.Background = new SolidColorBrush(Colors.Transparent);
+
+            for (i = 0; i < 8; i++)
+            {
+                Ellipse e = new Ellipse();
+                e.Stroke = System.Windows.Media.Brushes.White; //System.Windows.Media.Brushes.White;
+                e.Fill = System.Windows.Media.Brushes.White;   //System.Windows.Media.Brushes.DimGray;
+                e.Opacity = 0.2;
+                e.Width = ellipseDiameter;
+                e.Height = ellipseDiameter;
+                e.Name = "ellipse" + i;
+                myScatterView.RegisterName(e.Name, e);
+
+                double x = (canvasDiameter / 2) + 30 * Math.Cos(i * Math.PI / 4);
+                double y = (canvasDiameter / 2) + 30 * Math.Sin(i * Math.PI / 4);
+
+                e.SetValue(Canvas.LeftProperty, x);
+                e.SetValue(Canvas.TopProperty, y);
+
+                c.Children.Add(e);
+                ellipseList.Add(e);
+            }
+
+            ScatterViewItem item = new ScatterViewItem();
+            item.Width = canvasDiameter;
+            item.Height = canvasDiameter;
+            item.Content = c;
+            item.Background = new SolidColorBrush(Colors.Transparent);
+            item.CanScale = false;
+            item.CanRotate = false;
+            item.CanMove = false;
+            item.Center = new Point(myScatterView.ActualWidth / 2, myScatterView.ActualHeight / 2);
+            myScatterView.Items.Add(item);
+
+            var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(8) };
+            timer.Tick += (s, ev) =>
+            {
+                foreach (Ellipse e in c.Children)
+                {
+                    if (j == 8)
+                    {
+                        j = 0;
+                    }
+                    DoubleAnimation opacityAnimation = null;
+                    if (Math.Round(e.Opacity, 1) == 0.2)
+                    {
+                        opacityAnimation = new DoubleAnimation(0.2, 1.0, TimeSpan.FromSeconds(1), FillBehavior.Stop);
+                    }
+                    else
+                    {
+                        opacityAnimation = new DoubleAnimation(1.0, 0.2, TimeSpan.FromSeconds(1), FillBehavior.Stop);
+                    }
+                    opacityAnimation.BeginTime = TimeSpan.FromSeconds(j);
+                    opacityAnimation.AccelerationRatio = 0.5;
+                    opacityAnimation.DecelerationRatio = 0.5;
+                    opacityAnimation.FillBehavior = FillBehavior.Stop;
+                    opacityAnimation.Completed += delegate(object send, EventArgs evt)
+                    {
+                        if (Math.Round(e.Opacity, 1) == 0.2)
+                        {
+                            e.Opacity = 1.0;
+                        }
+                        else
+                        {
+                            e.Opacity = 0.2;
+                        }
+                    };
+                    e.BeginAnimation(Ellipse.OpacityProperty, opacityAnimation);
+                    j++;
+                }
+            };
+            timer.Start();
+        }
+
         // Dessine un cercle sur la table surface correspondant à une track (avec la couleur du zouzou et le nom de la track)
         public void drawCircle(string trackId, string trackPath, string zouzouColor)
         {
@@ -206,15 +294,21 @@ namespace MySurfaceApplication
                     {
                         ScatterViewItem svi = myScatterView.ItemContainerGenerator.ContainerFromItem(obj) as ScatterViewItem;
                         object objectSvi = svi.Content;
-                        if (objectSvi is Border)
+                        if (objectSvi is Canvas)
                         {
-                            Border sviContent = new Border();
-                            sviContent = objectSvi as Border;
-                            // Si oui, positionner le nouveau scatterViewItem aux alentours du svi de meme couleur
-                            if (sviContent.Background.ToString() == color.ToString())
+                            Canvas sviContent = objectSvi as Canvas;
+                            foreach (object canvasChild in sviContent.Children)
                             {
-                                newPosition = RandCenter((int)svi.ActualCenter.X, (int)svi.ActualCenter.Y);
-                                break;
+                                if (canvasChild is Border)
+                                {
+                                    Border circle = canvasChild as Border;
+                                    // Si oui, positionner le nouveau scatterViewItem aux alentours du svi de meme couleur
+                                    if (circle.Background.ToString() == color.ToString())
+                                    {
+                                        newPosition = RandCenter((int)svi.ActualCenter.X, (int)svi.ActualCenter.Y);
+                                        break;
+                                    }
+                                }
                             }
                         }
                     }
@@ -227,8 +321,7 @@ namespace MySurfaceApplication
                     border.Height = 120;
                     border.Width = 120;
 
-
-                    // Content
+                    // Content : icon + track name
                     StackPanel stack = new StackPanel();
                     stack.Width = 100;
                     stack.Height = 100;
@@ -256,13 +349,11 @@ namespace MySurfaceApplication
                     stack.Children.Add(content);
                     border.Child = stack;
 
-
                     Canvas c = new Canvas();
                     c.Height = 100;
                     c.Width = 100;
                     c.Children.Add(border);
                     c.Background = new SolidColorBrush(Colors.Transparent);
-
 
                     // Effects
                     var effects = Enum.GetValues(typeof(SoundEffect)).Cast<SoundEffect>();
@@ -276,16 +367,15 @@ namespace MySurfaceApplication
                         if (value > 0)
                         {
                             Image effectVisualizer = new Image();
-                            effectVisualizer.Source = new BitmapImage(new Uri(@"../../Resources/loader/Untitled-" + (int) (10*value) + ".png", UriKind.Relative));
+                            effectVisualizer.Source = new BitmapImage(new Uri(@"../../Resources/loader/Untitled-" + (int)(10 * value) + ".png", UriKind.Relative));
 
                             effectVisualizer.Width = 20;
                             effectVisualizer.Height = 20;
 
-                            double x = 50 + 70 * Math.Cos(i * Math.PI/5);
+                            double x = 50 + 70 * Math.Cos(i * Math.PI / 5);
                             double y = 50 + 70 * Math.Sin(i * Math.PI / 5);
                             effectVisualizer.SetValue(Canvas.LeftProperty, x);
                             effectVisualizer.SetValue(Canvas.TopProperty, y);
-
 
                             Image effectIcon = new Image();
                             effectIcon.Source = new BitmapImage(makeUriForEffect(effect));
@@ -301,12 +391,8 @@ namespace MySurfaceApplication
                             c.Children.Add(effectVisualizer);
 
                             i++;
-
                         }
                     }
-
-
-
 
                     // Item creation
                     ScatterViewItem item = new ScatterViewItem();
@@ -431,14 +517,28 @@ namespace MySurfaceApplication
                 // the changed contact point.  
                 double deltaX = currentTouchPoint.X - lastPoint.X;
                 double deltaY = currentTouchPoint.Y - lastPoint.Y;
-            
+
                 object objCurrentItem = currentItem.Content;
                 string currentColor = "";
+                /*
                 if (objCurrentItem is Border)
                 {
                     Border sviContent = new Border();
                     sviContent = objCurrentItem as Border;
                     currentColor = sviContent.Background.ToString();
+                }*/
+
+                if (objCurrentItem is Canvas)
+                {
+                    Canvas c = objCurrentItem as Canvas;
+                    foreach (object child in c.Children)
+                    {
+                        if (child is Border)
+                        {
+                            Border b = child as Border;
+                            currentColor = b.Background.ToString();
+                        }
+                    }
                 }
 
                 Point itemPosition = new Point();
@@ -448,14 +548,21 @@ namespace MySurfaceApplication
                 {
                     ScatterViewItem svi = myScatterView.ItemContainerGenerator.ContainerFromItem(obj) as ScatterViewItem;
                     object objectSvi = svi.Content;
-                    if (objectSvi is Border)
+                    if (objectSvi is Canvas)
                     {
-                        Border sviContent = new Border();
-                        sviContent = objectSvi as Border;
-                        if ((sviContent.Background.ToString() == currentColor) && (svi != currentItem))
+                        Canvas sviContent = objectSvi as Canvas;
+                        foreach (object canvasChild in sviContent.Children)
                         {
-                            itemPosition = svi.ActualCenter;
-                            svi.Center = new Point(itemPosition.X + deltaX, itemPosition.Y + deltaY);
+                            if (canvasChild is Border)
+                            {
+                                Border circle = canvasChild as Border;
+                                // Si oui, positionner le nouveau scatterViewItem aux alentours du svi de meme couleur
+                                if ((circle.Background.ToString() == currentColor) && (svi != currentItem))
+                                {
+                                    itemPosition = svi.ActualCenter;
+                                    svi.Center = new Point(itemPosition.X + deltaX, itemPosition.Y + deltaY);
+                                }
+                            }
                         }
                     }
                 }
@@ -750,6 +857,9 @@ namespace MySurfaceApplication
             subscriber.Bind(_messages, "jam", "jam", jamId);
             subscriber.Bind(_messages, "jam-tracks", "jam-tracks", jamId);
             subscriber.Bind(_messages, "track-groups", "track-groups", jamId);
+
+            // Draw timer in the center of myScatterView
+            drawTimer();
         }
 
         private void handle_JamMouseUp(object sender, MouseButtonEventArgs e)
@@ -760,6 +870,9 @@ namespace MySurfaceApplication
             subscriber.Bind(_messages, "jam", "jam", jamId);
             subscriber.Bind(_messages, "jam-tracks", "jam-tracks", jamId);
             subscriber.Bind(_messages, "track-groups", "track-groups", jamId);  
+
+            // Draw timer in the center of myScatterView
+            drawTimer();
         }
 
         //TAG
