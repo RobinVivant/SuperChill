@@ -176,6 +176,94 @@ namespace MySurfaceApplication
             return randor;
         }
 
+        // Draw timer in the middle of the scatterview
+        public void drawTimer()
+        {
+            List<Ellipse> ellipseList = new List<Ellipse>();
+            Canvas c = new Canvas();
+            int ellipseDiameter = 12;
+            int canvasDiameter = 100;
+            int i;
+            int j = 0;
+            //var converter = new System.Windows.Media.BrushConverter();
+            //var grayColor = (SolidColorBrush)converter.ConvertFromString("#293133");
+
+            c.Height = canvasDiameter;
+            c.Width = canvasDiameter;
+            c.Background = new SolidColorBrush(Colors.Transparent);
+
+            for (i = 0; i < 8; i++)
+            {
+                Ellipse e = new Ellipse();
+                e.Stroke = System.Windows.Media.Brushes.White; //System.Windows.Media.Brushes.White;
+                e.Fill = System.Windows.Media.Brushes.White;   //System.Windows.Media.Brushes.DimGray;
+                e.Opacity = 0.2;
+                e.Width = ellipseDiameter;
+                e.Height = ellipseDiameter;
+                e.Name = "ellipse" + i;
+                myScatterView.RegisterName(e.Name, e);
+
+                double x = (canvasDiameter / 2) + 30 * Math.Cos(i * Math.PI / 4);
+                double y = (canvasDiameter / 2) + 30 * Math.Sin(i * Math.PI / 4);
+
+                e.SetValue(Canvas.LeftProperty, x);
+                e.SetValue(Canvas.TopProperty, y);
+
+                c.Children.Add(e);
+                ellipseList.Add(e);
+            }
+
+            ScatterViewItem item = new ScatterViewItem();
+            item.Width = canvasDiameter;
+            item.Height = canvasDiameter;
+            item.Content = c;
+            item.Background = new SolidColorBrush(Colors.Transparent);
+            item.CanScale = false;
+            item.CanRotate = false;
+            item.CanMove = false;
+            item.Center = new Point(myScatterView.ActualWidth / 2, myScatterView.ActualHeight / 2);
+            myScatterView.Items.Add(item);
+
+            var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(8) };
+            timer.Tick += (s, ev) =>
+            {
+                foreach (Ellipse e in c.Children)
+                {
+                    if (j == 8)
+                    {
+                        j = 0;
+                    }
+                    DoubleAnimation opacityAnimation = null;
+                    if (Math.Round(e.Opacity, 1) == 0.2)
+                    {
+                        opacityAnimation = new DoubleAnimation(0.2, 1.0, TimeSpan.FromSeconds(1), FillBehavior.Stop);
+                    }
+                    else
+                    {
+                        opacityAnimation = new DoubleAnimation(1.0, 0.2, TimeSpan.FromSeconds(1), FillBehavior.Stop);
+                    }
+                    opacityAnimation.BeginTime = TimeSpan.FromSeconds(j);
+                    opacityAnimation.AccelerationRatio = 0.5;
+                    opacityAnimation.DecelerationRatio = 0.5;
+                    opacityAnimation.FillBehavior = FillBehavior.Stop;
+                    opacityAnimation.Completed += delegate(object send, EventArgs evt)
+                    {
+                        if (Math.Round(e.Opacity, 1) == 0.2)
+                        {
+                            e.Opacity = 1.0;
+                        }
+                        else
+                        {
+                            e.Opacity = 0.2;
+                        }
+                    };
+                    e.BeginAnimation(Ellipse.OpacityProperty, opacityAnimation);
+                    j++;
+                }
+            };
+            timer.Start();
+        }
+
         // Dessine un cercle sur la table surface correspondant à une track (avec la couleur du zouzou et le nom de la track)
         public void drawCircle(string trackId, string trackPath, string zouzouColor)
         {
@@ -732,6 +820,9 @@ namespace MySurfaceApplication
             subscriber.Bind(_messages, "jam", "jam", jamId);
             subscriber.Bind(_messages, "jam-tracks", "jam-tracks", jamId);
             subscriber.Bind(_messages, "track-groups", "track-groups", jamId);
+
+            // Draw timer in the center of myScatterView
+            drawTimer();
         }
 
         private void handle_JamMouseUp(object sender, MouseButtonEventArgs e)
@@ -742,6 +833,9 @@ namespace MySurfaceApplication
             subscriber.Bind(_messages, "jam", "jam", jamId);
             subscriber.Bind(_messages, "jam-tracks", "jam-tracks", jamId);
             subscriber.Bind(_messages, "track-groups", "track-groups", jamId);  
+
+            // Draw timer in the center of myScatterView
+            drawTimer();
         }
 
         //TAG
