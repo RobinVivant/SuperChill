@@ -241,6 +241,12 @@ namespace MySurfaceApplication
             item.CanRotate = false;
             item.CanMove = false;
             item.Center = new Point(myScatterView.ActualWidth / 2, myScatterView.ActualHeight / 2);
+
+            item.ApplyTemplate();
+            Microsoft.Surface.Presentation.Generic.SurfaceShadowChrome ssc;
+            ssc = item.Template.FindName("shadow", item) as Microsoft.Surface.Presentation.Generic.SurfaceShadowChrome;
+            ssc.Visibility = Visibility.Hidden;
+
             myScatterView.Items.Add(item);
 
             var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(8) };
@@ -427,6 +433,11 @@ namespace MySurfaceApplication
                     item.PreviewTouchUp += new EventHandler<TouchEventArgs>(handle_TouchLeave);
                     TouchExtensions.AddTapGestureHandler(item, new EventHandler<TouchEventArgs>(handle_TapGesture));
                     item.PreviewMouseUp += new MouseButtonEventHandler(handle_MouseUp);
+
+                    item.ApplyTemplate();
+                    Microsoft.Surface.Presentation.Generic.SurfaceShadowChrome ssc;
+                    ssc = item.Template.FindName("shadow", item) as Microsoft.Surface.Presentation.Generic.SurfaceShadowChrome;
+                    ssc.Visibility = Visibility.Hidden;
 
                     myScatterView.Items.Add(item);
 
