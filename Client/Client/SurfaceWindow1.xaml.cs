@@ -511,11 +511,25 @@ namespace MySurfaceApplication
 
                 object objCurrentItem = currentItem.Content;
                 string currentColor = "";
+                /*
                 if (objCurrentItem is Border)
                 {
                     Border sviContent = new Border();
                     sviContent = objCurrentItem as Border;
                     currentColor = sviContent.Background.ToString();
+                }*/
+
+                if (objCurrentItem is Canvas)
+                {
+                    Canvas c = objCurrentItem as Canvas;
+                    foreach (object child in c.Children)
+                    {
+                        if (child is Border)
+                        {
+                            Border b = child as Border;
+                            currentColor = b.Background.ToString();
+                        }
+                    }
                 }
 
                 Point itemPosition = new Point();
