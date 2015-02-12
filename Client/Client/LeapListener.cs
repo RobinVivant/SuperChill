@@ -11,11 +11,13 @@ namespace MySurfaceApplication
     {
 
         public delegate void onHandVariation(float dPitch, float dX, float dY);
+        public delegate void onHandLeaving(bool isPresent);
 
         private Object thisLock = new Object();
         private bool resetPosition = true;
         private float prevPitch, prevX, prevY;
         public onHandVariation OnHandVariation;
+        public onHandLeaving OnHandLeaving;
 
         private void SafeWriteLine(String line)
         {
@@ -54,6 +56,7 @@ namespace MySurfaceApplication
             if (frame.Hands.Count != 1)
             {
                 resetPosition = true;
+                this.OnHandLeaving(resetPosition);
                 return;
             }
 
@@ -62,9 +65,12 @@ namespace MySurfaceApplication
             Leap.Vector direction = h.Direction;
             Leap.Vector position = h.PalmPosition;
 
+            
+
             if (resetPosition)
             {
                 resetPosition = false;
+                this.OnHandLeaving(resetPosition);
             }
             else
             {

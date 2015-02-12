@@ -51,10 +51,10 @@ namespace MySurfaceApplication
 
         TimerCallback callback;
         Timer t;
+        Object lockTimer = new Object();
 
-
-        //LeapListener LeapListener;
-        //Leap.Controller LeapController;
+        LeapListener leapListener;
+        Leap.Controller leapController;
 
         Object thisLock = new Object();
 
@@ -69,6 +69,7 @@ namespace MySurfaceApplication
 
         Logger info = new Logger("Surface.log");
         private static List<Message> _messages = new List<Message>();
+        private long serverUpdateInterval = 200;
 
         public SurfaceWindow1()
         {
@@ -86,14 +87,14 @@ namespace MySurfaceApplication
             samplesMap.PropertyChanged += new PropertyChangedEventHandler(samplesChangedHandler);
 
             // Create a sample listener and controller
-            /*LeapListener = new LeapListener();
-            LeapController = new Leap.Controller();
+            leapListener = new LeapListener();
+            leapController = new Leap.Controller();
 
 
-            LeapListener.OnHandVariation += new LeapListener.onHandVariation(handleHandVariation);
-
+            leapListener.OnHandVariation += new LeapListener.onHandVariation(handleHandVariation);
+            leapListener.OnHandLeaving += new LeapListener.onHandLeaving(handleHandLeaving);
             // Have the sample listener receive events from the controller
-            LeapController.AddListener(LeapListener);*/
+            leapController.AddListener(leapListener);
                         
             jamList = new JamData();
             jamList.PropertyChanged += new PropertyChangedEventHandler(jamChangedHandler);
@@ -108,9 +109,9 @@ namespace MySurfaceApplication
 
             // Timer
             callback = new TimerCallback(Tick);
-            t = new Timer(delegate { callback(trackGroupsList); }, null, 0, 2000);
+            t = new Timer(delegate { callback(trackGroupsList); }, null, 0, serverUpdateInterval);
 
-            subscriber = new MeteorSubscriber(ref samplesList, ref jamTracksList, ref jamList, ref zouzouList, ref samplesMap, ref trackGroupsList);
+            subscriber = new MeteorSubscriber(ref thisLock,ref samplesList, ref jamTracksList, ref jamList, ref zouzouList, ref samplesMap, ref trackGroupsList);
             var client = new DDPClient(subscriber);
 
             // TODO; hack
@@ -134,17 +135,25 @@ namespace MySurfaceApplication
                 ((Image)myScatterView.FindName("fx_" + trackId + "_" + e.ToString())).Source = new BitmapImage(new Uri(@"../../Resources/loader/Untitled-" + (int)(10 * val) + ".png", UriKind.Relative));
             }));
         }
+            
+        private void handleHandLeaving(bool isNotPresent)
+        {
+            trackGroupsList.beingModified = !isNotPresent;
+        }
 
         public void Tick(Object o)
         {
-            var tgl = (TrackGroupsData) o;
-            foreach (TrackGroups tg in tgl)
+            lock (thisLock)
             {
-                if (tg.Modified)
+                var tgl = (TrackGroupsData)o;
+                foreach (TrackGroups tg in tgl)
                 {
-                    trackGroupsUpdate(tg);
-                    tg.Modified = false;
-                }                
+                    if (tg.Modified)
+                    {
+                        trackGroupsUpdate(tg);
+                        tg.Modified = false;
+                    }
+                }
             }
         }
 
@@ -184,6 +193,94 @@ namespace MySurfaceApplication
         {
             int randor = rand.Next(low, up);
             return randor;
+        }
+
+        // Draw timer in the middle of the scatterview
+        public void drawTimer()
+        {
+            List<Ellipse> ellipseList = new List<Ellipse>();
+            Canvas c = new Canvas();
+            int ellipseDiameter = 12;
+            int canvasDiameter = 100;
+            int i;
+            int j = 0;
+            //var converter = new System.Windows.Media.BrushConverter();
+            //var grayColor = (SolidColorBrush)converter.ConvertFromString("#293133");
+
+            c.Height = canvasDiameter;
+            c.Width = canvasDiameter;
+            c.Background = new SolidColorBrush(Colors.Transparent);
+
+            for (i = 0; i < 8; i++)
+            {
+                Ellipse e = new Ellipse();
+                e.Stroke = System.Windows.Media.Brushes.White; //System.Windows.Media.Brushes.White;
+                e.Fill = System.Windows.Media.Brushes.White;   //System.Windows.Media.Brushes.DimGray;
+                e.Opacity = 0.2;
+                e.Width = ellipseDiameter;
+                e.Height = ellipseDiameter;
+                e.Name = "ellipse" + i;
+                myScatterView.RegisterName(e.Name, e);
+
+                double x = (canvasDiameter / 2) + 30 * Math.Cos(i * Math.PI / 4);
+                double y = (canvasDiameter / 2) + 30 * Math.Sin(i * Math.PI / 4);
+
+                e.SetValue(Canvas.LeftProperty, x);
+                e.SetValue(Canvas.TopProperty, y);
+
+                c.Children.Add(e);
+                ellipseList.Add(e);
+            }
+
+            ScatterViewItem item = new ScatterViewItem();
+            item.Width = canvasDiameter;
+            item.Height = canvasDiameter;
+            item.Content = c;
+            item.Background = new SolidColorBrush(Colors.Transparent);
+            item.CanScale = false;
+            item.CanRotate = false;
+            item.CanMove = false;
+            item.Center = new Point(myScatterView.ActualWidth / 2, myScatterView.ActualHeight / 2);
+            myScatterView.Items.Add(item);
+
+            var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(8) };
+            timer.Tick += (s, ev) =>
+            {
+                foreach (Ellipse e in c.Children)
+                {
+                    if (j == 8)
+                    {
+                        j = 0;
+                    }
+                    DoubleAnimation opacityAnimation = null;
+                    if (Math.Round(e.Opacity, 1) == 0.2)
+                    {
+                        opacityAnimation = new DoubleAnimation(0.2, 1.0, TimeSpan.FromSeconds(1), FillBehavior.Stop);
+                    }
+                    else
+                    {
+                        opacityAnimation = new DoubleAnimation(1.0, 0.2, TimeSpan.FromSeconds(1), FillBehavior.Stop);
+                    }
+                    opacityAnimation.BeginTime = TimeSpan.FromSeconds(j);
+                    opacityAnimation.AccelerationRatio = 0.5;
+                    opacityAnimation.DecelerationRatio = 0.5;
+                    opacityAnimation.FillBehavior = FillBehavior.Stop;
+                    opacityAnimation.Completed += delegate(object send, EventArgs evt)
+                    {
+                        if (Math.Round(e.Opacity, 1) == 0.2)
+                        {
+                            e.Opacity = 1.0;
+                        }
+                        else
+                        {
+                            e.Opacity = 0.2;
+                        }
+                    };
+                    e.BeginAnimation(Ellipse.OpacityProperty, opacityAnimation);
+                    j++;
+                }
+            };
+            timer.Start();
         }
 
         // Dessine un cercle sur la table surface correspondant à une track (avec la couleur du zouzou et le nom de la track)
@@ -433,11 +530,25 @@ namespace MySurfaceApplication
 
                 object objCurrentItem = currentItem.Content;
                 string currentColor = "";
+                /*
                 if (objCurrentItem is Border)
                 {
                     Border sviContent = new Border();
                     sviContent = objCurrentItem as Border;
                     currentColor = sviContent.Background.ToString();
+                }*/
+
+                if (objCurrentItem is Canvas)
+                {
+                    Canvas c = objCurrentItem as Canvas;
+                    foreach (object child in c.Children)
+                    {
+                        if (child is Border)
+                        {
+                            Border b = child as Border;
+                            currentColor = b.Background.ToString();
+                        }
+                    }
                 }
 
                 Point itemPosition = new Point();
@@ -591,6 +702,9 @@ namespace MySurfaceApplication
             {
 
             }
+            else if(e.PropertyName == "LeapUpdated"){
+
+            }
             else if (e.PropertyName == "Removed")
             {
                 foreach (string loopId in trackGroups.TracksId)
@@ -614,8 +728,8 @@ namespace MySurfaceApplication
             base.OnClosed(e);
 
             // Remove the sample listener when done
-            //LeapController.RemoveListener(LeapListener);
-            //LeapController.Dispose();
+            leapController.RemoveListener(leapListener);
+            leapController.Dispose();
 
             // Remove handlers for window availability events
             RemoveWindowAvailabilityHandlers();
@@ -677,7 +791,18 @@ namespace MySurfaceApplication
 
         private float effectTresholdValue(float value)
         {
-            return value < 0.08 ? 0 : value;
+            if (value < 0.099)
+            {
+                if (trackGroupsList.beingModified)
+                {
+                    return 0.099f;
+                }
+                else
+                {
+                    return 0;
+                }
+            }
+            return value;
         }
 
         // Choix initial du jam
@@ -742,6 +867,9 @@ namespace MySurfaceApplication
             subscriber.Bind(_messages, "jam", "jam", jamId);
             subscriber.Bind(_messages, "jam-tracks", "jam-tracks", jamId);
             subscriber.Bind(_messages, "track-groups", "track-groups", jamId);
+
+            // Draw timer in the center of myScatterView
+            drawTimer();
         }
 
         private void handle_JamMouseUp(object sender, MouseButtonEventArgs e)
@@ -752,6 +880,9 @@ namespace MySurfaceApplication
             subscriber.Bind(_messages, "jam", "jam", jamId);
             subscriber.Bind(_messages, "jam-tracks", "jam-tracks", jamId);
             subscriber.Bind(_messages, "track-groups", "track-groups", jamId);  
+
+            // Draw timer in the center of myScatterView
+            drawTimer();
         }
 
         //TAG

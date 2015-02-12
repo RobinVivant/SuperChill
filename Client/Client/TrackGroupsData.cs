@@ -13,6 +13,7 @@ namespace MySurfaceApplication
         public TrackGroupsData() : base() { }
         public TrackGroupsData(int capacity) : base(capacity) { }
         public TrackGroupsData(IList<TrackGroups> dictionary) : base(dictionary) { }
+        public bool beingModified;
 
         public event NotifyCollectionChangedEventHandler CollectionChanged;
         public event PropertyChangedEventHandler PropertyChanged;
