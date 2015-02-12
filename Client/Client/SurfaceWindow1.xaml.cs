@@ -50,10 +50,10 @@ namespace MySurfaceApplication
 
         TimerCallback callback;
         Timer t;
+        Object lockTimer = new Object();
 
-
-        //LeapListener LeapListener;
-        //Leap.Controller LeapController;
+        LeapListener leapListener;
+        Leap.Controller leapController;
 
         Object thisLock = new Object();
 
@@ -68,6 +68,7 @@ namespace MySurfaceApplication
 
         Logger info = new Logger("Surface.log");
         private static List<Message> _messages = new List<Message>();
+        private long serverUpdateInterval = 200;
 
         public SurfaceWindow1()
         {
@@ -84,14 +85,14 @@ namespace MySurfaceApplication
             samplesMap.PropertyChanged += new PropertyChangedEventHandler(samplesChangedHandler);
 
             // Create a sample listener and controller
-            /*LeapListener = new LeapListener();
-            LeapController = new Leap.Controller();
+            leapListener = new LeapListener();
+            leapController = new Leap.Controller();
 
 
-            LeapListener.OnHandVariation += new LeapListener.onHandVariation(handleHandVariation);
-
+            leapListener.OnHandVariation += new LeapListener.onHandVariation(handleHandVariation);
+            leapListener.OnHandLeaving += new LeapListener.onHandLeaving(handleHandLeaving);
             // Have the sample listener receive events from the controller
-            LeapController.AddListener(LeapListener);*/
+            leapController.AddListener(leapListener);
                         
             jamList = new JamData();
             jamList.PropertyChanged += new PropertyChangedEventHandler(jamChangedHandler);
@@ -106,9 +107,9 @@ namespace MySurfaceApplication
 
             // Timer
             callback = new TimerCallback(Tick);
-            t = new Timer(delegate { callback(trackGroupsList); }, null, 0, 2000);
+            t = new Timer(delegate { callback(trackGroupsList); }, null, 0, serverUpdateInterval);
 
-            subscriber = new MeteorSubscriber(ref samplesList, ref jamTracksList, ref jamList, ref zouzouList, ref samplesMap, ref trackGroupsList);
+            subscriber = new MeteorSubscriber(ref thisLock,ref samplesList, ref jamTracksList, ref jamList, ref zouzouList, ref samplesMap, ref trackGroupsList);
             var client = new DDPClient(subscriber);
 
             // TODO; hack
@@ -125,16 +126,24 @@ namespace MySurfaceApplication
                 
         }
 
+        private void handleHandLeaving(bool isNotPresent)
+        {
+            trackGroupsList.beingModified = !isNotPresent;
+        }
+
         public void Tick(Object o)
         {
-            var tgl = (TrackGroupsData) o;
-            foreach (TrackGroups tg in tgl)
+            lock (thisLock)
             {
-                if (tg.Modified)
+                var tgl = (TrackGroupsData)o;
+                foreach (TrackGroups tg in tgl)
                 {
-                    trackGroupsUpdate(tg);
-                    tg.Modified = false;
-                }                
+                    if (tg.Modified)
+                    {
+                        trackGroupsUpdate(tg);
+                        tg.Modified = false;
+                    }
+                }
             }
         }
 
@@ -576,6 +585,9 @@ namespace MySurfaceApplication
             {
 
             }
+            else if(e.PropertyName == "LeapUpdated"){
+
+            }
             else if (e.PropertyName == "Removed")
             {
                 foreach (string loopId in trackGroups.TracksId)
@@ -599,8 +611,8 @@ namespace MySurfaceApplication
             base.OnClosed(e);
 
             // Remove the sample listener when done
-            //LeapController.RemoveListener(LeapListener);
-            //LeapController.Dispose();
+            leapController.RemoveListener(leapListener);
+            leapController.Dispose();
 
             // Remove handlers for window availability events
             RemoveWindowAvailabilityHandlers();
@@ -662,7 +674,18 @@ namespace MySurfaceApplication
 
         private float effectTresholdValue(float value)
         {
-            return value < 0.08 ? 0 : value;
+            if (value < 0.099)
+            {
+                if (trackGroupsList.beingModified)
+                {
+                    return 0.099f;
+                }
+                else
+                {
+                    return 0;
+                }
+            }
+            return value;
         }
 
         // Choix initial du jam

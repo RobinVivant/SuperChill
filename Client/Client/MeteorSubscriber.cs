@@ -79,6 +79,7 @@ namespace MySurfaceApplication
         JamData jamList;
         ZouzouData zouzouList;
         TrackGroupsData trackGroupsList;
+        Object thisLock;
 
         Logger info = new Logger("MeteorSubscriber.log");
 
@@ -88,7 +89,7 @@ namespace MySurfaceApplication
 
         private readonly Dictionary<string, List<IBinding<object>>> _bindings = new Dictionary<string, List<IBinding<object>>>();
 
-        public MeteorSubscriber(ref SampleData samplesList, ref jamTracksData jamTracksList, ref JamData jamList, ref ZouzouData zouzouList, 
+        public MeteorSubscriber(ref Object thisLock, ref SampleData samplesList, ref jamTracksData jamTracksList, ref JamData jamList, ref ZouzouData zouzouList, 
             ref ConnexionData samplesMap, ref TrackGroupsData trackGroupsList)
         {
             this.samplesMap = samplesMap;
@@ -97,6 +98,7 @@ namespace MySurfaceApplication
             this.jamList = jamList;
             this.zouzouList = zouzouList;
             this.trackGroupsList = trackGroupsList;
+            this.thisLock = thisLock;
         }
 
         public void DataReceived(string data)
@@ -227,25 +229,35 @@ namespace MySurfaceApplication
                         if (changed.Collection == "track-groups")
                         {
                             TrackGroups trackGroups = trackGroupsList.findById(changed.Id);
-                            if (trackGroups != null){
-                                try
+                            if (trackGroups != null)
+                            {
+                                lock (thisLock)
                                 {
-                                    var trackTab = JsonConvert.DeserializeObject<List<string>>(changed.Fields["tracks"].ToString());
-                                    trackGroups.TracksId = trackTab;
-                                    trackGroupsList.TracksUpdate(ref trackGroups);
-                                }catch (KeyNotFoundException e) { }
-                                try
-                                {
-                                    var effects = JsonConvert.DeserializeObject<List<Effect>>(changed.Fields["effects"].ToString());
-                                    trackGroups.Effects = effects;
-                                    trackGroupsList.EffectUpdate(ref trackGroups);
-                                }catch (KeyNotFoundException e){ }
-                                try
-                                {
-                                    var leapGesturesMapping = JsonConvert.DeserializeObject<LeapGesturesMapping>(changed.Fields["leapGesturesMapping"].ToString());
-                                    trackGroups.LeapGesturesMapping = leapGesturesMapping;
-                                    trackGroupsList.LeapUpdate(ref trackGroups);
-                                }catch (KeyNotFoundException e) { }
+                                    try
+                                    {
+                                        var trackTab = JsonConvert.DeserializeObject<List<string>>(changed.Fields["tracks"].ToString());
+                                        trackGroups.TracksId = trackTab;
+                                        trackGroupsList.TracksUpdate(ref trackGroups);
+                                    }
+                                    catch (KeyNotFoundException e) { }
+                                    try
+                                    {
+                                        if (!trackGroupsList.beingModified)
+                                        {
+                                            var effects = JsonConvert.DeserializeObject<List<Effect>>(changed.Fields["effects"].ToString());
+                                            trackGroups.Effects = effects;
+                                            trackGroupsList.EffectUpdate(ref trackGroups);
+                                        }
+                                    }
+                                    catch (KeyNotFoundException e) { }
+                                    try
+                                    {
+                                        var leapGesturesMapping = JsonConvert.DeserializeObject<LeapGesturesMapping>(changed.Fields["leapGesturesMapping"].ToString());
+                                        trackGroups.LeapGesturesMapping = leapGesturesMapping;
+                                        trackGroupsList.LeapUpdate(ref trackGroups);
+                                    }
+                                    catch (KeyNotFoundException e) { }
+                                }
                             }
                             
                         }
