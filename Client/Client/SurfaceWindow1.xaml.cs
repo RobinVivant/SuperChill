@@ -75,6 +75,11 @@ namespace MySurfaceApplication
         {
             InitializeComponent();
 
+            // Create an ImageBrush.
+            ImageBrush bgBrush = new ImageBrush();
+            bgBrush.ImageSource = new BitmapImage(new Uri(@"../../Resources/background.png", UriKind.Relative));
+            myScatterView.Background = bgBrush;
+
             // Initialize tag definitions
             InitializeDefinitions();
 
@@ -132,7 +137,7 @@ namespace MySurfaceApplication
         {
             myScatterView.Dispatcher.Invoke(DispatcherPriority.Normal, new Action(delegate()
             {
-                ((Image)myScatterView.FindName("fx_" + trackId + "_" + e.ToString())).Source = new BitmapImage(new Uri(@"../../Resources/loader/Untitled-" + (int)(10 * val) + ".png", UriKind.Relative));
+                ((Image)myScatterView.FindName("fx_" + trackId + "_" + e.ToString())).Source = new BitmapImage(new Uri(@"../../Resources/loader/white-" + (int)(10 * val) + ".png", UriKind.Relative));
             }));
         }
             
@@ -375,7 +380,7 @@ namespace MySurfaceApplication
                     var effects = Enum.GetValues(typeof(SoundEffect)).Cast<SoundEffect>();
                     Console.Out.WriteLine(trackId);
                     Loop l = manager.getLoop(trackId);
-                    int i = 0;
+                    int i = -3;
                     foreach (SoundEffect effect in effects)
                     {
                         if (l == null) continue;
@@ -383,23 +388,23 @@ namespace MySurfaceApplication
                         if (true || value > 0)
                         {
                             Image effectVisualizer = new Image();
-                            effectVisualizer.Source = new BitmapImage(new Uri(@"../../Resources/loader/Untitled-" + (int)(10 * value) + ".png", UriKind.Relative));
+                            effectVisualizer.Source = new BitmapImage(new Uri(@"../../Resources/loader/white-" + (int)(10 * value) + ".png", UriKind.Relative));
 
                             effectVisualizer.Width = 20;
                             effectVisualizer.Height = 20;
                             myScatterView.RegisterName("fx_" + trackId + "_" + effect.ToString(), effectVisualizer);
-                            double x = 51 + 70 * Math.Cos(i * Math.PI / 5);
-                            double y = 48 + 70 * Math.Sin(i * Math.PI / 5);
+                            double x = 50 + 76 * Math.Cos(i * Math.PI / 6);
+                            double y = 50 + 76 * Math.Sin(i * Math.PI / 6);
                             effectVisualizer.SetValue(Canvas.LeftProperty, x);
                             effectVisualizer.SetValue(Canvas.TopProperty, y);
 
                             Image effectIcon = new Image();
                             effectIcon.Source = new BitmapImage(makeUriForEffect(effect));
-                            effectIcon.Width = 16;
-                            effectIcon.Height = 16;
+                            effectIcon.Width = 14;
+                            effectIcon.Height = 14;
 
-                            x = 50 + 72 * Math.Cos(i * Math.PI / 5);
-                            y = 50 + 72 * Math.Sin(i * Math.PI / 5);
+                            x = 53 + 76 * Math.Cos(i * Math.PI / 6);
+                            y = 53 + 76 * Math.Sin(i * Math.PI / 6);
                             effectIcon.SetValue(Canvas.LeftProperty, x);
                             effectIcon.SetValue(Canvas.TopProperty, y);
 
@@ -832,8 +837,11 @@ namespace MySurfaceApplication
                 {
                     Border border = new Border();
                     var converter = new System.Windows.Media.BrushConverter();
-                    border.BorderBrush = Brushes.AliceBlue;
-                    border.Background = Brushes.LightSkyBlue;
+                    var color = (SolidColorBrush)converter.ConvertFromString("#B182D5");
+                    //border.BorderBrush = Brushes.AliceBlue;
+                    //border.Background = Brushes.LightSkyBlue;
+                    border.BorderBrush = color;
+                    border.Background = color;
                     border.CornerRadius = new CornerRadius(130);
                     border.Height = 200;
                     border.Width = 200;

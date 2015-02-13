@@ -233,16 +233,6 @@
     <Resource Include="Resources\chorus.png" />
     <Resource Include="Resources\flanger.png" />
     <Resource Include="Resources\gargle.png" />
-    <Resource Include="Resources\loader\Untitled-1.png" />
-    <Resource Include="Resources\loader\Untitled-10.png" />
-    <Resource Include="Resources\loader\Untitled-2.png" />
-    <Resource Include="Resources\loader\Untitled-3.png" />
-    <Resource Include="Resources\loader\Untitled-4.png" />
-    <Resource Include="Resources\loader\Untitled-5.png" />
-    <Resource Include="Resources\loader\Untitled-6.png" />
-    <Resource Include="Resources\loader\Untitled-7.png" />
-    <Resource Include="Resources\loader\Untitled-8.png" />
-    <Resource Include="Resources\loader\Untitled-9.png" />
     <Resource Include="Resources\reverb.png" />
     <Resource Include="Resources\volume.png" />
     <Resource Include="Resources\Bass.png" />
