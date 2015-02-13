@@ -186,6 +186,7 @@
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
     <AppDesigner Include="Properties\" />
+    <None Include="Resources\loader\red-1.psd" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="DDPClient.NET\.gitattributes" />
@@ -202,6 +203,27 @@
     <Content Include="MySurfaceApplication.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Resource Include="Resources\background.png" />
+    <Resource Include="Resources\loader\red-1.png" />
+    <Resource Include="Resources\loader\red-10.png" />
+    <Resource Include="Resources\loader\red-2.png" />
+    <Resource Include="Resources\loader\red-3.png" />
+    <Resource Include="Resources\loader\red-4.png" />
+    <Resource Include="Resources\loader\red-5.png" />
+    <Resource Include="Resources\loader\red-6.png" />
+    <Resource Include="Resources\loader\red-7.png" />
+    <Resource Include="Resources\loader\red-8.png" />
+    <Resource Include="Resources\loader\red-9.png" />
+    <Resource Include="Resources\loader\white-1.png" />
+    <Resource Include="Resources\loader\white-10.png" />
+    <Resource Include="Resources\loader\white-2.png" />
+    <Resource Include="Resources\loader\white-3.png" />
+    <Resource Include="Resources\loader\white-4.png" />
+    <Resource Include="Resources\loader\white-5.png" />
+    <Resource Include="Resources\loader\white-6.png" />
+    <Resource Include="Resources\loader\white-7.png" />
+    <Resource Include="Resources\loader\white-8.png" />
+    <Resource Include="Resources\loader\white-9.png" />
     <Resource Include="Resources\effects\chorus.png" />
     <Resource Include="Resources\effects\echo.png" />
     <Resource Include="Resources\effects\flanger.png" />
@@ -211,8 +233,6 @@
     <Resource Include="Resources\chorus.png" />
     <Resource Include="Resources\flanger.png" />
     <Resource Include="Resources\gargle.png" />
-    <Resource Include="Resources\reverb.png" />
-    <Resource Include="Resources\volume.png" />
     <Resource Include="Resources\loader\Untitled-1.png" />
     <Resource Include="Resources\loader\Untitled-10.png" />
     <Resource Include="Resources\loader\Untitled-2.png" />
@@ -223,6 +243,8 @@
     <Resource Include="Resources\loader\Untitled-7.png" />
     <Resource Include="Resources\loader\Untitled-8.png" />
     <Resource Include="Resources\loader\Untitled-9.png" />
+    <Resource Include="Resources\reverb.png" />
+    <Resource Include="Resources\volume.png" />
     <Resource Include="Resources\Bass.png" />
     <Resource Include="Resources\Drum Single.png" />
     <Resource Include="Resources\Drum.png" />
