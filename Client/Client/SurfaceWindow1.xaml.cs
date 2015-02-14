@@ -440,9 +440,10 @@ namespace MySurfaceApplication
                     item.PreviewMouseUp += new MouseButtonEventHandler(handle_MouseUp);
 
                     item.ApplyTemplate();
+                    item.ShowsActivationEffects = false;
                     Microsoft.Surface.Presentation.Generic.SurfaceShadowChrome ssc;
                     ssc = item.Template.FindName("shadow", item) as Microsoft.Surface.Presentation.Generic.SurfaceShadowChrome;
-                    ssc.Visibility = Visibility.Hidden;
+                    ssc.Visibility = Visibility.Hidden; 
 
                     myScatterView.Items.Add(item);
 
@@ -871,6 +872,7 @@ namespace MySurfaceApplication
                     item.MinWidth = 200;
 
                     item.ApplyTemplate();
+                    item.ShowsActivationEffects = false;
                     Microsoft.Surface.Presentation.Generic.SurfaceShadowChrome ssc;
                     ssc = item.Template.FindName("shadow", item) as Microsoft.Surface.Presentation.Generic.SurfaceShadowChrome;
                     ssc.Visibility = Visibility.Hidden;
